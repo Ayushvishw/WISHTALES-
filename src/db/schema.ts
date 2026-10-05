@@ -171,3 +171,11 @@ export const analyticsEvents = pgTable(
   },
   (t) => [index("analytics_events_name_at").on(t.name, t.at)],
 );
+
+/** Admin sign-in sessions. Only a SHA-256 of the session token is stored. */
+export const adminSessions = pgTable("admin_sessions", {
+  tokenHash: text("token_hash").primaryKey(),
+  userId: uuid("user_id").notNull().references(() => adminUsers.id, { onDelete: "cascade" }),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  createdAt: createdAt(),
+});

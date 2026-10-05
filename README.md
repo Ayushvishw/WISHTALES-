@@ -47,8 +47,22 @@ Copy `.env.example` to `.env.local` for production-like settings. In production,
 2. Run `npm test`. The schema check catches duplicate keys, missing required fields and puzzles that point at optional photo slots.
 3. Run `npm run db:seed`. It inserts only versions that don't exist yet.
 
+## Admin panel
+
+`/admin` is the operations panel (section 16 of the requirements):
+
+- **Overview:** revenue, live surprises, payments in progress, and a 30-day funnel built from the analytics events.
+- **Orders:** search by order number, share link or recipient name, and filter by state. An order page shows what the customer wrote, their photos, payments and history. From there you can switch a link off or back on, or record a refund. The refund itself is issued in Razorpay first.
+- **Templates:** show or hide a template, change its price, choose which version is live, or create a new version from its settings. Every change creates a new version. Paid orders keep the version they were bought with.
+- **Occasions and music:** set an occasion to live, coming soon or hidden, and retire or restore music tracks.
+- **Team** (owners only): add accounts as owner, editor or support, and remove them.
+- **Activity log** (owners only): every admin change and payment warning.
+
+Roles: owners can do everything. Editors manage templates, occasions and music. Support manages orders and links. Passwords are hashed with scrypt. Sessions are random tokens in an httpOnly cookie, and only their SHA-256 hash is stored. Sign-in attempts are rate limited.
+
+**First account.** Set `ADMIN_SETUP_CODE` in the environment and open `/admin`. While no accounts exist, the page asks for that code and creates the owner. Developers can also run `npm run admin:create -- you@example.com owner "a long password"`.
+
 ## Not built yet
 
-- Admin panel (section 16): templates, versions, pricing, orders, disabling links, audit log viewer. The `admin_users` and `audit_log` tables are in place.
 - Retention job that deletes photos after the agreed period (proposed: 12 months).
 - A shared rate-limit store for multi-instance deploys. The current limiter is in-memory.
