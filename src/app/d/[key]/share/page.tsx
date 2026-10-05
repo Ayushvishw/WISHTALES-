@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { appUrl } from "@/lib/url";
 import { SharePanel } from "@/components/SharePanel";
 import { Shell } from "@/components/Shell";
 import { getDraft } from "@/lib/orders/service";
@@ -11,7 +12,7 @@ export default async function SharePage({ params }: { params: Promise<{ key: str
   const d = await getDraft(key);
   if (!d) notFound();
   if (!d.linkToken) redirect(d.state === "DRAFT" ? `/d/${key}` : `/d/${key}/checkout`);
-  const base = process.env.APP_URL?.replace(/\/$/, "") || "http://localhost:3000";
+  const base = appUrl();
   const url = `${base}/w/${d.linkToken}`;
   return (
     <Shell step={4} state={d.state}>

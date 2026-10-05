@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { appUrl } from "@/lib/url";
 import { Fragment } from "react";
 import { notFound } from "next/navigation";
 import { inr } from "@/components/Shell";
@@ -16,7 +17,7 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
   const sp = await searchParams;
   const o = d.order;
   const manage = can(a.role, "orders.manage");
-  const base = process.env.APP_URL?.replace(/\/$/, "") || "";
+  const base = appUrl();
   return (
     <>
       <div>

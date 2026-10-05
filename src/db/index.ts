@@ -10,8 +10,11 @@ import * as schema from "./schema";
  * tests) an embedded PGlite database is used, so no database server is needed.
  */
 function create() {
-  const url = process.env.DATABASE_URL;
-  if (url) return drizzlePg(postgres(url, { max: 10 }), { schema });
+  // Neon and Supabase integrations on Vercel set one of these.
+  const url = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+  // prepare: false keeps it compatible with connection poolers (PgBouncer, Neon pooler).
+  if (url) return drizzlePg(postgres(url, { max: 5, prepare: false }), { schema });
+  if (process.env.VERCEL) throw new Error("No database configured. Connect a Postgres database (for example Neon) to the project.");
   const dir = process.env.PGLITE_DIR ?? ".data/db";
   if (dir !== "memory") mkdirSync(dir, { recursive: true });
   const client = dir === "memory" ? new PGlite() : new PGlite(dir);
