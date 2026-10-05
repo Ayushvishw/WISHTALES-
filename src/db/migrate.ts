@@ -5,7 +5,7 @@ import { db } from "./index";
 const migrationsFolder = "./drizzle";
 
 async function main() {
-  if (process.env.DATABASE_URL) await migratePg(db, { migrationsFolder });
+  if (process.env.DATABASE_URL || process.env.POSTGRES_URL) await migratePg(db, { migrationsFolder });
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   else await migratePglite(db as any, { migrationsFolder });
   console.log("Migrations applied.");
