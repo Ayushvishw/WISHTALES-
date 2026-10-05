@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { can, requireAdmin } from "@/lib/admin/auth";
 import { logout } from "../actions";
+import { DemoBanner } from "@/components/Shell";
+import { isDemoMode } from "@/lib/payments";
 import "../admin.css";
 
 export const dynamic = "force-dynamic";
@@ -10,6 +12,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const a = await requireAdmin();
   return (
     <div className="wrap">
+      {isDemoMode() && <DemoBanner />}
       <header className="bar">
         <Link href="/admin" className="brand" style={{ textDecoration: "none" }}><b>Wish Tale</b><span>Admin</span></Link>
         <Link href="/" className="btn ghost small">View shop</Link>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { OrderState } from "@/lib/orders/state";
+import { isDemoMode } from "@/lib/payments";
 
 const STEPS = ["Template", "Personalize", "Preview", "Pay", "Share"];
 
@@ -7,6 +8,7 @@ const STEPS = ["Template", "Personalize", "Preview", "Pay", "Share"];
 export function Shell({ step, state, children }: { step?: number; state?: OrderState; children: React.ReactNode }) {
   return (
     <div className="wrap">
+      {isDemoMode() && <DemoBanner />}
       <header className="bar">
         <Link href="/" className="brand" style={{ textDecoration: "none" }}>
           <b>Wish Tale</b>
@@ -29,3 +31,11 @@ export function Shell({ step, state, children }: { step?: number; state?: OrderS
 }
 
 export const inr = (minor: number) => "₹" + (minor / 100).toLocaleString("en-IN", { maximumFractionDigits: 2 });
+
+export function DemoBanner() {
+  return (
+    <div className="demo" role="note">
+      <b>Demo</b> Payments are simulated. Nothing is charged.
+    </div>
+  );
+}

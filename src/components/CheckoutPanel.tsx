@@ -108,8 +108,8 @@ export function CheckoutPanel({ draftKey, amount, mock, template, initialState }
       )}
       {mockOpen && (
         <div className="panel">
-          <div className="eyebrow">Test payment</div>
-          <p className="note" style={{ margin: 0 }}>Payments aren&apos;t connected in this environment. These buttons send a signed test webhook through the real verification code.</p>
+          <div className="eyebrow">Demo payment</div>
+          <p className="note" style={{ margin: 0 }}>Real payments aren&apos;t switched on yet, so nothing is charged. Choose what happens, the same way the bank would tell us.</p>
           <div className="row">
             <button className="btn" onClick={() => mockPay("success")}>Simulate success</button>
             <button className="btn ghost" onClick={() => mockPay("failure")}>Simulate failure</button>

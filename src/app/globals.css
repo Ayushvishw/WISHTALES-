@@ -196,3 +196,5 @@ a{color:inherit}
 .err{color:var(--bad);font-size:13px}
 .ph.busy{display:grid;place-items:center;font-size:12px;color:var(--muted)}
 .saving{font-size:12.5px;color:var(--muted)}
+.demo{margin-top:10px;padding:8px 14px;border-radius:10px;background:var(--sunk);border:1px dashed var(--warn);font-size:13px;color:var(--fg);display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.demo b{color:var(--warn);text-transform:uppercase;letter-spacing:.1em;font-size:11px}
