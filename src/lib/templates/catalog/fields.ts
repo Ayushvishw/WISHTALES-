@@ -1,0 +1,24 @@
+import type { TemplateField } from "../schema";
+
+type FieldInput = Omit<TemplateField, "required"> & { required?: boolean };
+
+/** Shared field definitions. Templates pick from these and override per template. */
+const F: Record<string, FieldInput> = {
+  recipient_name: { key: "recipient_name", label: "Their name", type: "text", required: true, max: 30 },
+  sender_name: { key: "sender_name", label: "Your name", type: "text", required: true, max: 30 },
+  relationship: { key: "relationship", label: "What are you to them?", type: "text", max: 40, placeholder: "Best friend since Class 6" },
+  event_date: { key: "event_date", label: "Birthday date", type: "date" },
+  age: { key: "age", label: "Age they are turning", type: "number", min: 1, max: 120 },
+  message: { key: "message", label: "Your message", type: "textarea", required: true, max: 420, help: "Short and specific works best. One thought per line." },
+  secret_line: { key: "secret_line", label: "What the scratch card reveals", type: "text", required: true, max: 90, help: "A surprise, a plan, or something you have never said." },
+  puzzle_line: { key: "puzzle_line", label: "Line shown when the photo puzzle is solved", type: "text", max: 90 },
+  closing_line: { key: "closing_line", label: "The very last line they read", type: "text", max: 90, help: "People remember the ending most. Keep it short." },
+};
+
+export function fields(...spec: (string | (Partial<TemplateField> & { key: string }))[]): TemplateField[] {
+  return spec.map((s) => {
+    const base = typeof s === "string" ? F[s] : { ...F[s.key], ...s };
+    if (!base) throw new Error(`Unknown field ${typeof s === "string" ? s : s.key}`);
+    return { required: false, ...base } as TemplateField;
+  });
+}
