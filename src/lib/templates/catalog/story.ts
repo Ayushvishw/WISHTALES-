@@ -6,9 +6,10 @@ import { fields } from "./fields";
  * photos, a letter and a finale. Each has its own look, games and copy.
  * Published versions are immutable: add a new version to change one.
  * 2.1.0 gives each template its own skin (decorations, frames, poster).
+ * 2.2.0 lets the customer write the words inside every game (see games.ts).
  */
 
-const base = { version: "2.1.0", occasion: "birthday", currency: "INR" as const, layout: "story" as const, scenes: [] };
+const base = { version: "2.2.0", occasion: "birthday", currency: "INR" as const, layout: "story" as const, scenes: [] };
 const PHOTOS = { min: 4, max: 8 };
 
 const REASONS = [
@@ -53,7 +54,7 @@ export const STORY_TEMPLATES: TemplateInput[] = [
         { type: "wheel", eyebrow: "Spin for a gift", title: "Spin the wheel of treats", lead: "You get three spins. Every treat you land on is yours to claim, any day you like.", spins: 3, field: "treats",
           items: ["Movie night", "Breakfast in bed", "A long drive", "Dessert date", "Foot massage", "You pick dinner", "Shopping trip", "Lazy Sunday"], done: "Screenshot these and claim them all" },
         { type: "gallery", eyebrow: "Us", title: "A few of my favourite moments", lead: "Every one of these is a reason I smile.", style: "polaroid" },
-        { type: "flips", eyebrow: "Why you", title: "Six things I adore about you", lead: "Tap each card to flip it.", field: "reasons", items: REASONS },
+        { type: "flips", eyebrow: "Why you", title: "Things I adore about you", lead: "Tap each card to flip it.", field: "reasons", items: REASONS },
         { type: "ritual", eyebrow: "Make a wish", title: "Close your eyes, make a wish…", lead: "…then tap each candle to blow it out.", kind: "candles", count: 5, done: "Your wish is on its way", again: "Light the candles again" },
         { type: "letter", eyebrow: "For you", title: "One last thing", lead: "I wrote you a letter. Tap to open it.", style: "envelope", field: "letter" },
         { type: "finale", eyebrow: "Grand finale", title: "One last surprise", lead: "Ready? Tap the button and look up.", button: "Light up the sky", headline: "Happy Birthday, {{recipient_name}}", signoff: "Made with all my love, by {{sender_name}}", effect: "fireworks" },

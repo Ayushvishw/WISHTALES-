@@ -17,6 +17,10 @@ export const fieldSchema = z.object({
   help: z.string().optional(),
   /** Used when the customer leaves an optional field empty. */
   default: z.string().optional(),
+  /** Textareas only: the fewest lines the customer must write. */
+  minLines: z.number().int().positive().optional(),
+  /** Textareas only: every line must have at least this many "|" separators. */
+  pipes: z.number().int().positive().optional(),
 });
 export type TemplateField = z.infer<typeof fieldSchema>;
 
@@ -62,6 +66,7 @@ export const chapterSchema = z.discriminatedUnion("type", [
     nameStyle: z.enum(["script", "display", "pixel"]),
     /** Shown one by one as floaters are popped. */
     wishes: z.array(z.string()).min(1),
+    field: z.string().optional(),
     showAge: z.boolean().optional(),
   }),
   z.object({ type: z.literal("question"), ...copy, yes: z.string(), no: z.array(z.string()).min(2), done: z.string() }),
@@ -75,7 +80,7 @@ export const chapterSchema = z.discriminatedUnion("type", [
     /** Wheel slices when the customer leaves the field empty. Exactly 8. */
     items: z.array(z.string().max(18)).length(8), field: z.string().optional(), done: z.string(),
   }),
-  z.object({ type: z.literal("gallery"), ...copy, style: z.enum(["polaroid", "frames", "film", "string"]), captions: z.array(z.string()).optional() }),
+  z.object({ type: z.literal("gallery"), ...copy, style: z.enum(["polaroid", "frames", "film", "string"]), captions: z.array(z.string()).optional(), field: z.string().optional() }),
   z.object({ type: z.literal("flips"), ...copy, items: z.array(z.string()).min(3).max(8), field: z.string().optional() }),
   z.object({ type: z.literal("memory"), ...copy, pairs: z.number().int().min(3).max(6), done: z.string() }),
   z.object({ type: z.literal("scratch"), ...copy, reveal: z.string(), cover: z.string() }),
@@ -94,7 +99,7 @@ export const chapterSchema = z.discriminatedUnion("type", [
   /** Tap the stars in order to draw a shape; the line is revealed at the end. */
   z.object({ type: z.literal("stars"), ...copy, shape: z.enum(["heart", "ring", "infinity"]), reveal: z.string() }),
   /** Press and hold to fill a love meter past 100%. */
-  z.object({ type: z.literal("meter"), ...copy, levels: z.array(z.string()).min(3).max(6), done: z.string() }),
+  z.object({ type: z.literal("meter"), ...copy, levels: z.array(z.string()).min(3).max(6), field: z.string().optional(), done: z.string() }),
   /** Tap to grow a flower per reason, building a bouquet. */
   z.object({ type: z.literal("bouquet"), ...copy, items: z.array(z.string()).min(3).max(7), field: z.string().optional(), done: z.string() }),
   /** Multiple choice: "Question | right answer | wrong | wrong" per line. */

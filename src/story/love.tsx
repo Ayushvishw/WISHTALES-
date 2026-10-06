@@ -218,7 +218,8 @@ function Meter({ chapter, ctx, num }: P<"meter">) {
     clearInterval(timer.current);
     if (!full) timer.current = setInterval(() => setV((x) => (x <= 0 ? 0 : Math.max(0, x - 0.6))), 40);
   };
-  const lvl = chapter.levels[Math.min(chapter.levels.length - 1, Math.floor((Math.min(v, 99.9) / 100) * chapter.levels.length))];
+  const levels = listFrom(ctx, chapter.field, chapter.levels, chapter.levels.length, 40);
+  const lvl = levels[Math.min(levels.length - 1, Math.floor((Math.min(v, 99.9) / 100) * levels.length))];
   const fill = Math.min(100, v);
   return (
     <Section center>
@@ -235,7 +236,7 @@ function Meter({ chapter, ctx, num }: P<"meter">) {
           </g>
         </svg>
         <p className="st-meter-pct">{full ? "∞" : `${Math.round(v)}%`}</p>
-        <p className="st-meter-lvl">{full ? ctx.fill(chapter.done) : ctx.fill(lvl)}</p>
+        <p className="st-meter-lvl">{full ? ctx.fill(chapter.done) : lvl}</p>
         {!full ? (
           <button
             className={`st-btn accent st-hold${holding.current ? " on" : ""}`}

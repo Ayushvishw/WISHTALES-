@@ -5,7 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import { playAudio, stopAudio } from "@/experience/audio";
 import { track } from "@/lib/analytics";
 import { CUSTOM_MUSIC_ID, SONG_RULES } from "@/lib/audio-files";
-import { validatePhotoCount, validateValues, type FieldErrors, type Values } from "@/lib/personalization";
+import { fillText, validatePhotoCount, validateValues, type FieldErrors, type Values } from "@/lib/personalization";
+import { builtinLines } from "@/lib/templates/catalog/games";
 import type { TemplateConfig, TemplateField } from "@/lib/templates/schema";
 import { sampleFor } from "@/lib/sample";
 
@@ -187,13 +188,17 @@ export function DraftEditor(props: { draftKey: string; config: TemplateConfig; v
     router.push(`/d/${draftKey}/preview`);
   };
 
+  const ours = builtinLines(config);
   const field = (f: TemplateField) => {
     const id = `f-${f.key}`;
     const e = errors[f.key];
+    // The template's own words, with names filled in, so customers can see what they would change.
+    const own = (ours[f.key] ?? f.default ?? "").split("\n").map((l) => fillText(l, values)).join("\n");
+    const empty = !(values[f.key] ?? "").trim();
     const common = {
       id,
       value: values[f.key] ?? "",
-      placeholder: f.placeholder || f.default || "",
+      placeholder: f.placeholder || own,
       onChange: (ev: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => change({ ...values, [f.key]: ev.target.value }),
       "aria-invalid": !!e,
       "aria-describedby": e ? `${id}-err` : undefined,
@@ -203,6 +208,11 @@ export function DraftEditor(props: { draftKey: string; config: TemplateConfig; v
         <span>{f.label} {!f.required && <em>(optional)</em>}</span>
         {f.type === "textarea" ? <textarea {...common} maxLength={f.max} /> : <input {...common} type={f.type} maxLength={f.type === "number" ? undefined : f.max} min={f.min} max={f.type === "number" ? f.max : undefined} />}
         {f.help && <small>{f.help}</small>}
+        {empty && own && f.type !== "date" && (
+          <button type="button" className="fl-ours" onClick={() => change({ ...values, [f.key]: own })}>
+            Edit these words
+          </button>
+        )}
         {e && <span className="err" id={`${id}-err`}>{e}</span>}
       </label>
     );

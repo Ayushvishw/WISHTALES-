@@ -16,7 +16,8 @@ const jpeg = (n: number) =>
     .jpeg()
     .toBuffer();
 
-const values = { recipient_name: "Riya", sender_name: "Aarav", letter: "Happy birthday" };
+const lines = (n: number) => Array.from({ length: n }, (_, i) => `Line ${i + 1}`).join("\n");
+const values = { recipient_name: "Riya", sender_name: "Aarav", letter: "Happy birthday", wishes: lines(3), reasons: lines(3), treats: lines(3) };
 
 async function readyDraft() {
   const key = await createDraft("bday-starlit-love");
