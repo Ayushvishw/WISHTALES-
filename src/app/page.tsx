@@ -196,7 +196,7 @@ export default async function Home() {
             <p>Share it on WhatsApp. No sign-up, no download, works on every phone.</p>
           </Reveal>
           <Reveal delay={60} className="bt bt-letter">
-            <div className="bt-art typer" aria-hidden="true"><span>Dear Riya, you are my favourite person…</span></div>
+            <div className="bt-art typer" aria-hidden="true"><span>Dear Lisa, you are my favourite person…</span></div>
             <h3>A letter that writes itself</h3>
             <p>Your words appear one letter at a time, as if you&apos;re writing it in front of them.</p>
           </Reveal>

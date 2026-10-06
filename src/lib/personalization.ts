@@ -65,7 +65,7 @@ export function resolveValues(t: TemplateConfig, values: Values): Values {
 /**
  * Resolve {{placeholders}} in template text. Returns plain text (React escapes
  * it on render). A placeholder with no value is removed together with the
- * comma or separator in front of it, so "From {{a}}, {{b}}" becomes "From Aarav".
+ * comma or separator in front of it, so "From {{a}}, {{b}}" becomes "From Andrew".
  */
 export function fillText(str: string, values: Values): string {
   return str
