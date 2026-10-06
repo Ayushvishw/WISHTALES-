@@ -15,7 +15,7 @@ export default async function DraftPage({ params }: { params: Promise<{ key: str
   const music = await listMusic();
   return (
     <Shell step={1} state={d.state}>
-      <DraftEditor draftKey={key} config={d.config} values={d.values} photos={d.photos} musicId={d.musicId} music={music} />
+      <DraftEditor draftKey={key} config={d.config} values={d.values} photos={d.photos} song={d.song} musicId={d.musicId} music={music} />
     </Shell>
   );
 }

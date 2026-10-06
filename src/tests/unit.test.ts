@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { mediaContentType, sniffAudio, songTitle } from "@/lib/audio-files";
 import { canTransition } from "@/lib/orders/state";
 import { fillText, resolveValues, sanitizeValues, validatePhotoCount, validateValues } from "@/lib/personalization";
 import { CATALOG } from "@/lib/templates/catalog";
@@ -75,5 +76,26 @@ describe("webhook signatures", () => {
     const tampered = signed.body.replace('"amount":100', '"amount":1');
     expect(() => p.parseWebhook(tampered, new Headers(signed.headers))).toThrow();
     expect(hmacHex("k", "a")).not.toBe(hmacHex("k", "b"));
+  });
+});
+
+describe("song files", () => {
+  const pad = (head: number[] | string) => Buffer.concat([typeof head === "string" ? Buffer.from(head, "latin1") : Buffer.from(head), Buffer.alloc(16)]);
+  it("detects formats from bytes", () => {
+    expect(sniffAudio(pad("ID3\x03"))?.ext).toBe("mp3");
+    expect(sniffAudio(pad([0xff, 0xfb, 0x90, 0x00]))?.ext).toBe("mp3");
+    expect(sniffAudio(pad([0xff, 0xf1, 0x50, 0x80]))?.ext).toBe("aac");
+    expect(sniffAudio(pad("\x00\x00\x00\x20ftypM4A "))?.ext).toBe("m4a");
+    expect(sniffAudio(pad("OggS"))?.ext).toBe("ogg");
+    expect(sniffAudio(pad("RIFF\x00\x00\x00\x00WAVE"))?.ext).toBe("wav");
+    expect(sniffAudio(pad("\x00\x00\x00\x20ftypqt  "))).toBeNull();
+    expect(sniffAudio(pad("<html>"))).toBeNull();
+    expect(sniffAudio(pad([0x89, 0x50, 0x4e, 0x47]))).toBeNull();
+  });
+  it("cleans titles and maps content types", () => {
+    expect(songTitle("my_song<script>.mp3")).toBe("my songscript");
+    expect(songTitle(".mp3")).toBe("Your song");
+    expect(mediaContentType("songs/abc.m4a")).toBe("audio/mp4");
+    expect(mediaContentType("photos/abc.webp")).toBe("image/webp");
   });
 });

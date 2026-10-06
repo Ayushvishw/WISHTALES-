@@ -102,6 +102,8 @@ export const media = pgTable(
     height: integer("height"),
     bytes: integer("bytes"),
     contentType: text("content_type").notNull(),
+    /** Display name for an uploaded song, cleaned from the file name. */
+    title: text("title"),
     createdAt: createdAt(),
   },
   (t) => [index("media_order_position").on(t.orderId, t.position)],

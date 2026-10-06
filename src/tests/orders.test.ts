@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { db, schema } from "@/db";
 import { seed } from "@/db/seed";
 import {
-  addPhoto, applyWebhook, createDraft, getDraft, getPublicExperience, removePhoto, reorderPhotos, startCheckout, updateDraft, UserError,
+  addPhoto, addSong, applyWebhook, getPreviewExperience, removeSong, createDraft, getDraft, getPublicExperience, removePhoto, reorderPhotos, startCheckout, updateDraft, UserError,
 } from "@/lib/orders/service";
 import type { WebhookEvent } from "@/lib/payments/provider";
 
@@ -75,6 +75,47 @@ describe("draft lifecycle", () => {
     await addPhoto(key, await jpeg(7), "image/jpeg");
     await addPhoto(key, await jpeg(8), "image/jpeg");
     await expect(addPhoto(key, await jpeg(9), "image/jpeg")).rejects.toThrow(/up to 8/);
+  });
+});
+
+describe("own song", () => {
+  const mp3 = (n = 2000) => Buffer.concat([Buffer.from("ID3\x04\x00\x00\x00\x00\x00\x00", "latin1"), Buffer.alloc(n, 1)]);
+
+  it("stores a song, selects it, and plays it in the experience", async () => {
+    const key = await readyDraft();
+    const s = await addSong(key, mp3(), "Tum Hi Ho (Official).mp3");
+    expect(s.title).toBe("Tum Hi Ho (Official)");
+    expect(s.url).toMatch(/^\/api\/media\/songs\/[A-Za-z0-9]+\.mp3$/);
+    const d = (await getDraft(key))!;
+    expect(d.musicId).toBe("mus_custom");
+    expect(d.song?.url).toBe(s.url);
+    expect((await getPreviewExperience(key))!.music?.source).toBe(s.url);
+  });
+
+  it("replaces an earlier song and deletes its file", async () => {
+    const key = await readyDraft();
+    const first = await addSong(key, mp3(), "a.mp3");
+    await addSong(key, mp3(3000), "b.mp3");
+    const rows = await db.select().from(schema.media).where(eq(schema.media.kind, "audio"));
+    expect(rows.some((r) => first.url.endsWith(r.storageKey))).toBe(false);
+    const { storage } = await import("@/lib/storage");
+    expect(await storage().get(first.url.replace("/api/media/", ""))).toBeNull();
+  });
+
+  it("rejects files that aren't audio or are too big", async () => {
+    const key = await readyDraft();
+    await expect(addSong(key, Buffer.from("<?php echo 1; ?> padding padding"), "x.mp3")).rejects.toThrow(/couldn't read/);
+    await expect(addSong(key, mp3(4 * 1024 * 1024), "big.mp3")).rejects.toThrow(/4 MB/);
+    await expect(updateDraft(key, { musicId: "mus_custom" })).rejects.toThrow(/Upload your song/);
+  });
+
+  it("goes back to the template's music when the song is removed", async () => {
+    const key = await readyDraft();
+    await addSong(key, mp3(), "a.mp3");
+    expect(await removeSong(key)).toEqual({ musicId: "mus_hbd_box" });
+    const d = (await getDraft(key))!;
+    expect(d.song).toBeNull();
+    expect(d.musicId).toBe("mus_hbd_box");
   });
 });
 
