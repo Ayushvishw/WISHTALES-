@@ -13,6 +13,12 @@ import { musicTracks, occasions, templates, templateVersions } from "./schema";
 export async function seed() {
   const newSlugs = CATALOG.filter((t) => !RETIRED_TEMPLATES.includes(t.slug)).map((t) => t.slug);
   const firstStoryRun = newSlugs.length > 0 && (await db.select({ id: templates.id }).from(templates).where(inArray(templates.slug, newSlugs))).length === 0;
+  // An occasion whose first templates arrive now goes live, once. An admin can change it again later.
+  const opening: string[] = [];
+  for (const o of OCCASIONS.filter((x) => x.live)) {
+    const slugs = CATALOG.filter((t) => t.occasion === o.slug).map((t) => t.slug);
+    if (slugs.length && !(await db.select({ id: templates.id }).from(templates).where(inArray(templates.slug, slugs))).length) opening.push(o.slug);
+  }
   for (const [i, o] of OCCASIONS.entries()) {
     await db
       .insert(occasions)
@@ -44,6 +50,9 @@ export async function seed() {
       status: "published",
       publishedAt: new Date(),
     });
+  }
+  if (opening.length) {
+    await db.update(occasions).set({ status: "live" }).where(and(inArray(occasions.slug, opening), eq(occasions.status, "coming_soon")));
   }
   if (firstStoryRun && RETIRED_TEMPLATES.length) {
     await db.update(templates).set({ status: "unpublished" }).where(inArray(templates.slug, RETIRED_TEMPLATES));

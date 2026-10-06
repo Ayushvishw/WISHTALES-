@@ -17,6 +17,21 @@ describe("template catalog", () => {
     expect(RETIRED_TEMPLATES).toHaveLength(3);
     expect(new Set(CATALOG.map((t) => t.slug)).size).toBe(CATALOG.length);
   });
+  it("has five Anniversary and five Love & Proposal templates, mixing swipe and scroll stories", () => {
+    for (const occ of ["anniversary", "proposal"]) {
+      const list = CATALOG.filter((t) => t.occasion === occ);
+      expect(list).toHaveLength(5);
+      const flows = new Set(list.map((t) => t.story?.flow));
+      expect(flows.has("swipe") && flows.has("scroll")).toBe(true);
+      expect(new Set(list.map((t) => t.story?.skin)).size).toBe(5);
+    }
+  });
+  it("fills the proposal question from the customer's field, or its default", () => {
+    const t = CATALOG.find((x) => x.slug === "prop-the-question")!;
+    const q = t.story!.chapters.find((c) => c.type === "question")!;
+    expect(fillText(q.title, resolveValues(t, { recipient_name: "Lisa", sender_name: "Andrew" }))).toBe("Will you marry me?");
+    expect(fillText(q.title, resolveValues(t, { big_question: "Will you move in with me?" }))).toBe("Will you move in with me?");
+  });
   it("rejects a story chapter that uses an unknown field", () => {
     const bad = { ...story, story: { ...story.story!, chapters: [...story.story!.chapters, { type: "letter", eyebrow: "x", title: "y", style: "envelope", field: "nope" }] } };
     expect(templateConfigSchema.safeParse(bad).success).toBe(false);

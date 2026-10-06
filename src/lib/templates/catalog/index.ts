@@ -1,4 +1,5 @@
 import { templateConfigSchema, type TemplateConfig, type TemplateInput } from "../schema";
+import { LOVE_TEMPLATES } from "./love";
 import { STORY_TEMPLATES } from "./story";
 import { fields } from "./fields";
 
@@ -109,13 +110,13 @@ const classic: TemplateInput[] = [
 /** The three launch templates are kept so paid orders still render, but no longer sold. */
 export const RETIRED_TEMPLATES = classic.map((t) => t.slug);
 
-export const CATALOG: TemplateConfig[] = [...STORY_TEMPLATES, ...classic].map((t) => templateConfigSchema.parse(t));
+export const CATALOG: TemplateConfig[] = [...STORY_TEMPLATES, ...LOVE_TEMPLATES, ...classic].map((t) => templateConfigSchema.parse(t));
 
 export const OCCASIONS = [
   { slug: "birthday", name: "Birthday", live: true },
-  { slug: "anniversary", name: "Anniversary", live: false },
+  { slug: "anniversary", name: "Anniversary", live: true },
   { slug: "friendship", name: "Friendship", live: false },
-  { slug: "proposal", name: "Proposal", live: false },
+  { slug: "proposal", name: "Love & Proposal", live: true },
   { slug: "wedding", name: "Wedding", live: false },
   { slug: "mothers-day", name: "Mother's Day", live: false },
   { slug: "fathers-day", name: "Father's Day", live: false },
@@ -125,6 +126,7 @@ export const OCCASIONS = [
 export const MUSIC = [
   { id: "mus_hbd_box", title: "Happy Birthday, music box", source: "builtin:hbd", license: "Public-domain melody, synthesized in the browser" },
   { id: "mus_warm_keys", title: "Warm keys", source: "builtin:chords", license: "Original, royalty-free" },
+  { id: "mus_canon", title: "Canon in D, music box", source: "builtin:canon", license: "Public-domain melody (Pachelbel), synthesized in the browser" },
   { id: "mus_custom", title: "Your own song", source: "custom", license: "A song you upload. Please only use music you have the right to share." },
   { id: "mus_none", title: "No music", source: "none", license: "n/a" },
 ] as const;

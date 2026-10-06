@@ -1,0 +1,126 @@
+/* Skins for the anniversary and proposal stories: decorations, frames, buttons and dividers.
+   Palette comes from each template's config; this only adds shape and ornament. */
+
+/* ── timeless: wine velvet, a double gold frame, interlocked rings, serif italics ── */
+.st[data-skin="timeless"] .st-skin .f1{inset:10px;border:1px solid color-mix(in srgb,var(--accent) 65%,transparent);outline:1px solid color-mix(in srgb,var(--accent) 30%,transparent);outline-offset:-7px}
+.st[data-skin="timeless"] .st-skin .big{right:-50px;top:10%;width:200px;height:120px;opacity:.22;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 60'%3E%3Ccircle cx='38' cy='30' r='22' fill='none' stroke='%23e8b86a' stroke-width='5'/%3E%3Ccircle cx='62' cy='30' r='22' fill='none' stroke='%23f6d7a7' stroke-width='5'/%3E%3C/svg%3E");animation:skFloat 12s ease-in-out infinite}
+.st[data-skin="timeless"] .st-head::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 30'%3E%3Cpath d='M4 15h56M100 15h56' stroke='%23e8b86a' stroke-width='1'/%3E%3Ccircle cx='74' cy='15' r='8' fill='none' stroke='%23e8b86a' stroke-width='2'/%3E%3Ccircle cx='86' cy='15' r='8' fill='none' stroke='%23f6d7a7' stroke-width='2'/%3E%3C/svg%3E")}
+.st[data-skin="timeless"] .st-divider{height:14px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 14'%3E%3Cpath d='M0 7h14M26 7h14' stroke='%23e8b86a' stroke-width='.8'/%3E%3Cpath d='M20 11c-2-2-6-4-5-7 1-2 4-1 5 1 1-2 4-3 5-1 1 3-3 5-5 7z' fill='%23c2185b'/%3E%3C/svg%3E")}
+.st[data-skin="timeless"] .st-h2{font-style:italic;font-weight:500}
+.st[data-skin="timeless"] .st-btn{border-radius:2px;letter-spacing:.14em;text-transform:uppercase;font-size:14px}
+.st[data-skin="timeless"] .st-btn.accent,.st[data-skin="timeless"] .st-btn.gold{background:linear-gradient(180deg,#f6dc9c,#c99a4c);color:#1d0b12}
+.st[data-skin="timeless"] .st-arena,.st[data-skin="timeless"] .st-sky,.st[data-skin="timeless"] .st-quiz,.st[data-skin="timeless"] .st-cons{border-radius:4px;box-shadow:inset 0 0 0 1px var(--accent),inset 0 0 0 6px var(--card),inset 0 0 0 7px color-mix(in srgb,var(--accent) 40%,transparent)}
+.st[data-skin="timeless"] .st-flip .face,.st[data-skin="timeless"] .st-tl-item,.st[data-skin="timeless"] .st-stat{border-radius:4px}
+.st[data-skin="timeless"] .st-flip .front{box-shadow:inset 0 0 0 1px var(--accent),inset 0 0 0 6px var(--card),inset 0 0 0 7px color-mix(in srgb,var(--accent) 40%,transparent)}
+
+/* ── diary: ruled notebook paper, a red margin, spiral holes, washi tape, hand lettering ── */
+.st[data-skin="diary"] .st-skin.back{background:repeating-linear-gradient(180deg,transparent 0 31px,rgba(121,173,220,.35) 31px 32px)}
+.st[data-skin="diary"] .st-skin .f1{left:42px;top:0;bottom:0;width:2px;background:rgba(228,87,46,.45)}
+.st[data-skin="diary"] .st-skin .f2{left:10px;top:0;bottom:0;width:16px;background:radial-gradient(circle,#d8ccb4 0 6px,transparent 7px) 0 0/16px 40px repeat-y}
+.st[data-skin="diary"] .st-head::before{width:110px;height:24px;background:rgba(242,165,65,.55);rotate:-3deg}
+.st[data-skin="diary"] .st-h2{font-weight:700;text-decoration:underline wavy color-mix(in srgb,var(--accent) 55%,transparent);text-decoration-thickness:2px;text-underline-offset:8px}
+.st[data-skin="diary"] .st-btn{border-radius:255px 15px 225px 15px/15px 225px 15px 255px;box-shadow:2px 3px 0 var(--fg)}
+.st[data-skin="diary"] .st-btn.ghost{box-shadow:inset 0 0 0 2px var(--fg)}
+.st[data-skin="diary"] .st-quiz,.st[data-skin="diary"] .st-arena,.st[data-skin="diary"] .st-sky,.st[data-skin="diary"] .st-scratch,.st[data-skin="diary"] .st-paper{border-radius:3px;box-shadow:0 1px 0 #e0d4bd,4px 6px 0 rgba(35,57,91,.12);border:1.5px solid #e0d4bd}
+.st[data-skin="diary"] .st-flip:nth-child(odd),.st[data-skin="diary"] .st-tl-item:nth-child(odd){rotate:-1.2deg}
+.st[data-skin="diary"] .st-tl-item:nth-child(even){rotate:1deg}
+.st[data-skin="diary"] .st-pol::before{background:rgba(228,87,46,.5)}
+.st[data-skin="diary"] .st-sec{padding-left:56px}
+
+/* ── moonlit: a big soft moon, clouds drifting, silver hairlines ── */
+.st[data-skin="moonlit"] .st-skin .big{right:-90px;top:-60px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle at 40% 40%,#fff6d6 0 30%,rgba(255,226,154,.25) 45%,transparent 68%);opacity:.75;animation:skFloat 16s ease-in-out infinite}
+.st[data-skin="moonlit"] .st-skin .b2{left:-10%;bottom:6%;width:60%;height:70px;border-radius:50px;background:rgba(169,198,255,.08);filter:blur(4px);box-shadow:180px -260px 0 -10px rgba(169,198,255,.06);animation:lsDrift 40s linear infinite}
+.st[data-skin="moonlit"] .st-head::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 30'%3E%3Cpath d='M60 4a11 11 0 1 0 8 19 9 9 0 1 1-8-19z' fill='%23ffe29a'/%3E%3Cpath d='M10 15h36M80 15h36' stroke='%23a9c6ff' stroke-width='.8' stroke-dasharray='2 4'/%3E%3C/svg%3E")}
+.st[data-skin="moonlit"] .st-divider{height:10px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 10'%3E%3Ccircle cx='25' cy='5' r='1.4' fill='%23ffe29a'/%3E%3Ccircle cx='8' cy='5' r='.8' fill='%23a9c6ff'/%3E%3Ccircle cx='42' cy='5' r='.8' fill='%23a9c6ff'/%3E%3C/svg%3E")}
+.st[data-skin="moonlit"] .st-h2{font-style:italic;font-weight:500;letter-spacing:.01em;text-shadow:0 0 22px color-mix(in srgb,var(--accent) 50%,transparent)}
+.st[data-skin="moonlit"] .st-arena,.st[data-skin="moonlit"] .st-sky,.st[data-skin="moonlit"] .st-cons{border-radius:200px 200px 28px 28px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 40%,transparent),0 0 60px color-mix(in srgb,var(--accent2) 18%,transparent)}
+.st[data-skin="moonlit"] .st-btn.accent,.st[data-skin="moonlit"] .st-btn.gold{background:linear-gradient(135deg,#e8eeff,#a9c6ff);color:#0b1026;box-shadow:0 0 24px rgba(169,198,255,.45)}
+.st[data-skin="moonlit"] .st-stat{background:rgba(20,27,60,.6);box-shadow:inset 0 0 0 1px rgba(169,198,255,.25)}
+
+/* ── cafe: striped awning, cream postcards, terracotta and sage ── */
+.st[data-skin="cafe"] .st-skin .f1{left:0;right:0;top:0;height:30px;background:radial-gradient(circle at 50% 0,transparent 0 0,transparent 0),repeating-linear-gradient(90deg,#e07a5f 0 40px,#fdf5e8 40px 80px);-webkit-mask:radial-gradient(20px 14px at 20px 16px,#000 98%,transparent) 0 0/40px 30px repeat-x,linear-gradient(#000 0 16px,transparent 0);mask:radial-gradient(20px 14px at 20px 16px,#000 98%,transparent) 0 0/40px 30px repeat-x,linear-gradient(#000 0 16px,transparent 0);opacity:.9}
+.st[data-skin="cafe"] .st-skin .big{right:-30px;bottom:-10px;width:170px;height:300px;opacity:.12;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 180' fill='none' stroke='%23f2cc8f' stroke-width='2.4' stroke-linejoin='round'%3E%3Cpath d='M10 178L40 60h20l30 118M24 120h52M32 90h36M40 60l10-56 10 56M24 120q26-24 52 0'/%3E%3C/svg%3E")}
+.st[data-skin="cafe"] .st-head::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 30'%3E%3Cpath d='M44 8h26v8a13 13 0 0 1-26 0z' fill='%23fdf5e8'/%3E%3Cpath d='M70 10c8 0 8 9 0 9' stroke='%23fdf5e8' stroke-width='2.4' fill='none'/%3E%3Cpath d='M30 26h60' stroke='%23e07a5f' stroke-width='2'/%3E%3C/svg%3E")}
+.st[data-skin="cafe"] .st-sec{padding-top:110px}
+.st[data-skin="cafe"] .st-h2{letter-spacing:.01em}
+.st[data-skin="cafe"] .st-btn{border-radius:6px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-size:14px}
+.st[data-skin="cafe"] .st-btn.accent,.st[data-skin="cafe"] .st-btn.gold{box-shadow:0 4px 0 color-mix(in srgb,var(--accent) 55%,#000)}
+.st[data-skin="cafe"] .st-arena,.st[data-skin="cafe"] .st-sky,.st[data-skin="cafe"] .st-board,.st[data-skin="cafe"] .st-catch{border-radius:8px;box-shadow:0 0 0 6px var(--paper),0 0 0 7px var(--line),0 24px 50px rgba(0,0,0,.35)}
+.st[data-skin="cafe"] .st-tl-item{border-radius:4px;outline:2px dashed color-mix(in srgb,var(--accent) 50%,transparent);outline-offset:-8px}
+
+/* ── golden: ivory, emerald arches, gold hairlines and roses ── */
+.st[data-skin="golden"] .st-skin .f1,.st[data-skin="golden"] .st-skin .f2{width:130px;height:130px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M0 40Q0 0 40 0' fill='none' stroke='%23b8862b' stroke-width='1.5'/%3E%3Cpath d='M0 60Q0 0 60 0' fill='none' stroke='%232f6b4f' stroke-width='3'/%3E%3Ccircle cx='18' cy='18' r='9' fill='%23c0576b'/%3E%3Cpath d='M18 10c4 0 6 4 3 7-3 2-6 0-5-3' stroke='%237d2b3c' stroke-width='1.4' fill='none'/%3E%3Cpath d='M28 22c8-2 12 3 12 7-6 0-10-3-12-7zM14 28c-2 8 3 12 7 12 0-6-3-10-7-12z' fill='%232f6b4f'/%3E%3C/svg%3E")}
+.st[data-skin="golden"] .st-skin .f1{left:0;top:0}
+.st[data-skin="golden"] .st-skin .f2{right:0;bottom:0;transform:rotate(180deg)}
+.st[data-skin="golden"] .st-head::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 140 30'%3E%3Cpath d='M6 15h48M86 15h48' stroke='%23b8862b' stroke-width='1'/%3E%3Cpath d='M70 6l6 9-6 9-6-9z' fill='%23b8862b'/%3E%3Ccircle cx='58' cy='15' r='2' fill='%232f6b4f'/%3E%3Ccircle cx='82' cy='15' r='2' fill='%232f6b4f'/%3E%3C/svg%3E")}
+.st[data-skin="golden"] .st-divider{height:14px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 14'%3E%3Cpath d='M0 7h48' stroke='%23b8862b' stroke-width='.6'/%3E%3Cpath d='M24 2l4 5-4 5-4-5z' fill='%23b8862b'/%3E%3C/svg%3E")}
+.st[data-skin="golden"] .st-h2{text-transform:uppercase;letter-spacing:.08em;font-size:clamp(24px,5.4cqi,42px)}
+.st[data-skin="golden"] .st-arena,.st[data-skin="golden"] .st-sky,.st[data-skin="golden"] .st-board{border-radius:160px 160px 16px 16px;box-shadow:inset 0 0 0 1px var(--accent),inset 0 0 0 8px var(--card),inset 0 0 0 9px color-mix(in srgb,var(--accent2) 50%,transparent),0 20px 50px rgba(31,59,45,.18)}
+.st[data-skin="golden"] .st-sky{background:#1f3b2d}
+.st[data-skin="golden"] .st-flip .face,.st[data-skin="golden"] .st-stat,.st[data-skin="golden"] .st-tl-item{border-radius:60px 60px 10px 10px}
+.st[data-skin="golden"] .st-stat{box-shadow:inset 0 0 0 1px var(--accent)}
+.st[data-skin="golden"] .st-btn{border-radius:4px;text-transform:uppercase;letter-spacing:.16em;font-size:14px}
+.st[data-skin="golden"] .st-btn.accent,.st[data-skin="golden"] .st-btn.gold{background:linear-gradient(180deg,#d9b25c,#9c6f1f);color:#fff}
+
+/* ── velvet: deep red velvet, gold corner brackets, rings floating ── */
+.st[data-skin="velvet"] .st-skin.back{background:radial-gradient(120% 70% at 50% 0,rgba(255,79,109,.16),transparent 60%),repeating-linear-gradient(115deg,rgba(255,255,255,.015) 0 2px,transparent 2px 6px)}
+.st[data-skin="velvet"] .st-skin .f1,.st[data-skin="velvet"] .st-skin .f2,.st[data-skin="velvet"] .st-skin .f3,.st[data-skin="velvet"] .st-skin .f4{width:44px;height:44px;border:2px solid var(--accent3);opacity:.75}
+.st[data-skin="velvet"] .st-skin .f1{left:12px;top:12px;border-right:0;border-bottom:0}
+.st[data-skin="velvet"] .st-skin .f2{right:12px;top:72px;border-left:0;border-bottom:0}
+.st[data-skin="velvet"] .st-skin .f3{left:12px;bottom:12px;border-right:0;border-top:0}
+.st[data-skin="velvet"] .st-skin .f4{right:12px;bottom:12px;border-left:0;border-top:0}
+.st[data-skin="velvet"] .st-head::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 30'%3E%3Ccircle cx='60' cy='18' r='8' fill='none' stroke='%23f5c86b' stroke-width='2.4'/%3E%3Cpath d='M60 2l5 5-5 5-5-5z' fill='%23eaf6ff'/%3E%3Cpath d='M10 18h36M74 18h36' stroke='%23f5c86b' stroke-width='.8'/%3E%3C/svg%3E")}
+.st[data-skin="velvet"] .st-divider{height:12px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 12'%3E%3Cpath d='M15 10c-2-2-6-4-5-7 1-2 4-1 5 1 1-2 4-3 5-1 1 3-3 5-5 7z' fill='%23ff4f6d'/%3E%3C/svg%3E")}
+.st[data-skin="velvet"] .st-h2{text-shadow:0 0 30px color-mix(in srgb,var(--accent) 45%,transparent)}
+.st[data-skin="velvet"] .st-btn.accent{background:linear-gradient(135deg,#ff6b84,#c9184a);color:#fff;box-shadow:0 10px 30px rgba(255,79,109,.35)}
+.st[data-skin="velvet"] .st-btn.gold{background:linear-gradient(180deg,#f7dc96,#c99a3c);color:#2a0610}
+.st[data-skin="velvet"] .st-arena,.st[data-skin="velvet"] .st-sky{border-radius:24px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent3) 55%,transparent),inset 0 0 80px rgba(0,0,0,.45)}
+.st[data-skin="velvet"] .st-promise{box-shadow:0 12px 30px rgba(0,0,0,.35),inset 0 0 0 1px #e9cfa0}
+
+/* ── nebula: violet clouds, a ringed planet, glowing HUD type ── */
+.st[data-skin="nebula"] .st-skin .big{left:-120px;top:20%;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(155,93,229,.35),transparent 65%);filter:blur(10px);animation:skFloat 18s ease-in-out infinite}
+.st[data-skin="nebula"] .st-skin .b2{right:-60px;bottom:10%;width:180px;height:120px;opacity:.5;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 80'%3E%3Ccircle cx='60' cy='40' r='22' fill='%236ae3ff'/%3E%3Cellipse cx='60' cy='40' rx='52' ry='10' fill='none' stroke='%23ff4ecd' stroke-width='3' transform='rotate(-16 60 40)'/%3E%3C/svg%3E");animation:skFloat 12s ease-in-out infinite reverse}
+.st[data-skin="nebula"] .st-head::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 30'%3E%3Cpath d='M60 15c6-7 13-10 18-7s5 11 0 14-12 0-18-7c-6-7-13-10-18-7s-5 11 0 14 12 0 18-7z' fill='none' stroke='%23ffe066' stroke-width='1.6'/%3E%3C/svg%3E")}
+.st[data-skin="nebula"] .st-h2{font-weight:700;letter-spacing:-.01em;font-size:clamp(26px,6cqi,46px);background:linear-gradient(90deg,#fff,#ffc4f0 50%,#9be9ff);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none}
+.st[data-skin="nebula"] .st-btn{border-radius:14px;letter-spacing:.06em}
+.st[data-skin="nebula"] .st-btn.accent{background:linear-gradient(135deg,#ff4ecd,#9b5de5);color:#fff;box-shadow:0 0 30px rgba(255,78,205,.4)}
+.st[data-skin="nebula"] .st-quiz,.st[data-skin="nebula"] .st-arena,.st[data-skin="nebula"] .st-sky,.st[data-skin="nebula"] .st-cons{border-radius:22px;background:rgba(24,8,56,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:inset 0 0 0 1px rgba(106,227,255,.3),0 0 40px rgba(155,93,229,.25)}
+.st[data-skin="nebula"] .st-opt{background:rgba(255,255,255,.04)}
+
+/* ── blush: soft paper, rose corners, wax-seal round buttons ── */
+.st[data-skin="blush"] .st-skin.back{background:radial-gradient(circle at 10% 10%,rgba(244,163,183,.35),transparent 35%),radial-gradient(circle at 90% 90%,rgba(244,163,183,.35),transparent 40%)}
+.st[data-skin="blush"] .st-skin .f1,.st[data-skin="blush"] .st-skin .f2{width:110px;height:110px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='26' cy='26' r='16' fill='%23e75480'/%3E%3Cpath d='M26 16c6 0 9 5 5 9-4 3-9 1-8-4' stroke='%23a02c55' stroke-width='2' fill='none'/%3E%3Ccircle cx='52' cy='14' r='9' fill='%23f4a3b7'/%3E%3Ccircle cx='14' cy='52' r='9' fill='%23f4a3b7'/%3E%3Cpath d='M40 34c12-4 20 2 22 10-10 2-18-2-22-10zM34 40c-4 12 2 20 10 22 2-10-2-18-10-22z' fill='%238bb28a'/%3E%3C/svg%3E")}
+.st[data-skin="blush"] .st-skin .f1{left:0;top:0}
+.st[data-skin="blush"] .st-skin .f2{right:0;bottom:0;transform:rotate(180deg)}
+.st[data-skin="blush"] .st-head::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 30'%3E%3Cpath d='M10 15q25-10 40 0M70 15q15 10 40 0' stroke='%23f4a3b7' stroke-width='1.4' fill='none'/%3E%3Ccircle cx='60' cy='15' r='9' fill='%23e75480'/%3E%3Cpath d='M60 12c-1-2-4-1-4 1 0 2 4 4 4 4s4-2 4-4c0-2-3-3-4-1z' fill='%23fff'/%3E%3C/svg%3E")}
+.st[data-skin="blush"] .st-h2{font-weight:400}
+.st[data-skin="blush"] .st-btn{border-radius:999px;box-shadow:0 8px 20px rgba(231,84,128,.25)}
+.st[data-skin="blush"] .st-arena,.st[data-skin="blush"] .st-sky,.st[data-skin="blush"] .st-scratch,.st[data-skin="blush"] .st-paper{border-radius:30px;box-shadow:0 0 0 8px #fff,0 0 0 9px var(--line),0 20px 50px rgba(74,29,44,.12)}
+.st[data-skin="blush"] .st-sky{background:#4a1d2c}
+.st[data-skin="blush"] .st-flip .face{border-radius:22px}
+.st[data-skin="blush"] .st-flip .front{background:repeating-linear-gradient(45deg,#fff 0 10px,#fff4f6 10px 20px);color:var(--accent)}
+
+/* ── neon: city skyline glow, scan lines, glowing outline buttons ── */
+.st[data-skin="neon"] .st-skin .big{left:0;right:0;bottom:0;height:120px;opacity:.5;background:linear-gradient(transparent,rgba(255,42,109,.15)),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60' preserveAspectRatio='none'%3E%3Cpath d='M0 60V40h10V24h12v36h8V30h14v30h10V18h16v42h8V34h12v26h10V12h14v48h10V36h12v24h10V26h14v34h10V40h10v20z' fill='%2312122a'/%3E%3C/svg%3E") bottom/100% 100% no-repeat}
+.st[data-skin="neon"] .st-skin .f1{inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 3px)}
+.st[data-skin="neon"] .st-head::before{height:4px;width:120px;border-radius:4px;background:var(--accent2);box-shadow:0 0 10px var(--accent2),0 0 24px var(--accent2)}
+.st[data-skin="neon"] .st-h2{color:#fff;text-shadow:0 0 6px var(--accent),0 0 22px var(--accent),0 0 46px var(--accent)}
+.st[data-skin="neon"] .st-eyebrow{color:var(--accent2);text-shadow:0 0 10px var(--accent2)}
+.st[data-skin="neon"] .st-divider{height:2px;background:linear-gradient(90deg,transparent,var(--accent2),transparent);box-shadow:0 0 12px var(--accent2)}
+.st[data-skin="neon"] .st-btn{border-radius:10px;background:transparent!important;color:#fff;box-shadow:inset 0 0 0 2px var(--accent),0 0 18px color-mix(in srgb,var(--accent) 60%,transparent),inset 0 0 14px color-mix(in srgb,var(--accent) 40%,transparent);text-transform:uppercase;letter-spacing:.1em;font-size:14px}
+.st[data-skin="neon"] .st-btn.gold{box-shadow:inset 0 0 0 2px var(--accent3),0 0 18px color-mix(in srgb,var(--accent3) 55%,transparent);color:var(--accent3)}
+.st[data-skin="neon"] .st-btn.ghost{box-shadow:inset 0 0 0 2px var(--accent2),0 0 14px color-mix(in srgb,var(--accent2) 45%,transparent);color:var(--accent2)}
+.st[data-skin="neon"] .st-arena,.st[data-skin="neon"] .st-catch,.st[data-skin="neon"] .st-board,.st[data-skin="neon"] .st-sky,.st[data-skin="neon"] .st-quiz{border-radius:14px;box-shadow:0 0 0 2px var(--accent2),0 0 30px color-mix(in srgb,var(--accent2) 35%,transparent)}
+.st[data-skin="neon"] .st-flip .front{box-shadow:inset 0 0 0 2px var(--accent),0 0 16px color-mix(in srgb,var(--accent) 40%,transparent)}
+
+/* ── fairy: draped fairy lights, grass at the bottom, soft glow ── */
+.st[data-skin="fairy"] .st-skin .f1{left:-2%;right:-2%;top:0;height:70px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 50'%3E%3Cpath d='M0 6q60 40 120 0' stroke='%233a4d40' stroke-width='1.2' fill='none'/%3E%3Cg fill='%23ffd27f'%3E%3Ccircle cx='12' cy='15' r='3.4'/%3E%3Ccircle cx='32' cy='24' r='3.4'/%3E%3Ccircle cx='52' cy='28' r='3.4'/%3E%3Ccircle cx='72' cy='28' r='3.4'/%3E%3Ccircle cx='92' cy='23' r='3.4'/%3E%3Ccircle cx='110' cy='14' r='3.4'/%3E%3C/g%3E%3C/svg%3E") top/240px 100% repeat-x;filter:drop-shadow(0 0 6px #ffd27f);animation:lsTwinkle 2.4s ease-in-out infinite alternate}
+.st[data-skin="fairy"] .st-skin .f2{left:0;right:0;bottom:0;height:60px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 40' preserveAspectRatio='none'%3E%3Cpath d='M0 40V24q4-14 8 0 4-20 9-2 4-16 8 0 5-22 10-2 4-14 8 2 5-18 9 0 4-14 9 2 4-20 9-2 5-16 8 2 5-14 9 0 4-18 9 0 4-12 8 2 4-16 9 0v16z' fill='%230c1610'/%3E%3C/svg%3E") bottom/240px 100% repeat-x}
+.st[data-skin="fairy"] .st-head::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 30'%3E%3Cpath d='M6 8q54 26 108 0' stroke='%23c3c9b3' stroke-width='.8' fill='none'/%3E%3Cg fill='%23ffd27f'%3E%3Ccircle cx='24' cy='15' r='2.6'/%3E%3Ccircle cx='44' cy='19' r='2.6'/%3E%3Ccircle cx='60' cy='20' r='3.2'/%3E%3Ccircle cx='76' cy='19' r='2.6'/%3E%3Ccircle cx='96' cy='15' r='2.6'/%3E%3C/g%3E%3C/svg%3E")}
+.st[data-skin="fairy"] .st-h2{text-shadow:0 0 24px color-mix(in srgb,var(--accent) 35%,transparent)}
+.st[data-skin="fairy"] .st-btn{border-radius:30px 8px 30px 8px}
+.st[data-skin="fairy"] .st-arena,.st[data-skin="fairy"] .st-sky,.st[data-skin="fairy"] .st-cons{border-radius:60px 14px 60px 14px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 35%,transparent),0 0 50px color-mix(in srgb,var(--accent) 12%,transparent)}
+.st[data-skin="fairy"] .st-flip .face,.st[data-skin="fairy"] .st-tl-item,.st[data-skin="fairy"] .st-promise{border-radius:34px 10px 34px 10px}
+
+@keyframes lsDrift{from{translate:0 0}to{translate:30% 0}}
+@keyframes lsTwinkle{from{opacity:.65}to{opacity:1}}

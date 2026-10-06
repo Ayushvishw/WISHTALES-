@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { LOVE_ART } from "./LovePosters";
 
 /** Each story skin's shop poster: a little scene drawn behind the name, so no two cards look alike. */
 const ART: Record<string, ReactNode> = {
@@ -188,6 +189,8 @@ const ART: Record<string, ReactNode> = {
     </>
   ),
 };
+
+Object.assign(ART, LOVE_ART);
 
 export function hasPoster(skin?: string) {
   return !!skin && skin in ART;

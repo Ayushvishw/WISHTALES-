@@ -15,7 +15,7 @@ export function Footer() {
             <h4>Occasions</h4>
             <Link href="/birthday">Birthday</Link>
             <Link href="/anniversary">Anniversary</Link>
-            <Link href="/proposal">Proposal</Link>
+            <Link href="/proposal">Love &amp; Proposal</Link>
             <Link href="/wedding">Wedding</Link>
           </div>
           <div>

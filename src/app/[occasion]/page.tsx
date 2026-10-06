@@ -22,12 +22,27 @@ const FOR: Record<string, string[]> = {
   "bday-candy-land": ["kids"],
   "bday-golden-gala": ["family", "partner"],
   "bday-vintage-scrapbook": ["friends"],
+  "anni-forever-always": ["partner"],
+  "anni-polaroid-diaries": ["partner"],
+  "anni-moonlit-promise": ["partner"],
+  "anni-paris-cafe": ["partner"],
+  "anni-golden-years": ["parents"],
+  "prop-the-question": ["marry"],
+  "prop-written-stars": ["marry"],
+  "prop-love-letters": ["marry", "date"],
+  "prop-neon-nights": ["date"],
+  "prop-fairy-garden": ["marry"],
 };
 const FILTERS = [
   { key: "partner", label: "For a partner" },
   { key: "friends", label: "For friends" },
   { key: "family", label: "For family" },
   { key: "kids", label: "For kids" },
+  { key: "parents", label: "For parents" },
+  { key: "marry", label: "Marriage proposal" },
+  { key: "date", label: "Ask them out" },
+  { key: "swipe", label: "Swipe stories" },
+  { key: "scroll", label: "Scroll stories" },
 ];
 
 async function personalize(formData: FormData) {
@@ -66,6 +81,8 @@ export default async function OccasionPage({ params }: { params: Promise<{ occas
   }
 
   const list = await listTemplates(occasion);
+  const flowOf = (t: (typeof list)[number]) => (t.story?.flow === "swipe" ? "swipe" : "scroll");
+  const mixed = new Set(list.map(flowOf)).size > 1;
   return (
     <Shell home>
       <Track events={["occasion_selected", "template_viewed"]} template={occasion} />
@@ -85,7 +102,7 @@ export default async function OccasionPage({ params }: { params: Promise<{ occas
           filters={FILTERS}
           items={list.map((t, i) => ({
             key: t.slug,
-            tags: FOR[t.slug] ?? [],
+            tags: [...(FOR[t.slug] ?? []), ...(mixed ? [flowOf(t)] : [])],
             node: (
               <Reveal delay={Math.min(i, 5) * 60}>
                 <TemplateCard t={t} priority={i < 3}>

@@ -3,7 +3,7 @@ import { inr, Shell } from "@/components/Shell";
 import { Track } from "@/components/Track";
 import { listOccasions, listTemplates } from "@/lib/orders/service";
 import { resolveValues } from "@/lib/personalization";
-import { builtinMusic, SAMPLE, SAMPLE_PHOTOS } from "@/lib/sample";
+import { builtinMusic, SAMPLE_PHOTOS, sampleFor } from "@/lib/sample";
 import { CountUp, MagicButton, Reveal, RotatingWord, Spotlight, Tilt } from "@/site/fx";
 import { HeroLive, type LiveSlide } from "@/site/HeroLive";
 import { OCCASION_LOOK, Scene } from "@/site/scenes";
@@ -11,7 +11,7 @@ import { TemplateCard } from "@/site/TemplateCard";
 
 export const dynamic = "force-dynamic";
 
-const HERO_ORDER = ["bday-starlit-love", "bday-desi-dhamaka", "bday-retro-arcade", "bday-ocean-sunset", "bday-royal-rose", "bday-candy-land"];
+const HERO_ORDER = ["bday-starlit-love", "prop-the-question", "bday-desi-dhamaka", "anni-paris-cafe", "bday-retro-arcade", "prop-written-stars", "bday-ocean-sunset", "anni-forever-always", "bday-candy-land"];
 
 const FAQ = [
   ["Do they need to download an app?", "No. It opens in the browser on any phone or laptop. They tap your link and the surprise starts."],
@@ -19,16 +19,20 @@ const FAQ = [
   ["Can I add our own song?", "Yes. Upload an MP3 or M4A up to 4 MB and it plays from the moment they open the gift. Or pick one of ours."],
   ["Can I see it before I pay?", "Yes. You preview the full surprise with your own names, photos and song first. You only pay when it looks right."],
   ["Who can see it?", "Only people who have the link. Each link is a long random code, and your photos are stored privately."],
-  ["What about anniversaries, proposals and weddings?", "They're on the way. Birthday is live now, and each new occasion will get its own collection."],
+  ["Do you have anniversary and proposal surprises?", "Yes. Anniversary and Love & Proposal are live, with days-together counters, a love meter, a ring box and a question they can only say yes to. Weddings and more are on the way."],
+  ["What is a swipe story?", "Some templates scroll down like a long page. Swipe stories show one chapter per screen, and they swipe sideways like Instagram stories."],
 ];
 
 export default async function Home() {
   const occasions = (await listOccasions()).filter((o) => o.status !== "hidden");
-  const birthday = await listTemplates("birthday");
-  const story = birthday.filter((t) => t.layout === "story");
-  const from = birthday.length ? Math.min(...birthday.map((t) => t.priceMinor)) : 0;
+  const liveOcc = occasions.filter((o) => o.status === "live");
+  const byOcc = Object.fromEntries(await Promise.all(liveOcc.map(async (o) => [o.slug, (await listTemplates(o.slug)).filter((t) => t.layout === "story")] as const)));
+  const story = byOcc.birthday ?? [];
+  const love = [...(byOcc.proposal ?? []), ...(byOcc.anniversary ?? [])];
+  const everything = Object.values(byOcc).flat();
+  const from = everything.length ? Math.min(...everything.map((t) => t.priceMinor)) : 0;
   const today = new Date().toISOString().slice(0, 10);
-  const slides: LiveSlide[] = HERO_ORDER.map((slug) => story.find((t) => t.slug === slug))
+  const slides: LiveSlide[] = HERO_ORDER.map((slug) => everything.find((t) => t.slug === slug))
     .filter((t) => !!t)
     .map((config) => {
       const source = builtinMusic(config.music.default);
@@ -37,7 +41,7 @@ export default async function Home() {
         name: config.name,
         experience: {
           config,
-          values: resolveValues(config, { ...SAMPLE, event_date: today }),
+          values: resolveValues(config, { ...sampleFor(config.occasion), event_date: today }),
           photos: SAMPLE_PHOTOS.slice(0, Math.max(config.photos.min, Math.min(config.photos.max, 8))),
           music: source ? { source } : null,
         },
@@ -58,7 +62,7 @@ export default async function Home() {
         </div>
         <div className="hero2-in">
           <div className="hero2-copy">
-            <Reveal><span className="pill-glow"><i />Birthday collection is live · {story.length} templates</span></Reveal>
+            <Reveal><span className="pill-glow"><i />{liveOcc.length > 1 ? `${liveOcc.map((o) => o.name).join(", ").replace(/, ([^,]*)$/, " and $1")} are live` : "Birthday collection is live"} · {everything.length} templates</span></Reveal>
             <h1 className="h-mega">
               <Reveal delay={80}>Make their</Reveal>
               <Reveal delay={160}><RotatingWord words={["birthday", "anniversary", "proposal", "wedding day", "Mother's Day"]} /></Reveal>
@@ -70,7 +74,7 @@ export default async function Home() {
               </p>
             </Reveal>
             <Reveal delay={400} className="cta-row">
-              <MagicButton href="/birthday">Create a surprise</MagicButton>
+              <MagicButton href="/#occasions">Create a surprise</MagicButton>
               <Link className="gbtn" href={`/sample/${slides[0]?.slug ?? ""}`}>
                 <span className="gbtn-play" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z" fill="currentColor" /></svg></span>
                 Watch a sample
@@ -124,7 +128,7 @@ export default async function Home() {
                     <span className="occ2-bg" aria-hidden="true" />
                     <Scene slug={o.slug} />
                     <span className="occ2-txt">
-                      <span className={`occ2-tag${isLive ? " on" : ""}`}>{isLive ? `Live · ${story.length} templates` : "Coming soon"}</span>
+                      <span className={`occ2-tag${isLive ? " on" : ""}`}>{isLive ? `Live · ${(byOcc[o.slug] ?? []).length} templates` : "Coming soon"}</span>
                       <b>{o.name}</b>
                       <small>{look.line}</small>
                     </span>
@@ -168,6 +172,31 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* love rail */}
+      {love.length > 0 && (
+        <section className="sec">
+          <Reveal className="sec-head row-head">
+            <div>
+              <span className="kick">Anniversary and Love &amp; Proposal</span>
+              <h2 className="h-big">For the love stories.</h2>
+            </div>
+            <Link href={byOcc.proposal?.length ? "/proposal" : "/anniversary"} className="gbtn">See all {love.length} →</Link>
+          </Reveal>
+          <div className="rail">
+            {love.map((t, i) => (
+              <Reveal key={t.slug} delay={Math.min(i, 4) * 80} className="rail-item">
+                <TemplateCard t={t}>
+                  <div className="tc-actions">
+                    <Link className="gbtn sm" href={`/sample/${t.slug}`}>Watch</Link>
+                    <Link className="sbtn sm" href={`/${t.occasion}`}>Personalize</Link>
+                  </div>
+                </TemplateCard>
+              </Reveal>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* what's inside */}
       <section className="sec">
         <Reveal className="sec-head center">
@@ -210,8 +239,8 @@ export default async function Home() {
 
       {/* numbers */}
       <section className="nums">
-        <Reveal className="num"><b><CountUp to={story.length} /></b><span>birthday templates</span></Reveal>
-        <Reveal delay={80} className="num"><b><CountUp to={12} /></b><span>kinds of games and moments</span></Reveal>
+        <Reveal className="num"><b><CountUp to={everything.length} /></b><span>templates</span></Reveal>
+        <Reveal delay={80} className="num"><b><CountUp to={19} /></b><span>kinds of games and moments</span></Reveal>
         <Reveal delay={160} className="num"><b><CountUp to={occasions.length} /></b><span>occasions, {live} live now</span></Reveal>
         <Reveal delay={240} className="num"><b>0</b><span>apps to install</span></Reveal>
       </section>
@@ -262,8 +291,8 @@ export default async function Home() {
         <Reveal className="final-card">
           <div className="aurora soft" aria-hidden="true"><i /><i /><i /></div>
           <h2 className="h-big">Someone deserves<br /><em>a little magic</em> today.</h2>
-          <p>Start with a birthday. It takes ten minutes, and they&apos;ll remember it for years.</p>
-          <MagicButton href="/birthday">Create a surprise</MagicButton>
+          <p>Pick a birthday, an anniversary or a proposal. It takes ten minutes, and they&apos;ll remember it for years.</p>
+          <MagicButton href="/#occasions">Create a surprise</MagicButton>
         </Reveal>
       </section>
     </Shell>

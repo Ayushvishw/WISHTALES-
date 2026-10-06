@@ -120,6 +120,21 @@ function synth(c: AudioContext, gen: string): Player | null {
       for (const [n, d] of N) { note(hz(n + 12), t, d * beat); t += d * beat; }
       return N.reduce((s, [, d]) => s + d, 0) * beat + 1.2;
     },
+    // Pachelbel's Canon in D (public domain): the ground bass chords with the famous falling melody, music-box voice.
+    canon: () => {
+      const ch = [[50, 62, 66, 69], [45, 61, 64, 69], [47, 62, 66, 71], [42, 61, 66, 69], [43, 59, 62, 67], [38, 57, 62, 66], [43, 59, 62, 67], [45, 61, 64, 69]];
+      const top = [78, 76, 74, 73, 71, 69, 71, 73];
+      const d = 2;
+      let t = c.currentTime + 0.08;
+      ch.forEach((cn, i) => {
+        cn.forEach((n) => note(hz(n), t, d, true));
+        note(hz(top[i]), t, 0.9);
+        note(hz(top[i] - 12 + 7), t + 1, 0.5);
+        note(hz(top[i] - 5), t + 1.5, 0.4);
+        t += d;
+      });
+      return ch.length * d;
+    },
     // Original I–vi–IV–V pad with a light melody.
     chords: () => {
       const ch = [[60, 64, 67, 72], [57, 60, 64, 69], [53, 57, 60, 65], [55, 59, 62, 67]];
