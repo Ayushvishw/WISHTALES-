@@ -63,30 +63,10 @@
 .st-opener{appearance:none;background:none;border:0;padding:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;animation:stShake 2.6s ease-in-out infinite}
 @keyframes stShake{0%,70%,100%{transform:rotate(0)}74%{transform:rotate(-6deg)}78%{transform:rotate(6deg)}82%{transform:rotate(-4deg)}86%{transform:rotate(3deg)}}
 .st-opener.opening{animation:none}
-.st-gift{padding-top:46px}
-.st-gift .lid{display:block;width:232px;height:52px;background:var(--accent);border-radius:10px;position:relative;z-index:2;box-shadow:0 6px 0 rgba(0,0,0,.18)}
-.st-gift .lid::after{content:"";position:absolute;left:50%;top:0;bottom:0;width:34px;margin-left:-17px;background:var(--accent3)}
-.st-gift.opening .lid{animation:stLid 1s cubic-bezier(.4,-.3,.4,1) forwards}
-@keyframes stLid{to{transform:translateY(-170px) rotate(-22deg);opacity:0}}
-.st-gift .bow{position:absolute;left:50%;top:-40px;width:0;height:0;z-index:3}
-.st-gift .bow::before,.st-gift .bow::after{content:"";position:absolute;top:0;width:56px;height:44px;border:12px solid var(--accent3);border-radius:50%}
-.st-gift .bow::before{right:2px;transform:rotate(-24deg)}
-.st-gift .bow::after{left:2px;transform:rotate(24deg)}
-.st-gift .box{display:block;width:204px;height:170px;background:color-mix(in srgb,var(--accent) 82%,#000);border-radius:0 0 14px 14px;position:relative}
-.st-gift .ribbon{position:absolute;left:50%;top:0;bottom:0;width:34px;margin-left:-17px;background:var(--accent3)}
 .st-envelope .env,.st-env .env{display:block;width:300px;max-width:84cqi;height:200px;background:var(--paper);border-radius:12px;position:relative;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.4)}
 .st-envelope .flap,.st-env .flap{position:absolute;left:0;right:0;top:0;height:116px;background:color-mix(in srgb,var(--paper) 80%,var(--accent));clip-path:polygon(0 0,100% 0,50% 100%);transform-origin:top;transition:transform .8s}
 .st-envelope .seal,.st-env .seal{position:absolute;left:50%;top:88px;width:52px;height:52px;margin-left:-26px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;z-index:2;box-shadow:0 4px 10px rgba(0,0,0,.25)}
-.st-envelope.opening .flap{transform:rotateX(180deg)}
-.st-envelope.opening .env{animation:stLift 1s ease forwards}
 @keyframes stLift{to{transform:translateY(-40px) scale(1.06);opacity:0}}
-.st-chest .chest-lid{display:block;width:240px;height:70px;background:var(--accent2);border-radius:60px 60px 8px 8px;position:relative;z-index:2;box-shadow:inset 0 -8px 0 rgba(0,0,0,.18);transform-origin:50% 100%}
-.st-chest .lock{position:absolute;left:50%;bottom:-18px;width:34px;height:40px;margin-left:-17px;background:var(--accent3);border-radius:6px;z-index:3}
-.st-chest .chest-box{display:block;width:240px;height:130px;background:color-mix(in srgb,var(--accent2) 75%,#000);border-radius:0 0 12px 12px;position:relative;overflow:hidden;box-shadow:inset 0 0 0 6px var(--accent3)}
-.st-chest .glow{position:absolute;left:10%;right:10%;top:-30px;height:60px;border-radius:50%;background:var(--accent3);filter:blur(16px);opacity:0;transition:opacity .6s}
-.st-chest.opening .chest-lid{animation:stChest 1s ease forwards}
-.st-chest.opening .glow{opacity:.9}
-@keyframes stChest{to{transform:rotateX(75deg) translateY(-30px)}}
 
 /* hero */
 .st-hero{min-height:760px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;text-align:center;padding:120px 20px 140px}
@@ -106,13 +86,13 @@
 .st-fwrap{position:absolute;top:100%;animation:stRiseB linear infinite}
 @keyframes stRiseB{from{transform:translateY(0)}to{transform:translateY(-1100px)}}
 .st-floater{appearance:none;pointer-events:auto;background:none;border:0;padding:0;cursor:pointer;display:block;animation:stBob ease-in-out infinite alternate;transform-origin:50% 10%;-webkit-tap-highlight-color:transparent}
-.st-floater:hover svg{filter:brightness(1.12)}
+.st-floater:hover :is(svg,img){filter:brightness(1.12)}
 @keyframes stBob{from{transform:rotate(-7deg) translateX(-8px)}to{transform:rotate(7deg) translateX(8px)}}
 .st-burst{position:absolute;width:0;height:0;pointer-events:none}
 .st-burst .ring{position:absolute;left:-30px;top:-30px;width:60px;height:60px;border-radius:50%;border:3px solid;animation:stRing .7s ease-out forwards}
 @keyframes stRing{from{transform:scale(.2);opacity:1}to{transform:scale(2.4);opacity:0}}
 .st-burst .pt{position:absolute;left:0;top:0;width:0;height:0}
-.st-burst .pt svg{position:absolute;left:-9px;top:-9px}
+.st-burst .pt :is(svg,img){position:absolute;left:-9px;top:-9px}
 .st-burst .far{animation:stFar 1s cubic-bezier(.2,.8,.3,1) forwards}
 .st-burst .near{animation:stNear .9s cubic-bezier(.2,.8,.3,1) forwards}
 @keyframes stFar{0%{transform:translateY(0) scale(.3);opacity:1}100%{transform:translateY(-96px) scale(1.1);opacity:0}}
@@ -141,10 +121,10 @@
 .st-progress span{display:block;height:100%;background:var(--accent3);transition:width .3s ease}
 .st-faller{position:absolute;top:0;appearance:none;background:none;border:0;padding:8px;cursor:pointer;animation:stDrop linear 1 both;-webkit-tap-highlight-color:transparent;will-change:transform;touch-action:manipulation}
 @keyframes stDrop{from{transform:translateY(-90px)}to{transform:translateY(470px)}}
-.st-faller svg{display:block;filter:drop-shadow(0 4px 10px color-mix(in srgb,var(--accent) 45%,transparent));transition:transform .2s}
-.st-faller svg.gold{filter:drop-shadow(0 0 12px var(--accent3))}
+.st-faller :is(svg,img){display:block;filter:drop-shadow(0 4px 10px color-mix(in srgb,var(--accent) 45%,transparent));transition:transform .2s}
+.st-faller .gold{filter:drop-shadow(0 0 12px var(--accent3))}
 .st-faller.got{pointer-events:none;animation-play-state:paused}
-.st-faller.got svg{animation:stGot .42s ease-out forwards}
+.st-faller.got :is(svg,img){animation:stGot .42s ease-out forwards}
 @keyframes stGot{to{transform:scale(2.4);opacity:0}}
 
 /* puzzle */
@@ -180,15 +160,15 @@
 .st-pol img{display:block;width:100%;height:100%;object-fit:cover;transition:transform 1.4s cubic-bezier(.2,.8,.2,1)}
 .st-pol .shine{position:absolute;top:0;left:-80%;width:55%;height:100%;background:linear-gradient(105deg,transparent 0%,rgba(255,255,255,.55) 50%,transparent 100%);transform:skewX(-18deg);pointer-events:none}
 .st-pol .hov{position:absolute;left:0;right:0;bottom:30px;height:0;pointer-events:none;z-index:4}
-.st-pol .hov svg{position:absolute;bottom:0;opacity:0}
-.st-pol .hov svg:nth-child(1){left:18%}.st-pol .hov svg:nth-child(2){left:48%}.st-pol .hov svg:nth-child(3){left:74%}
+.st-pol .hov .obj3d{position:absolute;bottom:0;opacity:0}
+.st-pol .hov .obj3d:nth-child(1){left:18%}.st-pol .hov .obj3d:nth-child(2){left:48%}.st-pol .hov .obj3d:nth-child(3){left:74%}
 .st-pol figcaption{font-family:var(--script);font-size:24px;color:var(--paper-ink);text-align:center;padding-top:10px;line-height:1.1}
 .st-pol:hover,.st-pol.lift{rotate:0deg;scale:1.08;translate:0 -16px;z-index:5;box-shadow:0 34px 70px rgba(0,0,0,.55);animation-play-state:paused}
 .st-pol:hover img,.st-pol.lift img{transform:scale(1.08)}
 .st-pol:hover .shine,.st-pol.lift .shine{animation:stShine 1s ease .1s both}
-.st-pol:hover .hov svg,.st-pol.lift .hov svg{animation:stHeart 1.8s ease-out infinite}
-.st-pol:hover .hov svg:nth-child(2),.st-pol.lift .hov svg:nth-child(2){animation-delay:.5s}
-.st-pol:hover .hov svg:nth-child(3),.st-pol.lift .hov svg:nth-child(3){animation-delay:1s}
+.st-pol:hover .hov .obj3d,.st-pol.lift .hov .obj3d{animation:stHeart 1.8s ease-out infinite}
+.st-pol:hover .hov .obj3d:nth-child(2),.st-pol.lift .hov .obj3d:nth-child(2){animation-delay:.5s}
+.st-pol:hover .hov .obj3d:nth-child(3),.st-pol.lift .hov .obj3d:nth-child(3){animation-delay:1s}
 @keyframes stShine{from{left:-80%}to{left:140%}}
 @keyframes stHeart{0%{transform:translateY(0) scale(.4);opacity:0}15%{opacity:1}100%{transform:translateY(-220px) scale(1.15) rotate(18deg);opacity:0}}
 /* frames variant: gilded frames hung on a wall */
@@ -307,7 +287,7 @@
 .st-eq i:nth-child(2){height:calc(4px + var(--b2)*16px)}.st-eq i:nth-child(3){height:calc(4px + var(--b3)*16px)}.st-eq i:nth-child(4){height:calc(4px + var(--b4)*16px)}.st-eq i:nth-child(5){height:calc(4px + var(--b5)*16px)}
 .st-toast{position:absolute;left:50%;bottom:24px;z-index:85;transform:translate(-50%,160%);opacity:0;transition:transform .5s cubic-bezier(.3,1.5,.5,1),opacity .4s;background:var(--paper);color:var(--paper-ink);border-radius:20px;padding:14px 20px;display:flex;align-items:center;gap:14px;width:max-content;max-width:calc(100% - 32px);box-shadow:0 20px 50px rgba(0,0,0,.4);font-size:16px;line-height:1.45;pointer-events:none}
 .st-toast.on{transform:translate(-50%,0);opacity:1}
-.st-toast svg{flex:none}
+.st-toast :is(svg,img){flex:none}
 .st-confetti{position:absolute;inset:0;z-index:70;pointer-events:none;overflow:hidden}
 .st-confetti span{position:absolute;top:-24px;border-radius:2px;animation:stConf linear forwards}
 @keyframes stConf{0%{transform:translateY(0) rotate(0)}50%{transform:translateY(55vh) rotate(380deg) translateX(30px)}100%{transform:translateY(115vh) rotate(760deg) translateX(-20px)}}
@@ -350,3 +330,50 @@
 .st-lock-card .st-lead{margin-bottom:18px}
 .st-lock-cta{display:flex;flex-direction:column;align-items:center;gap:10px}
 .st-lock-cta small{color:var(--muted);font-size:13px}
+
+/* 3D objects: real depth, a soft shadow, never blurry or draggable */
+.obj3d{display:inline-block;flex:none;object-fit:contain;-webkit-user-drag:none;user-select:none;filter:drop-shadow(0 6px 10px rgba(0,0,0,.28))}
+.st-floater .obj3d{filter:drop-shadow(0 12px 16px rgba(0,0,0,.3))}
+.st-cstar:not(.lit):not(.next) .obj3d{filter:grayscale(1) brightness(.8);opacity:.55}
+.st-cstar.next .obj3d{filter:drop-shadow(0 0 12px #fff6b0)}
+/* the 3D opener: it bobs, glows, then bursts open */
+.st-opener .o3d{position:relative;display:block;width:230px;height:230px;max-width:70cqi;max-height:70cqi}
+.st-opener .o3d .obj3d{width:100%;height:100%;filter:drop-shadow(0 26px 30px rgba(0,0,0,.45));animation:stBob3d 3.2s ease-in-out infinite}
+.st-opener .o3d::before{content:"";position:absolute;inset:-14%;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--accent) 45%,transparent),transparent 62%);animation:stHalo 3.2s ease-in-out infinite}
+.st-opener.opening .o3d .obj3d{animation:stBurst3d .95s cubic-bezier(.3,1.4,.5,1) forwards}
+.st-opener.opening .o3d::before{animation:stHaloOut .95s ease-out forwards}
+@keyframes stBob3d{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-12px) rotate(3deg)}}
+@keyframes stHalo{50%{transform:scale(1.12);opacity:.75}}
+@keyframes stBurst3d{30%{transform:scale(.88) rotate(-10deg)}60%{transform:scale(1.25) rotate(8deg);opacity:1}100%{transform:scale(1.9) rotate(0);opacity:0}}
+@keyframes stHaloOut{to{transform:scale(2.6);opacity:0}}
+/* 3D rituals */
+.st-cake .candles{gap:0;margin-bottom:-58px;max-width:300px;z-index:3}
+.st-cake .candle{width:46px;height:78px}
+.st-cake .candle .obj3d{position:absolute;bottom:0;left:50%;margin-left:-32px;transition:filter .4s}
+.st-cake .candle.out .obj3d{clip-path:inset(36% 0 0 0)}
+.st-cake .candle .smoke{bottom:44px}
+.st-cake .cake3d{width:min(300px,80cqi);height:auto;clip-path:inset(30% 0 0 0);margin-top:-80px;filter:drop-shadow(0 22px 26px rgba(0,0,0,.35))}
+.diya{padding:0;width:92px}
+.diya .obj3d{transition:filter .5s}
+.diya:not(.lit) .obj3d{filter:grayscale(.55) brightness(.6);clip-path:polygon(0 0,66% 0,66% 44%,100% 44%,100% 100%,0 100%)}
+.diya.lit .obj3d{filter:drop-shadow(0 0 22px color-mix(in srgb,var(--accent3) 85%,transparent))}
+.st-bottle .bottle3d{display:block;filter:drop-shadow(0 26px 30px rgba(0,0,0,.45))}
+.st-bottle .glasses3d{position:absolute;right:-90px;bottom:0;animation:stUp .7s cubic-bezier(.3,1.5,.5,1) both}
+.st-bottle .foam{left:8%;right:auto;width:30%;top:8%}
+.st-launch .rocket3d{rotate:-45deg}
+.st-env .o3d{position:relative;display:block}
+.st-env .o3d .obj3d{width:min(210px,60cqi);height:auto;filter:drop-shadow(0 22px 26px rgba(0,0,0,.35))}
+.st-env .o3d .seal{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);width:58px;height:58px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px rgba(0,0,0,.3)}
+/* each chapter title wears one of the template's 3D objects; it replaces the flat ornament */
+
+.st-head-obj{display:block;width:64px;height:64px;margin:0 0 10px;animation:stBob3d 4s ease-in-out infinite;filter:drop-shadow(0 10px 14px rgba(0,0,0,.3))}
+.st-head.center .st-head-obj{margin-left:auto;margin-right:auto}
+/* the hero's 3D props float in the corners, behind the name */
+.st-props{position:absolute;inset:0;pointer-events:none;z-index:0}
+.st-props .obj3d{position:absolute;filter:drop-shadow(0 18px 22px rgba(0,0,0,.35));animation:stBob3d 5s ease-in-out infinite}
+.st-props .p0{left:4%;top:14%;rotate:-12deg}
+.st-props .p1{right:5%;top:20%;rotate:14deg;animation-delay:-1.4s}
+.st-props .p2{left:7%;bottom:16%;rotate:10deg;animation-delay:-2.6s}
+.st-props .p3{right:8%;bottom:22%;rotate:-8deg;animation-delay:-3.6s}
+@container (max-width:640px){.st-props .obj3d{scale:.7}.st-props .p0{left:-2%;top:9%}.st-props .p1{right:-1%;top:12%}.st-props .p2{left:0;bottom:9%}.st-props .p3{right:0;bottom:12%}}
+.st-lock-icon{background:none;width:auto;height:auto}

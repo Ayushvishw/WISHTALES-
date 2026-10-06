@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { inr } from "@/components/Shell";
 import type { TemplateConfig } from "@/lib/templates/schema";
 import { Motif } from "@/story/art";
+import { Obj, skinObjects } from "@/story/obj";
 import { Tilt } from "./fx";
 import { hasPoster, Poster } from "./Poster";
 
@@ -21,6 +22,11 @@ export function TemplateCard({ t, children, priority = false }: { t: TemplateCon
       {th.fonts && <link rel="stylesheet" href={`https://fonts.googleapis.com/css2?${th.fonts}&display=swap`} precedence={priority ? "high" : "thumbs"} />}
       <Link href={`/sample/${t.slug}`} className="tc-art" style={{ background: story?.backdrop ?? th.bg, color: th.fg }} aria-label={`Watch the ${t.name} sample`} data-skin={skin}>
         {skin ? <Poster skin={skin} /> : <span className="tc-glow" aria-hidden="true" />}
+        {skin && (
+          <span className="tc-objs" aria-hidden="true">
+            {skinObjects(skin).slice(0, 2).map((o, i) => <Obj key={o} name={o} size={i ? 66 : 84} className={`o${i}`} />)}
+          </span>
+        )}
         {story && !skin && (
           <span className="tc-motifs" aria-hidden="true">
             {motifs.map((i) => (

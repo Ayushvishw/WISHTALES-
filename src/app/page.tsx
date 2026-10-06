@@ -7,6 +7,7 @@ import { builtinMusic, SAMPLE_PHOTOS, sampleFor } from "@/lib/sample";
 import { CountUp, MagicButton, Reveal, RotatingWord, Spotlight, Tilt } from "@/site/fx";
 import { HeroLive, type LiveSlide } from "@/site/HeroLive";
 import { OCCASION_LOOK, Scene } from "@/site/scenes";
+import { Obj, type ObjName } from "@/story/obj";
 import { TemplateCard } from "@/site/TemplateCard";
 
 export const dynamic = "force-dynamic";
@@ -58,7 +59,7 @@ export default async function Home() {
         <div className="aurora" aria-hidden="true"><i /><i /><i /><i /></div>
         <div className="stars" aria-hidden="true" />
         <div className="floaties" aria-hidden="true">
-          <span className="fy f1">🎈</span><span className="fy f2">🎁</span><span className="fy f3">💌</span><span className="fy f4">✨</span><span className="fy f5">🎂</span><span className="fy f6">💖</span>
+          {(["balloon", "wrapped_gift", "love_letter", "sparkles", "birthday_cake", "ring"] as const).map((o, i) => <Obj key={o} name={o} size={[86, 74, 70, 56, 92, 64][i]} className={`fy f${i + 1}`} />)}
         </div>
         <div className="hero2-in">
           <div className="hero2-copy">
@@ -103,7 +104,7 @@ export default async function Home() {
             {[0, 1].map((k) => (
               <span key={k}>
                 {(row ? ["Proposals", "Weddings", "Mother's Day", "Father's Day", "Friendship", "Anniversaries"] : ["Birthdays", "First dates", "Long distance", "Best friends", "Surprises", "Big milestones"]).map((w) => (
-                  <b key={w}>{w}<i>✦</i></b>
+                  <b key={w}>{w}<Obj name="sparkles" size={30} className="marq-ic" /></b>
                 ))}
               </span>
             ))}
@@ -205,31 +206,37 @@ export default async function Home() {
         </Reveal>
         <div className="bento">
           <Reveal className="bt bt-song">
+            <Obj name="headphone" size={84} className="bt-obj" />
             <div className="bt-art eq" aria-hidden="true">{Array.from({ length: 14 }, (_, i) => <i key={i} style={{ animationDelay: `${-i * 0.13}s` }} />)}</div>
             <h3>Your song, their soundtrack</h3>
             <p>Upload the song that means something. The colours pulse with the beat.</p>
           </Reveal>
           <Reveal delay={80} className="bt bt-games">
+            <Obj name="joystick" size={84} className="bt-obj" />
             <div className="bt-art wheel" aria-hidden="true"><span /></div>
             <h3>Games made for them</h3>
             <p>Catch hearts, spin for treats, solve a puzzle of your photo, and try saying No to the big question.</p>
           </Reveal>
           <Reveal delay={160} className="bt bt-photos">
+            <Obj name="camera_with_flash" size={84} className="bt-obj" />
             <div className="bt-art pols" aria-hidden="true">{[1, 2, 3].map((n) => <span key={n} style={{ backgroundImage: `url(/samples/${n}.webp)` }} />)}</div>
             <h3>Your photos, beautifully placed</h3>
             <p>Polaroids, picture frames, film strips. Tap one and it lifts off the wall.</p>
           </Reveal>
           <Reveal delay={140} className="bt bt-share">
+            <Obj name="love_letter" size={84} className="bt-obj" />
             <div className="bt-art chat" aria-hidden="true"><span className="b1">Open this 🎁</span><span className="b2">wishtales.vercel.app/w/…</span><span className="b3">OMG 😭❤️</span></div>
             <h3>One link. That&apos;s it.</h3>
             <p>Share it on WhatsApp. No sign-up, no download, works on every phone.</p>
           </Reveal>
           <Reveal delay={60} className="bt bt-letter">
+            <Obj name="scroll" size={84} className="bt-obj" />
             <div className="bt-art typer" aria-hidden="true"><span>Dear Lisa, you are my favourite person…</span></div>
             <h3>A letter that writes itself</h3>
             <p>Your words appear one letter at a time, as if you&apos;re writing it in front of them.</p>
           </Reveal>
           <Reveal delay={220} className="bt bt-private">
+            <Obj name="locked" size={84} className="bt-obj" />
             <div className="bt-art lock" aria-hidden="true"><span /></div>
             <h3>Private by default</h3>
             <p>Only people with your link can open it. Photos are stored privately.</p>
@@ -253,14 +260,14 @@ export default async function Home() {
         </Reveal>
         <ol className="steps2">
           {[
-            ["🎨", "Pick a world", "Choose a template. Watch the full sample first."],
-            ["✍️", "Make it yours", "Their name, your letter, 4 to 8 photos and a song."],
-            ["👀", "Preview everything", "See exactly what they will see before you pay."],
-            ["💌", "Send one link", "Share it on WhatsApp and wait for their reaction."],
+            ["crystal_ball", "Pick a world", "Choose a template. Watch the full sample first."],
+            ["pencil", "Make it yours", "Their name, your letter, 4 to 8 photos and a song."],
+            ["star_struck", "Preview everything", "See exactly what they will see before you pay."],
+            ["love_letter", "Send one link", "Share it on WhatsApp and wait for their reaction."],
           ].map(([ic, h, p], i) => (
             <Reveal as="li" key={h} delay={i * 110} className="step2">
               <span className="step2-n">{i + 1}</span>
-              <span className="step2-ic" aria-hidden="true">{ic}</span>
+              <span className="step2-ic" aria-hidden="true"><Obj name={ic as ObjName} size={64} /></span>
               <b>{h}</b>
               <p>{p}</p>
             </Reveal>

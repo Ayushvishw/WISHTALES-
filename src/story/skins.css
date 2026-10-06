@@ -145,3 +145,4 @@
 @keyframes skWave{to{transform:translateX(-50%)}}
 @keyframes skSpin{to{rotate:360deg}}
 @media (prefers-reduced-motion:reduce){.st-skin span{animation:none!important}}
+.st[data-skin] .st-head.st-head::before{display:none}
