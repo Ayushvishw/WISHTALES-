@@ -71,6 +71,7 @@ main{padding-block:0 40px}
 .thumb{aspect-ratio:4/3;position:relative;display:grid;place-items:center;text-align:center;padding:18px;overflow:hidden}
 .thumb strong{font-size:30px;line-height:1.05;font-weight:400;position:relative}
 .thumb small{position:absolute;left:14px;top:12px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;opacity:.75}
+.thumb .motif{position:absolute;right:-10px;top:-8px;opacity:.35;transform:rotate(14deg)}
 .thumb .glyph{position:absolute;right:14px;bottom:10px;font-size:13px;opacity:.7}
 .tbody{padding:16px;display:flex;flex-direction:column;gap:10px;flex:1}
 .tbody h3{font-size:22px}

@@ -1,11 +1,12 @@
-import { templateConfigSchema, type TemplateConfig } from "../schema";
+import { templateConfigSchema, type TemplateConfig, type TemplateInput } from "../schema";
+import { STORY_TEMPLATES } from "./story";
 import { fields } from "./fields";
 
 /**
  * Version 1.0.0 of the three launch Birthday templates. Published versions are
  * immutable: to change one, add a new version and seed it, never edit in place.
  */
-const raw: TemplateConfig[] = [
+const classic: TemplateInput[] = [
   {
     slug: "bday-candlelight",
     version: "1.0.0",
@@ -105,7 +106,10 @@ const raw: TemplateConfig[] = [
   },
 ];
 
-export const CATALOG: TemplateConfig[] = raw.map((t) => templateConfigSchema.parse(t));
+/** The three launch templates are kept so paid orders still render, but no longer sold. */
+export const RETIRED_TEMPLATES = classic.map((t) => t.slug);
+
+export const CATALOG: TemplateConfig[] = [...STORY_TEMPLATES, ...classic].map((t) => templateConfigSchema.parse(t));
 
 export const OCCASIONS = [
   { slug: "birthday", name: "Birthday", live: true },

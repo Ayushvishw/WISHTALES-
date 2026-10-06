@@ -1,13 +1,18 @@
-import { and, eq } from "drizzle-orm";
-import { CATALOG, MUSIC, OCCASIONS } from "@/lib/templates/catalog";
+import { and, eq, inArray } from "drizzle-orm";
+import { CATALOG, MUSIC, OCCASIONS, RETIRED_TEMPLATES } from "@/lib/templates/catalog";
 import { db } from "./index";
 import { musicTracks, occasions, templates, templateVersions } from "./schema";
 
 /**
  * Idempotent: inserts occasions, music and template versions that don't exist
  * yet. Existing template versions are never modified (they are immutable).
+ * The first time the story templates arrive, the older classic templates are
+ * hidden from the shop (past orders keep working). This happens only once, so
+ * an admin who shows them again later is not overridden.
  */
 export async function seed() {
+  const newSlugs = CATALOG.filter((t) => !RETIRED_TEMPLATES.includes(t.slug)).map((t) => t.slug);
+  const firstStoryRun = newSlugs.length > 0 && (await db.select({ id: templates.id }).from(templates).where(inArray(templates.slug, newSlugs))).length === 0;
   for (const [i, o] of OCCASIONS.entries()) {
     await db
       .insert(occasions)
@@ -39,6 +44,9 @@ export async function seed() {
       status: "published",
       publishedAt: new Date(),
     });
+  }
+  if (firstStoryRun && RETIRED_TEMPLATES.length) {
+    await db.update(templates).set({ status: "unpublished" }).where(inArray(templates.slug, RETIRED_TEMPLATES));
   }
 }
 

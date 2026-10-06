@@ -20,6 +20,8 @@ export const fieldSchema = z.object({
 });
 export type TemplateField = z.infer<typeof fieldSchema>;
 
+const color = z.string().regex(/^#[0-9a-fA-F]{6}$/);
+
 const sceneBase = { id: z.string().regex(/^[a-z][a-z0-9-]*$/) };
 
 export const sceneSchema = z.discriminatedUnion("type", [
@@ -45,13 +47,72 @@ export const sceneSchema = z.discriminatedUnion("type", [
 ]);
 export type Scene = z.infer<typeof sceneSchema>;
 
-const color = z.string().regex(/^#[0-9a-fA-F]{6}$/);
+/* ---------------- story layout: one scrolling page of chapters ---------------- */
+
+export const MOTIFS = ["heart", "star", "petal", "bubble", "pixel", "marigold", "candy", "sparkle", "butterfly", "shell", "note"] as const;
+const motif = z.enum(MOTIFS);
+const copy = { eyebrow: z.string(), title: z.string(), lead: z.string().optional() };
+
+export const chapterSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("hero"),
+    kicker: z.string(),
+    lead: z.string(),
+    floaters: z.enum(["balloons", "bubbles", "lanterns", "none"]),
+    nameStyle: z.enum(["script", "display", "pixel"]),
+    /** Shown one by one as floaters are popped. */
+    wishes: z.array(z.string()).min(1),
+    showAge: z.boolean().optional(),
+  }),
+  z.object({ type: z.literal("question"), ...copy, yes: z.string(), no: z.array(z.string()).min(2), done: z.string() }),
+  z.object({
+    type: z.literal("catch"), ...copy, item: motif, target: z.number().int().min(5).max(40), seconds: z.number().int().min(10).max(60),
+    win: z.string(), winSub: z.string(), lose: z.string(), loseSub: z.string(),
+  }),
+  z.object({ type: z.literal("slide"), ...copy, photo: z.number().int().min(0), solved: z.string(), solvedSub: z.string() }),
+  z.object({
+    type: z.literal("wheel"), ...copy, spins: z.number().int().min(1).max(5),
+    /** Wheel slices when the customer leaves the field empty. Exactly 8. */
+    items: z.array(z.string().max(18)).length(8), field: z.string().optional(), done: z.string(),
+  }),
+  z.object({ type: z.literal("gallery"), ...copy, style: z.enum(["polaroid", "frames", "film"]), captions: z.array(z.string()).optional() }),
+  z.object({ type: z.literal("flips"), ...copy, items: z.array(z.string()).min(3).max(8), field: z.string().optional() }),
+  z.object({ type: z.literal("memory"), ...copy, pairs: z.number().int().min(3).max(6), done: z.string() }),
+  z.object({ type: z.literal("scratch"), ...copy, reveal: z.string(), cover: z.string() }),
+  z.object({
+    type: z.literal("ritual"), ...copy, kind: z.enum(["candles", "diyas", "champagne", "lanterns", "rockets"]),
+    count: z.number().int().min(1).max(9), done: z.string(), again: z.string(),
+  }),
+  z.object({ type: z.literal("letter"), ...copy, style: z.enum(["envelope", "bottle", "terminal"]), field: z.string() }),
+  z.object({
+    type: z.literal("finale"), ...copy, button: z.string(), headline: z.string(), signoff: z.string(), effect: z.enum(["fireworks", "confetti"]),
+  }),
+]);
+export type Chapter = z.infer<typeof chapterSchema>;
+
+export const storySchema = z.object({
+  opener: z.object({ kind: z.enum(["gift", "envelope", "chest"]), eyebrow: z.string(), hint: z.string(), sub: z.string() }),
+  motif,
+  ambient: z.object({
+    orbs: z.array(color).length(3),
+    particles: z.enum(["petals", "fireflies", "bubbles", "stars", "confetti", "sparks", "none"]),
+    colors: z.array(color).min(1),
+  }),
+  /** Background of the page; a CSS color or gradient built only from theme colors. */
+  backdrop: z.string().regex(/^[#a-z0-9(),.%\s-]+$/i).optional(),
+  chapters: z.array(chapterSchema).min(3),
+});
+export type Story = z.infer<typeof storySchema>;
 
 export const themeSchema = z.object({
   bg: color, fg: color, muted: color, line: color, card: color,
   accent: color, accent2: color, onAccent: color, paper: color, paperInk: color,
   display: z.string(), body: z.string(), letter: z.string(), hand: z.string(),
   fx: z.array(color).min(1),
+  /** Third accent used by story templates (highlights, tickets, wheel hub). */
+  accent3: color.optional(),
+  /** Google Fonts css2 query loaded with the experience, e.g. "family=Fraunces:wght@500;700&family=Great+Vibes". */
+  fonts: z.string().regex(/^family=[A-Za-z0-9+:;,@.&=]+$/).optional(),
 });
 export type Theme = z.infer<typeof themeSchema>;
 
@@ -70,7 +131,10 @@ export const templateConfigSchema = z
     fields: z.array(fieldSchema).min(1),
     photos: z.object({ min: z.number().int().min(0), max: z.number().int().positive() }),
     music: z.object({ default: z.string() }),
-    scenes: z.array(sceneSchema).min(1),
+    /** Classic step-by-step scenes, or one scrolling page of chapters ("story"). */
+    layout: z.enum(["scenes", "story"]).default("scenes"),
+    scenes: z.array(sceneSchema).default([]),
+    story: storySchema.optional(),
   })
   .superRefine((t, ctx) => {
     const keys = new Set<string>();
@@ -80,6 +144,17 @@ export const templateConfigSchema = z
     }
     for (const k of ["recipient_name", "sender_name"]) {
       if (!keys.has(k)) ctx.addIssue({ code: "custom", message: `Template must define ${k}` });
+    }
+    if (t.layout === "scenes" && !t.scenes.length) ctx.addIssue({ code: "custom", message: "A scenes template needs at least one scene" });
+    if (t.layout === "story") {
+      if (!t.story) ctx.addIssue({ code: "custom", message: "A story template needs a story" });
+      for (const c of t.story?.chapters ?? []) {
+        if (c.type === "slide" && c.photo >= t.photos.min) ctx.addIssue({ code: "custom", message: "The slide puzzle uses a photo slot beyond the required minimum" });
+        if (c.type === "memory" && c.pairs > t.photos.min) ctx.addIssue({ code: "custom", message: "The memory game needs more pairs than the required photos" });
+        for (const k of ["field" in c ? c.field : undefined].filter(Boolean) as string[]) {
+          if (!keys.has(k)) ctx.addIssue({ code: "custom", message: `Chapter ${c.type} reads unknown field ${k}` });
+        }
+      }
     }
     const ids = new Set<string>();
     for (const s of t.scenes) {
@@ -92,3 +167,4 @@ export const templateConfigSchema = z
     if (t.photos.min > t.photos.max) ctx.addIssue({ code: "custom", message: "photos.min is greater than photos.max" });
   });
 export type TemplateConfig = z.infer<typeof templateConfigSchema>;
+export type TemplateInput = z.input<typeof templateConfigSchema>;
