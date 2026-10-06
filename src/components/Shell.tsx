@@ -1,31 +1,38 @@
-import Link from "next/link";
 import type { OrderState } from "@/lib/orders/state";
 import { isDemoMode } from "@/lib/payments";
+import { Footer } from "@/site/Footer";
+import { Header } from "@/site/Header";
 
 const STEPS = ["Template", "Personalize", "Preview", "Pay", "Share"];
 
-/** Page frame for the customer side: brand bar plus, inside the create flow, the step bar and order state. */
-export function Shell({ step, state, children }: { step?: number; state?: OrderState; children: React.ReactNode }) {
+/**
+ * Page frame for the customer side: the site header and footer, plus the step
+ * bar and order state inside the create flow. `home` pages run full width.
+ */
+export function Shell({ step, state, home, children }: { step?: number; state?: OrderState; home?: boolean; children: React.ReactNode }) {
   return (
-    <div className="wrap">
+    <div className="site">
       {isDemoMode() && <DemoBanner />}
-      <header className="bar">
-        <Link href="/" className="brand" style={{ textDecoration: "none" }}>
-          <b>Wish Tale</b>
-        </Link>
-      </header>
-      {step !== undefined && (
-        <div className="steps">
-          {STEPS.map((n, k) => (
-            <span key={n} className={`s ${k === step ? "on" : k < step ? "done" : ""}`}>
-              <i>{k < step ? "✓" : k + 1}</i>
-              {n}
-            </span>
-          ))}
-          {state && <span className="state" title="Order state">Order: {state}</span>}
+      <Header />
+      {home ? (
+        <main className="home">{children}</main>
+      ) : (
+        <div className="wrap page">
+          {step !== undefined && (
+            <div className="steps">
+              {STEPS.map((n, k) => (
+                <span key={n} className={`s ${k === step ? "on" : k < step ? "done" : ""}`}>
+                  <i>{k < step ? "✓" : k + 1}</i>
+                  {n}
+                </span>
+              ))}
+              {state && <span className="state" title="Order state">Order: {state}</span>}
+            </div>
+          )}
+          <main>{children}</main>
         </div>
       )}
-      <main>{children}</main>
+      <Footer />
     </div>
   );
 }
