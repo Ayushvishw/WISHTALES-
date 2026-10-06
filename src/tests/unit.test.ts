@@ -2,17 +2,31 @@ import { describe, expect, it } from "vitest";
 import { mediaContentType, sniffAudio, songTitle } from "@/lib/audio-files";
 import { canTransition } from "@/lib/orders/state";
 import { fillText, resolveValues, sanitizeValues, validatePhotoCount, validateValues } from "@/lib/personalization";
-import { CATALOG } from "@/lib/templates/catalog";
+import { CATALOG, RETIRED_TEMPLATES } from "@/lib/templates/catalog";
 import { templateConfigSchema } from "@/lib/templates/schema";
 import { isToken, randomToken } from "@/lib/tokens";
 import { hmacHex } from "@/lib/payments/provider";
 import { MockProvider } from "@/lib/payments/mock";
 
 const candle = CATALOG.find((t) => t.slug === "bday-candlelight")!;
+const story = CATALOG.find((t) => t.slug === "bday-starlit-love")!;
 
 describe("template catalog", () => {
-  it("has three valid Birthday templates", () => {
-    expect(CATALOG.filter((t) => t.occasion === "birthday")).toHaveLength(3);
+  it("has ten story Birthday templates plus the three retired classics", () => {
+    expect(CATALOG.filter((t) => t.occasion === "birthday" && t.layout === "story")).toHaveLength(10);
+    expect(RETIRED_TEMPLATES).toHaveLength(3);
+    expect(new Set(CATALOG.map((t) => t.slug)).size).toBe(CATALOG.length);
+  });
+  it("rejects a story chapter that uses an unknown field", () => {
+    const bad = { ...story, story: { ...story.story!, chapters: [...story.story!.chapters, { type: "letter", eyebrow: "x", title: "y", style: "envelope", field: "nope" }] } };
+    expect(templateConfigSchema.safeParse(bad).success).toBe(false);
+  });
+  it("rejects a slide puzzle that points at an optional photo slot", () => {
+    const bad = { ...story, story: { ...story.story!, chapters: [...story.story!.chapters, { type: "slide", eyebrow: "x", title: "y", photo: 7, solved: "a", solvedSub: "b" }] } };
+    expect(templateConfigSchema.safeParse(bad).success).toBe(false);
+  });
+  it("rejects a story template with no story", () => {
+    expect(templateConfigSchema.safeParse({ ...story, story: undefined }).success).toBe(false);
   });
   it("rejects a puzzle that points at an optional photo slot", () => {
     const bad = { ...candle, scenes: [{ id: "p", type: "puzzle", puzzle: "match", photos: [7], title: "x", hint: "y" }] };

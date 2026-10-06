@@ -10,6 +10,34 @@ type Player = { stop(): void };
 
 let ctx: AudioContext | null = null;
 let current: Player | null = null;
+let analyser: AnalyserNode | null = null;
+let bins: Uint8Array<ArrayBuffer> | null = null;
+
+/** Everything audible goes through one analyser so visuals can follow the music. */
+function out(c: AudioContext): AudioNode {
+  if (!analyser) {
+    analyser = c.createAnalyser();
+    analyser.fftSize = 256;
+    analyser.smoothingTimeConstant = 0.8;
+    analyser.connect(c.destination);
+    bins = new Uint8Array(new ArrayBuffer(analyser.frequencyBinCount));
+  }
+  return analyser;
+}
+
+/** Loudness 0–1 overall and in five bands, or null when nothing is measurable. */
+export function audioLevel(): { lvl: number; bands: number[] } | null {
+  if (!analyser || !bins || !current) return null;
+  analyser.getByteFrequencyData(bins);
+  const n = bins.length;
+  const band = (a: number, b: number) => {
+    let sum = 0;
+    for (let i = Math.floor(a * n); i < Math.floor(b * n); i++) sum += bins![i];
+    return sum / Math.max(1, Math.floor(b * n) - Math.floor(a * n)) / 255;
+  };
+  const bands = [band(0, 0.06), band(0.06, 0.14), band(0.14, 0.28), band(0.28, 0.5), band(0.5, 0.8)];
+  return { lvl: Math.min(1, (bands[0] * 1.4 + bands[1] + bands[2]) / 2.6), bands };
+}
 
 export function unlockAudio(): boolean {
   try {
@@ -41,6 +69,14 @@ export function playAudio(source: string): boolean {
   const el = new Audio(source);
   el.loop = true;
   el.volume = 0.6;
+  // Route through the analyser when possible. Media is same-origin, so this is allowed.
+  if (unlockAudio() && ctx) {
+    try {
+      ctx.createMediaElementSource(el).connect(out(ctx));
+    } catch {
+      /* plays directly, just without visuals */
+    }
+  }
   el.play().catch(() => stopAudio());
   current = { stop: () => el.pause() };
   return true;
@@ -51,7 +87,7 @@ const hz = (n: number) => 440 * Math.pow(2, (n - 69) / 12);
 function synth(c: AudioContext, gen: string): Player | null {
   const bus = c.createGain();
   bus.gain.value = 0.8;
-  bus.connect(c.destination);
+  bus.connect(out(c));
   let timer: ReturnType<typeof setTimeout> | undefined;
   let alive = true;
 

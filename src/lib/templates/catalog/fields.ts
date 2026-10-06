@@ -12,6 +12,9 @@ const F: Record<string, FieldInput> = {
   message: { key: "message", label: "Your message", type: "textarea", required: true, max: 420, help: "Short and specific works best. One thought per line." },
   secret_line: { key: "secret_line", label: "What the scratch card reveals", type: "text", required: true, max: 90, help: "A surprise, a plan, or something you have never said." },
   puzzle_line: { key: "puzzle_line", label: "Line shown when the photo puzzle is solved", type: "text", max: 90 },
+  letter: { key: "letter", label: "Your letter", type: "textarea", required: true, max: 1500, help: "It types itself out like a real letter near the end. Write it the way you talk." },
+  reasons: { key: "reasons", label: "Things you love about them (one per line)", type: "textarea", max: 600, help: "Up to 6 short lines for the flip cards. Leave it empty and we'll use sweet ones." },
+  treats: { key: "treats", label: "Treats on the wheel (one per line)", type: "textarea", max: 220, help: "Up to 8 short treats, like \"Movie night\". Leave it empty to use ours." },
   closing_line: { key: "closing_line", label: "The very last line they read", type: "text", max: 90, help: "People remember the ending most. Keep it short." },
 };
 

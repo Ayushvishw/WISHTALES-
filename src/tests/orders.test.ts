@@ -16,10 +16,10 @@ const jpeg = (n: number) =>
     .jpeg()
     .toBuffer();
 
-const values = { recipient_name: "Riya", sender_name: "Aarav", message: "Happy birthday", secret_line: "Goa" };
+const values = { recipient_name: "Riya", sender_name: "Aarav", letter: "Happy birthday" };
 
 async function readyDraft() {
-  const key = await createDraft("bday-candlelight");
+  const key = await createDraft("bday-starlit-love");
   await updateDraft(key, { values });
   for (let i = 0; i < 6; i++) await addPhoto(key, await jpeg(i), "image/jpeg");
   return key;
@@ -38,11 +38,11 @@ afterAll(() => rm(".data/test-uploads", { recursive: true, force: true }));
 
 describe("draft lifecycle", () => {
   it("stays DRAFT until values and photos are complete", async () => {
-    const key = await createDraft("bday-candlelight");
+    const key = await createDraft("bday-starlit-love");
     expect(await updateDraft(key, { values })).toBe("DRAFT");
-    for (let i = 0; i < 5; i++) await addPhoto(key, await jpeg(i), "image/jpeg");
+    for (let i = 0; i < 3; i++) await addPhoto(key, await jpeg(i), "image/jpeg");
     expect((await getDraft(key))!.state).toBe("DRAFT");
-    await addPhoto(key, await jpeg(5), "image/jpeg");
+    await addPhoto(key, await jpeg(3), "image/jpeg");
     expect((await getDraft(key))!.state).toBe("PREVIEW_READY");
     // Removing a photo makes it incomplete again.
     const d = (await getDraft(key))!;
@@ -51,7 +51,7 @@ describe("draft lifecycle", () => {
   });
 
   it("rejects non-images, and re-encodes photos without metadata", async () => {
-    const key = await createDraft("bday-candlelight");
+    const key = await createDraft("bday-starlit-love");
     await expect(addPhoto(key, Buffer.from("<?php echo 1; ?>"), "image/jpeg")).rejects.toThrow(/readable image/);
     const p = await addPhoto(key, await jpeg(1), "image/jpeg");
     const [row] = await db.select().from(schema.media).where(eq(schema.media.id, p.id));
@@ -112,10 +112,10 @@ describe("own song", () => {
   it("goes back to the template's music when the song is removed", async () => {
     const key = await readyDraft();
     await addSong(key, mp3(), "a.mp3");
-    expect(await removeSong(key)).toEqual({ musicId: "mus_hbd_box" });
+    expect(await removeSong(key)).toEqual({ musicId: "mus_warm_keys" });
     const d = (await getDraft(key))!;
     expect(d.song).toBeNull();
-    expect(d.musicId).toBe("mus_hbd_box");
+    expect(d.musicId).toBe("mus_warm_keys");
   });
 });
 
@@ -157,7 +157,7 @@ describe("payment and link", () => {
   });
 
   it("refuses checkout for an incomplete draft", async () => {
-    const key = await createDraft("bday-candlelight");
+    const key = await createDraft("bday-starlit-love");
     await expect(startCheckout(key)).rejects.toThrow(/Finish the details/);
   });
 
@@ -170,7 +170,8 @@ describe("payment and link", () => {
     if (r.status !== "active") return;
     expect(Object.keys(r.experience).sort()).toEqual(["config", "music", "photos", "values"]);
     expect(r.experience.photos).toHaveLength(6);
-    expect(r.experience.values.closing_line).toMatch(/won't face/);
+    expect(r.experience.values.letter).toBe("Happy birthday");
+    expect(r.experience.config.layout).toBe("story");
     expect(JSON.stringify(r.experience)).not.toContain(key);
     expect(await getPublicExperience("A".repeat(22))).toEqual({ status: "not_found" });
   });

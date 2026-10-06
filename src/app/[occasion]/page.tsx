@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { inr, Shell } from "@/components/Shell";
 import { Track } from "@/components/Track";
 import { createDraft, listOccasions, listTemplates } from "@/lib/orders/service";
+import { Motif } from "@/story/art";
 
 export const dynamic = "force-dynamic";
 
@@ -24,10 +25,12 @@ export default async function OccasionPage({ params }: { params: Promise<{ occas
       <div className="tgrid">
         {list.map((t) => (
           <article className="tcard" key={t.slug}>
-            <div className="thumb" style={{ background: t.theme.bg, color: t.theme.fg }}>
-              <small style={{ color: t.theme.accent }}>{occ.name} · v{t.version}</small>
+            <div className="thumb" style={{ background: t.story?.backdrop ?? t.theme.bg, color: t.theme.fg }}>
+              {t.theme.fonts && <link rel="stylesheet" href={`https://fonts.googleapis.com/css2?${t.theme.fonts}&display=swap`} precedence="thumbs" />}
+              {t.story && <Motif kind={t.story.motif} fill={t.theme.accent} size={64} className="motif" />}
+              <small style={{ color: t.theme.accent }}>{occ.name}</small>
               <strong style={{ fontFamily: t.theme.display }}>Happy birthday,<br /><span style={{ color: t.theme.accent }}>Riya</span></strong>
-              <span className="glyph" style={{ color: t.theme.accent2 }}>{t.scenes.length} scenes</span>
+              <span className="glyph" style={{ color: t.theme.accent2 }}>{t.story ? `${t.story.chapters.length} chapters` : `${t.scenes.length} scenes`}</span>
             </div>
             <div className="tbody">
               <h3>{t.name}</h3>

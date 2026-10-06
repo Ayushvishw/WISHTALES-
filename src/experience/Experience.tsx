@@ -6,6 +6,7 @@ import type { Scene, Theme } from "@/lib/templates/schema";
 import { isPlaying, playAudio, stopAudio } from "./audio";
 import { burst, useReducedMotion } from "./hooks";
 import { SCENES } from "./scenes";
+import { StoryExperience } from "@/story/Story";
 import "./experience.css";
 
 export type SceneContext = {
@@ -61,7 +62,12 @@ type Props = {
 };
 
 /** Renders any template: Template + Personalization + Media + Music → Experience. */
-export function Experience({ experience, ribbon, onEvent }: Props) {
+export function Experience(props: Props) {
+  // Older stored configs have no layout field; they are scene templates.
+  return props.experience.config.layout === "story" ? <StoryExperience {...props} /> : <ScenesExperience {...props} />;
+}
+
+function ScenesExperience({ experience, ribbon, onEvent }: Props) {
   const { config, values, photos, music } = experience;
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
