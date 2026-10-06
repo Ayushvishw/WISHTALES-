@@ -25,7 +25,7 @@ export function TemplateCard({ t, children, priority = false }: { t: TemplateCon
           </span>
         )}
         <span className="tc-kicker" style={{ color: th.accent3 ?? th.accent2 }}>Happy birthday</span>
-        <span className="tc-name" style={{ fontFamily: th.display }}>Riya</span>
+        <span className="tc-name" style={{ fontFamily: th.display }}>Lisa</span>
         <span className="tc-play"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z" fill="currentColor" /></svg>Watch sample</span>
       </Link>
       <div className="tc-body">

@@ -7,20 +7,12 @@ import { track } from "@/lib/analytics";
 import { CUSTOM_MUSIC_ID, SONG_RULES } from "@/lib/audio-files";
 import { validatePhotoCount, validateValues, type FieldErrors, type Values } from "@/lib/personalization";
 import type { TemplateConfig, TemplateField } from "@/lib/templates/schema";
+import { SAMPLE } from "@/lib/sample";
 
 type Photo = { id: string; url: string; thumbUrl: string };
 type Music = { id: string; title: string; source: string; license: string };
 type Song = { url: string; title: string };
 
-const SAMPLE: Values = {
-  recipient_name: "Riya",
-  sender_name: "Aarav",
-  relationship: "your best friend since Class 6",
-  age: "27",
-  message:
-    "I tried to write something clever three times. Here is the plain version.\nYou are the person I call first, with good news, bad news, or nothing at all at 1 a.m.\nYou have never once made me feel like too much. Happy birthday.",
-  secret_line: "Same time next year: Goa, finally. The tickets are already booked.",
-};
 
 async function api<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, init);
