@@ -146,7 +146,9 @@ export function StoryExperience({ experience, ribbon, onEvent }: Props) {
       scrollToNext: (from) => {
         let next = from?.closest("section")?.nextElementSibling ?? null;
         while (next && next.tagName !== "SECTION") next = next.nextElementSibling;
-        (next as HTMLElement | null)?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+        // Scroll only the story's own scroller, never the page around it (the home page embeds a live story).
+        const box = from?.closest(".st-scroll");
+        if (next && box) box.scrollTo({ top: (next as HTMLElement).offsetTop, behavior: reduce ? "auto" : "smooth" });
       },
       finished: () => {
         if (done.current) return;
