@@ -67,12 +67,14 @@ export function resolveValues(t: TemplateConfig, values: Values): Values {
  * it on render). A placeholder with no value is removed together with the
  * comma or separator in front of it, so "From {{a}}, {{b}}" becomes "From Andrew".
  */
-export function fillText(str: string, values: Values): string {
-  return str
+export function fillText(str: string, values: Values, depth = 0): string {
+  const out = str
     .replace(/\s*[,·]?\s*\{\{(\w+)\}\}/g, (m, k: string) => {
       const v = (values[k] ?? "").trim();
       if (!v) return "";
       return m.replace(`{{${k}}}`, v);
     })
     .trim();
+  // A default can name another field ("{{recipient_name}}, obviously"), so fill once more.
+  return depth === 0 && out.includes("{{") ? fillText(out, values, 1) : out;
 }

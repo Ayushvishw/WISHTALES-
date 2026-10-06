@@ -3,6 +3,7 @@ import { mediaContentType, sniffAudio, songTitle } from "@/lib/audio-files";
 import { canTransition } from "@/lib/orders/state";
 import { fillText, resolveValues, sanitizeValues, validatePhotoCount, validateValues } from "@/lib/personalization";
 import { CATALOG, RETIRED_TEMPLATES } from "@/lib/templates/catalog";
+import { builtinLines } from "@/lib/templates/catalog/games";
 import { templateConfigSchema } from "@/lib/templates/schema";
 import { isToken, randomToken } from "@/lib/tokens";
 import { hmacHex } from "@/lib/payments/provider";
@@ -31,6 +32,29 @@ describe("template catalog", () => {
     const q = t.story!.chapters.find((c) => c.type === "question")!;
     expect(fillText(q.title, resolveValues(t, { recipient_name: "Lisa", sender_name: "Andrew" }))).toBe("Will you marry me?");
     expect(fillText(q.title, resolveValues(t, { big_question: "Will you move in with me?" }))).toBe("Will you move in with me?");
+  });
+  it("lets the customer write the words in every game", () => {
+    for (const t of CATALOG.filter((x) => x.layout === "story")) {
+      const keys = new Set(t.fields.map((f) => f.key));
+      for (const c of t.story!.chapters) {
+        if (c.type === "question") expect(c.title, t.slug).toMatch(/\{\{\w+\}\}/);
+        if (c.type === "stars") expect(c.reveal, t.slug).toMatch(/\{\{\w+\}\}/);
+        if (c.type === "scratch") expect(c.reveal, t.slug).toMatch(/\{\{\w+\}\}/);
+        if (["wheel", "flips", "timeline", "meter", "bouquet", "quiz", "promises", "counter", "letter"].includes(c.type)) {
+          expect("field" in c && keys.has(c.field!), `${t.slug} ${c.type}`).toBe(true);
+        }
+      }
+    }
+  });
+  it("uses the template's own game words when the customer leaves them empty", () => {
+    const t = CATALOG.find((x) => x.slug === "bday-retro-arcade")!;
+    const q = t.story!.chapters.find((c) => c.type === "question")!;
+    const v = resolveValues(t, { recipient_name: "Lisa" });
+    expect(fillText(q.title, v)).toBe("Who's the best player in the world?");
+    expect(fillText(q.type === "question" ? q.yes : "", v)).toBe("Lisa, obviously");
+    expect(fillText(q.title, resolveValues(t, { fun_question: "Who makes the best chai?" }))).toBe("Who makes the best chai?");
+    const anni = CATALOG.find((x) => x.slug === "anni-forever-always")!;
+    expect(builtinLines(anni).meter_levels.split("\n")).toHaveLength(5);
   });
   it("rejects a story chapter that uses an unknown field", () => {
     const bad = { ...story, story: { ...story.story!, chapters: [...story.story!.chapters, { type: "letter", eyebrow: "x", title: "y", style: "envelope", field: "nope" }] } };

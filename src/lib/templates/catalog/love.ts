@@ -7,9 +7,10 @@ import { fields } from "./fields";
  * love-story chapters on top: a days-together counter, a timeline, a love
  * meter, connect-the-stars, a bouquet, a couples quiz, promises, a love lock
  * and a ring box. "swipe" templates show one chapter per screen.
+ * 1.1.0 lets the customer write the words inside every game (see games.ts).
  */
 
-const common = { version: "1.0.0", currency: "INR" as const, layout: "story" as const, scenes: [] };
+const common = { version: "1.1.0", currency: "INR" as const, layout: "story" as const, scenes: [] };
 const anni = { ...common, occasion: "anniversary" };
 const prop = { ...common, occasion: "proposal" };
 const PHOTOS = { min: 4, max: 8 };

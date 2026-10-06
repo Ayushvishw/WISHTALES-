@@ -63,9 +63,9 @@ describe("templates", () => {
   it("changes price through a new version without touching existing orders", async () => {
     const before = await paidOrder();
     const v = await changePrice(owner, "bday-candy-land", 349);
-    expect(v).toBe("2.1.1");
+    expect(v).toBe("2.2.1");
     const d = (await templateDetail("bday-candy-land"))!;
-    expect(d.versions.filter((x) => x.status === "published").map((x) => x.version)).toEqual(["2.1.1"]);
+    expect(d.versions.filter((x) => x.status === "published").map((x) => x.version)).toEqual(["2.2.1"]);
     const [paid] = await db.select().from(schema.orders).where(eq(schema.orders.id, before._orderId));
     expect(paid.amountMinor).toBe(19900);
     const key = await createDraft("bday-candy-land");
@@ -79,13 +79,13 @@ describe("templates", () => {
     const cfg = d.versions[0].config;
     await expect(createVersion(owner, "bday-starlit-love", "{not json", false)).rejects.toThrow(/isn't valid/);
     await expect(createVersion(owner, "bday-starlit-love", JSON.stringify(cfg), false)).rejects.toThrow(/higher than/);
-    await expect(createVersion(owner, "bday-starlit-love", JSON.stringify({ ...cfg, version: "2.2.0", slug: "other" }), false)).rejects.toThrow(/slug/);
-    await expect(createVersion(owner, "bday-starlit-love", JSON.stringify({ ...cfg, version: "2.2.0", story: undefined }), false)).rejects.toThrow(/problems/);
-    expect(await createVersion(owner, "bday-starlit-love", JSON.stringify({ ...cfg, version: "2.2.0", name: "Starlit Deluxe" }), false)).toBe("2.2.0");
-    // Saved as a draft: customers still get 2.1.0 until it's published.
+    await expect(createVersion(owner, "bday-starlit-love", JSON.stringify({ ...cfg, version: "2.3.0", slug: "other" }), false)).rejects.toThrow(/slug/);
+    await expect(createVersion(owner, "bday-starlit-love", JSON.stringify({ ...cfg, version: "2.3.0", story: undefined }), false)).rejects.toThrow(/problems/);
+    expect(await createVersion(owner, "bday-starlit-love", JSON.stringify({ ...cfg, version: "2.3.0", name: "Starlit Deluxe" }), false)).toBe("2.3.0");
+    // Saved as a draft: customers still get 2.2.0 until it's published.
     let k = await createDraft("bday-starlit-love");
-    expect((await getDraft(k))!.config.version).toBe("2.1.0");
-    await setVersionStatus(owner, "bday-starlit-love", "2.2.0", "published");
+    expect((await getDraft(k))!.config.version).toBe("2.2.0");
+    await setVersionStatus(owner, "bday-starlit-love", "2.3.0", "published");
     k = await createDraft("bday-starlit-love");
     expect((await getDraft(k))!.config.name).toBe("Starlit Deluxe");
   });

@@ -2,6 +2,7 @@ import { templateConfigSchema, type TemplateConfig, type TemplateInput } from ".
 import { LOVE_TEMPLATES } from "./love";
 import { STORY_TEMPLATES } from "./story";
 import { fields } from "./fields";
+import { editableGames } from "./games";
 
 /**
  * Version 1.0.0 of the three launch Birthday templates. Published versions are
@@ -110,7 +111,7 @@ const classic: TemplateInput[] = [
 /** The three launch templates are kept so paid orders still render, but no longer sold. */
 export const RETIRED_TEMPLATES = classic.map((t) => t.slug);
 
-export const CATALOG: TemplateConfig[] = [...STORY_TEMPLATES, ...LOVE_TEMPLATES, ...classic].map((t) => templateConfigSchema.parse(t));
+export const CATALOG: TemplateConfig[] = [...STORY_TEMPLATES, ...LOVE_TEMPLATES, ...classic].map((t) => templateConfigSchema.parse(editableGames(t)));
 
 export const OCCASIONS = [
   { slug: "birthday", name: "Birthday", live: true },

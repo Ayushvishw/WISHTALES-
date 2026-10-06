@@ -6,9 +6,10 @@ import { fields } from "./fields";
  * photos, a letter and a finale. Each has its own look, games and copy.
  * Published versions are immutable: add a new version to change one.
  * 2.1.0 gives each template its own skin (decorations, frames, poster).
+ * 2.2.0 lets the customer write the words inside every game (see games.ts).
  */
 
-const base = { version: "2.1.0", occasion: "birthday", currency: "INR" as const, layout: "story" as const, scenes: [] };
+const base = { version: "2.2.0", occasion: "birthday", currency: "INR" as const, layout: "story" as const, scenes: [] };
 const PHOTOS = { min: 4, max: 8 };
 
 const REASONS = [

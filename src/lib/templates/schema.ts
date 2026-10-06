@@ -94,7 +94,7 @@ export const chapterSchema = z.discriminatedUnion("type", [
   /** Tap the stars in order to draw a shape; the line is revealed at the end. */
   z.object({ type: z.literal("stars"), ...copy, shape: z.enum(["heart", "ring", "infinity"]), reveal: z.string() }),
   /** Press and hold to fill a love meter past 100%. */
-  z.object({ type: z.literal("meter"), ...copy, levels: z.array(z.string()).min(3).max(6), done: z.string() }),
+  z.object({ type: z.literal("meter"), ...copy, levels: z.array(z.string()).min(3).max(6), field: z.string().optional(), done: z.string() }),
   /** Tap to grow a flower per reason, building a bouquet. */
   z.object({ type: z.literal("bouquet"), ...copy, items: z.array(z.string()).min(3).max(7), field: z.string().optional(), done: z.string() }),
   /** Multiple choice: "Question | right answer | wrong | wrong" per line. */
