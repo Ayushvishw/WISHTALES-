@@ -52,7 +52,7 @@ Copy `.env.example` to `.env.local` for production-like settings. In production,
 1. Import the GitHub repository in Vercel. The framework is detected as Next.js.
 2. In the project's **Storage** tab, create a **Neon** Postgres database and a **Blob** store (choose Private), and connect both to the project. They set `DATABASE_URL` and `BLOB_READ_WRITE_TOKEN` automatically.
 3. In **Settings → Environment Variables**, add `ADMIN_SETUP_CODE` (any long random text). Add the three `RAZORPAY_*` keys when you're ready for real payments; until then the site runs in demo mode.
-4. Deploy. The `vercel-build` script applies migrations, seeds the catalog (idempotent, never edits published versions), then builds.
+4. Deploy. On production deploys the `vercel-build` script applies migrations, seeds the catalog (idempotent, never edits published versions), then builds. Preview deploys only build: they share the production database, so they must never change it.
 5. Open `/admin` to create the owner account, and point the Razorpay webhook at `https://<your-domain>/api/payments/webhook` with the `payment.captured` and `payment.failed` events.
 
 Share links use `APP_URL` if set, otherwise the Vercel production domain.
