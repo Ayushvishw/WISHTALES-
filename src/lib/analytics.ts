@@ -4,6 +4,7 @@ export const ANALYTICS_EVENTS = [
   "template_viewed",
   "template_selected",
   "form_started",
+  "song_uploaded",
   "preview_generated",
   "checkout_started",
   "payment_success",

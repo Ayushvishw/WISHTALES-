@@ -4,11 +4,13 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { playAudio, stopAudio } from "@/experience/audio";
 import { track } from "@/lib/analytics";
+import { CUSTOM_MUSIC_ID, SONG_RULES } from "@/lib/audio-files";
 import { validatePhotoCount, validateValues, type FieldErrors, type Values } from "@/lib/personalization";
 import type { TemplateConfig, TemplateField } from "@/lib/templates/schema";
 
 type Photo = { id: string; url: string; thumbUrl: string };
 type Music = { id: string; title: string; source: string; license: string };
+type Song = { url: string; title: string };
 
 const SAMPLE: Values = {
   recipient_name: "Riya",
@@ -27,12 +29,16 @@ async function api<T>(url: string, init?: RequestInit): Promise<T> {
   return body as T;
 }
 
-export function DraftEditor(props: { draftKey: string; config: TemplateConfig; values: Values; photos: Photo[]; musicId: string | null; music: Music[] }) {
+export function DraftEditor(props: { draftKey: string; config: TemplateConfig; values: Values; photos: Photo[]; song: Song | null; musicId: string | null; music: Music[] }) {
   const { draftKey, config } = props;
   const router = useRouter();
   const [values, setValues] = useState<Values>(props.values);
   const [photos, setPhotos] = useState<Photo[]>(props.photos);
   const [musicId, setMusicId] = useState(props.musicId ?? config.music.default);
+  const [song, setSong] = useState<Song | null>(props.song);
+  const [songBusy, setSongBusy] = useState(false);
+  const [songMsg, setSongMsg] = useState("");
+  const customAllowed = props.music.some((m) => m.id === CUSTOM_MUSIC_ID);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [photoMsg, setPhotoMsg] = useState("");
   const [uploading, setUploading] = useState(0);
@@ -137,7 +143,41 @@ export function DraftEditor(props: { draftKey: string; config: TemplateConfig; v
 
   const listen = (m: Music) => {
     if (listening === m.id) { stopAudio(); setListening(null); return; }
-    setListening(playAudio(m.source) ? m.id : null);
+    const source = m.id === CUSTOM_MUSIC_ID ? song?.url : m.source;
+    setListening(source && playAudio(source) ? m.id : null);
+  };
+
+  const uploadSong = async (f: File | undefined) => {
+    if (!f) return;
+    setSongMsg("");
+    if (f.size > SONG_RULES.maxBytes) { setSongMsg("That song is over 4 MB. Try an MP3 of about 4 minutes or less."); return; }
+    stopAudio();
+    setListening(null);
+    setSongBusy(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", f);
+      const s = await api<Song & { musicId: string }>(`${base}/song`, { method: "POST", body: fd });
+      setSong({ url: s.url, title: s.title });
+      setMusicId(s.musicId);
+      track("song_uploaded", config.slug);
+    } catch (e) {
+      setSongMsg((e as Error).message);
+    } finally {
+      setSongBusy(false);
+    }
+  };
+
+  const removeSong = async () => {
+    stopAudio();
+    setListening(null);
+    try {
+      const r = await api<{ musicId: string }>(`${base}/song`, { method: "DELETE" });
+      setSong(null);
+      setMusicId(r.musicId);
+    } catch (e) {
+      setSongMsg((e as Error).message);
+    }
   };
 
   const preview = async () => {
@@ -225,18 +265,37 @@ export function DraftEditor(props: { draftKey: string; config: TemplateConfig; v
         <fieldset>
           <legend>Music</legend>
           <div className="music">
-            {props.music.map((m) => (
+            {props.music.filter((m) => m.id !== CUSTOM_MUSIC_ID).map((m) => (
               <div className="track" key={m.id}>
                 <input type="radio" name="music" id={`m-${m.id}`} checked={musicId === m.id} onChange={() => chooseMusic(m.id)} />
                 <label htmlFor={`m-${m.id}`}><b>{m.title}</b><span>{m.license}</span></label>
                 {m.source !== "none" && <button type="button" className="btn ghost small" onClick={() => listen(m)}>{listening === m.id ? "Stop" : "Listen"}</button>}
               </div>
             ))}
+            {customAllowed && (
+              <div className={`track own${song ? "" : " empty"}`}>
+                <input type="radio" name="music" id="m-own" disabled={!song} checked={musicId === CUSTOM_MUSIC_ID} onChange={() => chooseMusic(CUSTOM_MUSIC_ID)} />
+                <label htmlFor="m-own">
+                  <b>{song ? song.title : "Add your own song"}</b>
+                  <span>{song ? "Your song. It plays from the start of the surprise." : "Their favourite, or the one that's \"yours\". MP3, M4A or WAV, up to 4 MB."}</span>
+                </label>
+                <div className="acts">
+                {song && <button type="button" className="btn ghost small" onClick={() => listen(props.music.find((m) => m.id === CUSTOM_MUSIC_ID)!)}>{listening === CUSTOM_MUSIC_ID ? "Stop" : "Listen"}</button>}
+                <label className="btn ghost small upload-song">
+                  {songBusy ? "Uploading…" : song ? "Change" : "Upload song"}
+                  <input type="file" accept={SONG_RULES.accept} hidden disabled={songBusy} onChange={(e) => { void uploadSong(e.target.files?.[0]); e.target.value = ""; }} />
+                </label>
+                {song && <button type="button" className="btn ghost small" aria-label="Remove your song" onClick={removeSong}>✕</button>}
+                </div>
+              </div>
+            )}
           </div>
+          {songMsg && <div className="err" role="alert">{songMsg}</div>}
+          {customAllowed && <p className="note">Only upload music you have the right to share. The song plays only for the person you send the link to.</p>}
         </fieldset>
 
         <div className="row">
-          <button className="btn accent" type="submit" disabled={busy || uploading > 0}>{uploading ? "Uploading photos…" : "Preview the experience"}</button>
+          <button className="btn accent" type="submit" disabled={busy || uploading > 0 || songBusy}>{uploading ? "Uploading photos…" : songBusy ? "Uploading song…" : "Preview the experience"}</button>
           {Object.keys(errors).length > 0 && <span className="err">Fix {Object.keys(errors).length} thing{Object.keys(errors).length > 1 ? "s" : ""} above to continue.</span>}
         </div>
       </form>

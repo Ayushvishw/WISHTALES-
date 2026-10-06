@@ -1,5 +1,6 @@
 import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
+import { CUSTOM_MUSIC_ID, SONG_RULES, sniffAudio, songTitle } from "@/lib/audio-files";
 import { processPhoto } from "@/lib/images";
 import { paymentProvider } from "@/lib/payments";
 import type { WebhookEvent } from "@/lib/payments/provider";
@@ -82,6 +83,7 @@ export async function getDraft(draftKey: string) {
   if (!row) return null;
   const photos = await db.select().from(media).where(and(eq(media.orderId, row.order.id), eq(media.kind, "photo"))).orderBy(asc(media.position));
   const [link] = await db.select().from(publicLinks).where(eq(publicLinks.orderId, row.order.id));
+  const [song] = await db.select().from(media).where(and(eq(media.orderId, row.order.id), eq(media.kind, "audio")));
   return {
     reference: row.order.reference,
     state: row.order.state,
@@ -91,6 +93,7 @@ export async function getDraft(draftKey: string) {
     config: row.config,
     values: row.values,
     photos: photos.map((p) => ({ id: p.id, url: mediaUrl(p.storageKey), thumbUrl: mediaUrl(p.thumbKey ?? p.storageKey) })),
+    song: song ? { url: mediaUrl(song.storageKey), title: song.title ?? "Your song" } : null,
     linkToken: link?.status === "active" ? link.token : null,
     _orderId: row.order.id,
   };
@@ -135,6 +138,7 @@ export async function updateDraft(draftKey: string, input: { values?: Record<str
     if (input.musicId) {
       const [m] = await tx.select().from(musicTracks).where(and(eq(musicTracks.id, input.musicId), eq(musicTracks.status, "active")));
       if (!m) throw new UserError("That music isn't available.");
+      if (m.id === CUSTOM_MUSIC_ID && !(await songOf(tx, o.id))) throw new UserError("Upload your song first.");
       [o] = await tx.update(orders).set({ musicId: m.id, updatedAt: new Date() }).where(eq(orders.id, o.id)).returning();
     }
     o = await refreshReadiness(tx, o);
@@ -182,6 +186,62 @@ export async function removePhoto(draftKey: string, photoId: string) {
   });
   await storage().delete(removed.storageKey);
   if (removed.thumbKey) await storage().delete(removed.thumbKey);
+}
+
+async function songOf(tx: Tx, orderId: string) {
+  const [row] = await tx.select().from(media).where(and(eq(media.orderId, orderId), eq(media.kind, "audio")));
+  return row ?? null;
+}
+
+/** Stores the customer's own song, replacing any earlier one, and selects it as the music. */
+export async function addSong(draftKey: string, file: Buffer, fileName: string) {
+  if (file.byteLength > SONG_RULES.maxBytes) throw new UserError("Songs must be 4 MB or smaller. Try an MP3 of about 4 minutes or less.", 413);
+  const fmt = sniffAudio(file);
+  if (!fmt) throw new UserError("We couldn't read that song. Use an MP3, M4A, AAC, OGG or WAV file.");
+  const [custom] = await db.select().from(musicTracks).where(and(eq(musicTracks.id, CUSTOM_MUSIC_ID), eq(musicTracks.status, "active")));
+  if (!custom) throw new UserError("Adding your own song isn't available right now.");
+  const key = `songs/${randomToken(24)}.${fmt.ext}`;
+  const title = songTitle(fileName);
+  await storage().put(key, file, fmt.contentType);
+  let old: string | null = null;
+  try {
+    await db.transaction(async (tx) => {
+      const o = await requireDraft(tx, draftKey);
+      assertEditable(o);
+      const prev = await songOf(tx, o.id);
+      if (prev) {
+        old = prev.storageKey;
+        await tx.delete(media).where(eq(media.id, prev.id));
+      }
+      await tx.insert(media).values({ orderId: o.id, kind: "audio", storageKey: key, position: 0, bytes: file.byteLength, contentType: fmt.contentType, title });
+      await tx.update(orders).set({ musicId: CUSTOM_MUSIC_ID, updatedAt: new Date() }).where(eq(orders.id, o.id));
+    });
+  } catch (e) {
+    await storage().delete(key);
+    throw e;
+  }
+  if (old) await storage().delete(old);
+  return { url: mediaUrl(key), title, musicId: CUSTOM_MUSIC_ID };
+}
+
+/** Deletes the customer's song. If it was selected, the music goes back to the template's default. */
+export async function removeSong(draftKey: string) {
+  const res = await db.transaction(async (tx) => {
+    const o = await requireDraft(tx, draftKey);
+    assertEditable(o);
+    const prev = await songOf(tx, o.id);
+    if (!prev) return { key: null, musicId: o.musicId };
+    await tx.delete(media).where(eq(media.id, prev.id));
+    let musicId = o.musicId;
+    if (o.musicId === CUSTOM_MUSIC_ID) {
+      const [cfgRow] = await tx.select({ config: templateVersions.config }).from(templateVersions).where(eq(templateVersions.id, o.templateVersionId));
+      musicId = cfgRow.config.music.default;
+      await tx.update(orders).set({ musicId, updatedAt: new Date() }).where(eq(orders.id, o.id));
+    }
+    return { key: prev.storageKey, musicId };
+  });
+  if (res.key) await storage().delete(res.key);
+  return { musicId: res.musicId };
 }
 
 /** Sets photo order. `ids` must list exactly the draft's photos. */
@@ -316,7 +376,10 @@ async function buildExperience(o: Order, config: TemplateConfig, values: Values)
   let music: PublicExperience["music"] = null;
   if (o.musicId) {
     const [m] = await db.select().from(musicTracks).where(inArray(musicTracks.id, [o.musicId]));
-    if (m && m.source !== "none") music = { source: m.source.startsWith("builtin:") ? m.source : mediaUrl(m.source) };
+    if (m?.source === "custom") {
+      const [song] = await db.select({ key: media.storageKey }).from(media).where(and(eq(media.orderId, o.id), eq(media.kind, "audio")));
+      if (song) music = { source: mediaUrl(song.key) };
+    } else if (m && m.source !== "none") music = { source: m.source.startsWith("builtin:") ? m.source : mediaUrl(m.source) };
   }
   return { config, values: resolveValues(config, values), photos: photos.map((p) => mediaUrl(p.key)), music };
 }

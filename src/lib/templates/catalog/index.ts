@@ -121,5 +121,6 @@ export const OCCASIONS = [
 export const MUSIC = [
   { id: "mus_hbd_box", title: "Happy Birthday, music box", source: "builtin:hbd", license: "Public-domain melody, synthesized in the browser" },
   { id: "mus_warm_keys", title: "Warm keys", source: "builtin:chords", license: "Original, royalty-free" },
+  { id: "mus_custom", title: "Your own song", source: "custom", license: "A song you upload. Please only use music you have the right to share." },
   { id: "mus_none", title: "No music", source: "none", license: "n/a" },
 ] as const;
