@@ -427,3 +427,27 @@ em{font-style:italic}
 .tc-art[data-skin="scrapbook"] .tc-name{color:#33241a;rotate:-4deg;margin-right:120px}
 .tc-art[data-skin="scrapbook"] .tc-kicker{color:#a8402a!important;margin-right:120px}
 @media (prefers-reduced-motion:reduce){.tc-poster *{animation:none!important}}
+
+/* 3D objects across the site (Fluent 3D set, see public/3d/LICENSE.txt) */
+.obj3d{display:inline-block;flex:none;object-fit:contain;-webkit-user-drag:none;user-select:none;filter:drop-shadow(0 10px 14px rgba(0,0,0,.35))}
+.fy.obj3d{width:clamp(44px,5.4vw,90px);height:auto;font-size:0}
+.scene3d{position:relative;aspect-ratio:5/4;height:auto}
+.scene3d .s3{position:absolute;height:auto;filter:drop-shadow(0 20px 26px rgba(0,0,0,.45));animation:bob 6s ease-in-out infinite}
+.scene3d .s3-0{width:54%;left:23%;bottom:2%;z-index:2}
+.scene3d .s3-1{width:34%;left:2%;top:4%;rotate:-12deg;animation-delay:-2s}
+.scene3d .s3-2{width:34%;right:2%;top:10%;rotate:12deg;animation-delay:-4s}
+.scene3d .s3-3{width:18%;left:44%;top:0;animation-delay:-1s}
+.occ2-card:hover .scene3d .s3-1{translate:-6px -6px}
+.occ2-card:hover .scene3d .s3-2{translate:6px -6px}
+.marq b .marq-ic{width:.7em;height:auto;margin:0 .55em;filter:drop-shadow(0 4px 8px rgba(0,0,0,.35))}
+.bt-obj{position:absolute;top:14px;right:14px;width:78px;height:auto;rotate:10deg;transition:transform .5s cubic-bezier(.3,1.5,.5,1);z-index:2}
+.bt:hover .bt-obj{transform:translateY(-8px) rotate(-14deg) scale(1.1)}
+.bt-private .bt-art.lock{display:none}
+.step2-ic{font-size:0}
+.step2-ic .obj3d{width:64px;height:64px}
+.tc-objs{position:absolute;inset:0;z-index:-1;pointer-events:none}
+.tc-objs .obj3d{position:absolute;height:auto;filter:drop-shadow(0 14px 18px rgba(0,0,0,.45));animation:bob 6s ease-in-out infinite;transition:transform .6s cubic-bezier(.3,1.5,.5,1)}
+.tc-objs .o0{width:84px;left:6%;bottom:8%;rotate:-10deg}
+.tc-objs .o1{width:64px;right:7%;bottom:12%;rotate:12deg;animation-delay:-3s}
+.tc:hover .tc-objs .o0{transform:translate(-4px,-10px) rotate(-8deg) scale(1.1)}
+.tc:hover .tc-objs .o1{transform:translate(4px,-10px) rotate(8deg) scale(1.1)}

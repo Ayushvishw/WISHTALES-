@@ -6,7 +6,8 @@ import { useReducedMotion } from "@/experience/hooks";
 import type { PublicExperience } from "@/lib/orders/service";
 import { fillText } from "@/lib/personalization";
 import type { Chapter, Story, Theme } from "@/lib/templates/schema";
-import { Motif, seeded } from "./art";
+import { isRomantic, Motif, seeded } from "./art";
+import { Obj, type ObjName } from "./obj";
 import { CHAPTERS } from "./chapters";
 import "./story.css";
 import "./skins.css";
@@ -242,9 +243,7 @@ export function StoryExperience({ experience, ribbon, protect, onEvent }: Props)
           <section className="st-sec st-locked">
             <div className="st-wrap center">
               <div className="st-lock-card">
-                <span className="st-lock-icon" aria-hidden="true">
-                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
-                </span>
+                <span className="st-lock-icon" aria-hidden="true"><Obj name="locked" size={60} /></span>
                 <p className="st-eyebrow">The best part is locked</p>
                 <h2 className="st-h2">The letter and the grand finale</h2>
                 <p className="st-lead center">They open in your own version, with your names, photos, song and words.</p>
@@ -330,6 +329,8 @@ function Ambient({ story, reduce }: { story: Story; reduce: boolean }) {
   );
 }
 
+const OPENER_OBJECT: Record<string, ObjName> = { gift: "wrapped_gift", chest: "package", ringbox: "ring" };
+
 function Opener({ story, ctx, opening, onOpen }: { story: Story; ctx: StoryContext; opening: boolean; onOpen(): void }) {
   const stars = useMemo(() => {
     const r = seeded(3);
@@ -343,30 +344,9 @@ function Opener({ story, ctx, opening, onOpen }: { story: Story; ctx: StoryConte
       ))}
       <p className="st-eyebrow">{ctx.fill(opener.eyebrow)}</p>
       <button className={`st-opener st-${opener.kind}${opening ? " opening" : ""}`} onClick={onOpen} aria-label={ctx.fill(opener.hint)}>
-        {opener.kind === "gift" && (
-          <>
-            <span className="lid"><span className="bow" /></span>
-            <span className="box"><span className="ribbon" /></span>
-          </>
-        )}
-        {opener.kind === "envelope" && (
-          <span className="env">
-            <span className="flap" />
-            <span className="seal"><Motif kind={story.motif} fill={ctx.theme.paper} size={26} /></span>
-          </span>
-        )}
-        {opener.kind === "ringbox" && (
-          <span className="rb">
-            <span className="rb-lid" />
-            <span className="rb-box"><span className="rb-ring"><Motif kind="ring" fill={ctx.theme.accent3 ?? ctx.theme.accent} size={64} /></span></span>
-          </span>
-        )}
-        {opener.kind === "chest" && (
-          <>
-            <span className="chest-lid"><span className="lock" /></span>
-            <span className="chest-box"><span className="glow" /></span>
-          </>
-        )}
+        <span className="o3d">
+          <Obj name={OPENER_OBJECT[opener.kind] ?? (isRomantic(story.motif) ? "love_letter" : "envelope")} size={230} />
+        </span>
       </button>
       <p className="st-hint">{ctx.fill(opener.hint)}</p>
       <p className="st-sub">{ctx.fill(opener.sub)}</p>

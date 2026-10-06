@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState, type PointerEvent as RPointerEvent, type ReactNode } from "react";
 import type { Chapter } from "@/lib/templates/schema";
-import { Floater, Motif, seeded } from "./art";
+import { Floater, isRomantic, Motif, seeded } from "./art";
+import { Obj, skinObjects } from "./obj";
 import { LoveLock, LOVE_CHAPTERS, RingBox } from "./love";
 import type { StoryContext } from "./Story";
 
@@ -27,6 +28,7 @@ export function listFrom(ctx: StoryContext, field: string | undefined, defaults:
 export function Head({ chapter, ctx, num, center }: { chapter: { eyebrow: string; title: string; lead?: string }; ctx: StoryContext; num: number | null; center?: boolean }) {
   return (
     <div className={center ? "st-head center" : "st-head"}>
+      <Obj name={skinObjects(ctx.story.skin)[(num ?? 0) % 4]} size={64} className="st-head-obj" />
       <p className="st-eyebrow">{num ? `Chapter ${num} · ` : ""}{ctx.fill(chapter.eyebrow)}</p>
       <h2 className="st-h2">{ctx.fill(chapter.title)}</h2>
       {chapter.lead && <p className="st-lead">{ctx.fill(chapter.lead)}</p>}
@@ -84,6 +86,9 @@ function Hero({ chapter, ctx }: P<"hero">) {
   return (
     <section className="st-hero">
       <div className="st-breath" aria-hidden="true"><span className="r2" /><span className="r1" /><span className="r3" /></div>
+      <div className="st-props" aria-hidden="true">
+        {skinObjects(ctx.story.skin).map((o, i) => <Obj key={o} name={o} size={[110, 84, 92, 72][i]} className={`p${i}`} />)}
+      </div>
       <div className="st-hero-copy">
         <p className="st-kicker">{ctx.fill(chapter.kicker)}</p>
         <h1 className={`st-name st-name-${chapter.nameStyle}`} aria-label={name}>
@@ -595,36 +600,28 @@ function Ritual({ chapter, ctx, num }: P<"ritual">) {
           <div className="st-cake">
             <div className="candles">
               {state.map((out, i) => (
-                <button key={i} className="candle" onClick={() => act(i)} aria-label={`Blow out candle ${i + 1}`} disabled={out}>
-                  <span className="stick" /><span className="wick" />
-                  {!out ? <span className="flame" /> : <span className="smoke" />}
+                <button key={i} className={`candle${out ? " out" : ""}`} onClick={() => act(i)} aria-label={`Blow out candle ${i + 1}`} disabled={out}>
+                  <Obj name="candle" size={64} />
+                  {out && <span className="smoke" />}
                 </button>
               ))}
             </div>
-            <div className="tier-top" /><div className="tier-bot">{[0, 1, 2, 3, 4, 5].map((s) => <span key={s} className={`spr s${s}`} />)}</div>
-            <div className="plate" />
+            <Obj name="birthday_cake" size={300} className="cake3d" />
           </div>
         )}
         {k === "diyas" && (
           <div className="st-diyas">
             {state.map((lit, i) => (
               <button key={i} className={`diya${lit ? " lit" : ""}`} onClick={() => act(i)} aria-label={`Light diya ${i + 1}`} disabled={lit}>
-                {lit && <span className="flame" />}
-                <svg width="74" height="40" viewBox="0 0 74 40" aria-hidden="true"><path d="M2 8h70c-2 16-16 30-35 30S4 24 2 8z" fill="var(--accent2)" /><path d="M2 8h70" stroke="var(--accent3)" strokeWidth="4" strokeLinecap="round" /><circle cx="20" cy="22" r="3" fill="var(--accent3)" /><circle cx="37" cy="26" r="3" fill="var(--accent3)" /><circle cx="54" cy="22" r="3" fill="var(--accent3)" /></svg>
+                <Obj name="diya_lamp" size={84} />
               </button>
             ))}
           </div>
         )}
         {k === "champagne" && (
           <button className={`st-bottle${finished ? " popped" : ""}`} onClick={() => act(0)} aria-label="Pop the champagne" disabled={finished}>
-            <span className="cork" />
-            <svg width="90" height="230" viewBox="0 0 90 230" aria-hidden="true">
-              <path d="M36 0h18v54c0 10 26 24 26 56v110a10 10 0 0 1-10 10H20a10 10 0 0 1-10-10V110c0-32 26-46 26-56z" fill="#1f3a2a" />
-              <path d="M36 0h18v40H36z" fill="var(--accent)" />
-              <rect x="18" y="128" width="54" height="56" rx="6" fill="var(--paper)" />
-              <path d="M30 150h30M34 162h22" stroke="var(--accent)" strokeWidth="3" strokeLinecap="round" />
-              <path d="M24 100c4-14 10-22 12-24" stroke="#fff" strokeOpacity=".3" strokeWidth="5" strokeLinecap="round" fill="none" />
-            </svg>
+            <Obj name="bottle_with_popping_cork" size={220} className="bottle3d" />
+            {finished && <Obj name="clinking_glasses" size={130} className="glasses3d" />}
             {finished && <span className="foam">{Array.from({ length: 14 }, (_, i) => <i key={i} style={{ left: `${(i * 37) % 100}%`, animationDelay: `${(i % 7) * 0.12}s` }} />)}</span>}
           </button>
         )}
@@ -637,12 +634,7 @@ function Ritual({ chapter, ctx, num }: P<"ritual">) {
                 {k === "lanterns" ? (
                   <Floater kind="lanterns" color={ctx.palette[i % ctx.palette.length]} w={52} />
                 ) : (
-                  <svg width="52" height="96" viewBox="0 0 52 96" aria-hidden="true">
-                    <path d="M26 2c12 12 16 30 14 52H12C10 32 14 14 26 2z" fill="var(--paper)" />
-                    <circle cx="26" cy="30" r="7" fill={ctx.palette[i % ctx.palette.length]} stroke="var(--line)" strokeWidth="2" />
-                    <path d="M12 44L2 64l12-4zM40 44l10 20-12-4z" fill={ctx.palette[(i + 1) % ctx.palette.length]} />
-                    <path className="fire" d="M18 56h16l-8 30z" fill="var(--accent3)" />
-                  </svg>
+                  <Obj name="rocket" size={76} className="rocket3d" />
                 )}
               </button>
             ))}
@@ -680,7 +672,7 @@ function Letter({ chapter, ctx, num }: P<"letter">) {
       {!open ? (
         <button className={`st-env st-env-${chapter.style}`} onClick={() => setOpen(true)} aria-label="Open the letter">
           {chapter.style === "envelope" && (
-            <span className="env"><span className="flap" /><span className="seal"><Motif kind={ctx.story.motif} fill={ctx.theme.paper} size={24} /></span></span>
+            <span className="o3d"><Obj name={isRomantic(ctx.story.motif) ? "love_letter" : "envelope"} size={210} />{!isRomantic(ctx.story.motif) && <span className="seal"><Motif kind={ctx.story.motif} fill={ctx.theme.paper} size={40} /></span>}</span>
           )}
           {chapter.style === "bottle" && (
             <svg width="220" height="130" viewBox="0 0 220 130" aria-hidden="true">
