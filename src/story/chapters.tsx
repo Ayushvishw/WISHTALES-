@@ -9,18 +9,21 @@ import type { StoryContext } from "./Story";
 type Of<T extends Chapter["type"]> = Extract<Chapter, { type: T }>;
 type P<T extends Chapter["type"]> = { chapter: Of<T>; ctx: StoryContext; num: number | null };
 
-/** Customer lines for a list chapter (one per line), topped up from the template's defaults. */
-export function listFrom(ctx: StoryContext, field: string | undefined, defaults: string[], count: number, max = 200) {
+/**
+ * Customer lines for a list chapter (one per line). The template's own lines
+ * are only examples: they show when the customer wrote nothing (samples, or
+ * orders made before a field was required), never mixed in with real ones.
+ * `repeat` cycles the customer's lines to fill a game with fixed slots.
+ */
+export function listFrom(ctx: StoryContext, field: string | undefined, defaults: string[], count: number, max = 200, repeat = false) {
   const own = (field ? ctx.values[field] ?? "" : "")
     .split("\n")
     .map((s) => s.trim())
     .filter(Boolean)
     .map((s) => s.slice(0, max));
+  if (!own.length) return defaults.slice(0, count).map((d) => ctx.fill(d));
   const out = own.slice(0, count);
-  for (const d of defaults) {
-    if (out.length >= count) break;
-    out.push(ctx.fill(d));
-  }
+  while (repeat && out.length < count) out.push(own[out.length % own.length]);
   return out;
 }
 
@@ -55,6 +58,7 @@ function Hero({ chapter, ctx }: P<"hero">) {
   const layer = useRef<HTMLDivElement>(null);
   const burstId = useRef(0);
   const wishIdx = useRef(0);
+  const wishes = listFrom(ctx, chapter.field, chapter.wishes, 6, 140);
   const COUNT = 12;
   const floaters = useMemo(() => {
     const r = seeded(11 + round);
@@ -74,9 +78,9 @@ function Hero({ chapter, ctx }: P<"hero">) {
       setTimeout(() => setBursts((s) => s.filter((x) => x.id !== id)), 1100);
     }
     setPopped((s) => new Set(s).add(i));
-    const w = chapter.wishes[wishIdx.current % chapter.wishes.length];
+    const w = wishes[wishIdx.current % wishes.length];
     wishIdx.current++;
-    ctx.toast(ctx.fill(w));
+    ctx.toast(w);
   };
   const all = popped.size >= COUNT;
   const cue = useRef<HTMLButtonElement>(null);
@@ -351,7 +355,7 @@ function Slide({ chapter, ctx, num }: P<"slide">) {
 /* ---------------- spin the wheel ---------------- */
 
 function Wheel({ chapter, ctx, num }: P<"wheel">) {
-  const items = listFrom(ctx, chapter.field, chapter.items, 8, 18);
+  const items = listFrom(ctx, chapter.field, chapter.items, 8, 18, true);
   const [rot, setRot] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [won, setWon] = useState<string[]>([]);
@@ -411,6 +415,9 @@ function Wheel({ chapter, ctx, num }: P<"wheel">) {
 /* ---------------- photos ---------------- */
 
 function Gallery({ chapter, ctx, num }: P<"gallery">) {
+  // The customer's own captions, one per photo. The template's are examples only.
+  const own = chapter.field ? (ctx.values[chapter.field] ?? "").split("\n").map((l) => l.trim()) : null;
+  const captions = own ? own.map((l) => l.slice(0, 40)) : (chapter.captions ?? []).map((c) => ctx.fill(c));
   const [lift, setLift] = useState<number | null>(null);
   return (
     <Section center>
@@ -427,7 +434,7 @@ function Gallery({ chapter, ctx, num }: P<"gallery">) {
               <Motif kind={ctx.story.motif} fill={ctx.theme.accent2} size={18} />
               <Motif kind={ctx.story.motif} fill={ctx.theme.accent} size={20} />
             </span>
-            {chapter.captions?.[i] && <figcaption>{ctx.fill(chapter.captions[i])}</figcaption>}
+            {captions[i] && <figcaption>{captions[i]}</figcaption>}
           </figure>
         ))}
       </div>

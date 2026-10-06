@@ -21,7 +21,7 @@ const photo = (n: number) => sharp({ create: { width: 600, height: 800, channels
 
 async function paidOrder() {
   const key = await createDraft("bday-candy-land");
-  await updateDraft(key, { values: { recipient_name: "Meera", sender_name: "Kabir", letter: "Hi" } });
+  await updateDraft(key, { values: { recipient_name: "Meera", sender_name: "Kabir", letter: "Hi", wishes: "a\nb\nc", treats: "a\nb\nc" } });
   for (let i = 0; i < 6; i++) await addPhoto(key, await photo(i), "image/jpeg");
   const s = await startCheckout(key);
   await applyWebhook("mock", { kind: "payment.captured", eventId: "e" + Math.random(), providerOrderId: s.providerOrderId, providerPaymentId: "p", amountMinor: s.amountMinor }, {});

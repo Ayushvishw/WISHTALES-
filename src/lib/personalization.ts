@@ -29,7 +29,7 @@ export function validateValues(t: TemplateConfig, values: Values): FieldErrors {
   for (const f of t.fields) {
     const v = (values[f.key] ?? "").trim();
     if (!v) {
-      if (f.required && !f.default) errors[f.key] = `Add ${f.label.toLowerCase()}.`;
+      if (f.required && !f.default) errors[f.key] = `Please fill in: ${f.label.replace(/ \(one per line\)$/, "")}.`;
       continue;
     }
     if (f.type === "number") {
@@ -41,6 +41,11 @@ export function validateValues(t: TemplateConfig, values: Values): FieldErrors {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(v) || Number.isNaN(Date.parse(v))) errors[f.key] = "Use a valid date.";
     } else if (f.max && v.length > f.max) {
       errors[f.key] = `Keep it under ${f.max} characters.`;
+    } else if (f.type === "textarea" && (f.minLines || f.pipes)) {
+      const lines = v.split("\n").map((l) => l.trim()).filter(Boolean);
+      const bad = f.pipes ? lines.findIndex((l) => l.split("|").filter((p) => p.trim()).length < f.pipes! + 1) : -1;
+      if (f.minLines && lines.length < f.minLines) errors[f.key] = `Write at least ${f.minLines} lines, one per line (you have ${lines.length}).`;
+      else if (bad >= 0) errors[f.key] = `Line ${bad + 1} needs ${f.pipes! + 1} parts split by "|", like the example.`;
     }
   }
   return errors;

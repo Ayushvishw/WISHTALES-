@@ -76,7 +76,7 @@ export const LOVE_TEMPLATES: TemplateInput[] = [
       fx: ["#e8b86a", "#c2185b", "#f6d7a7", "#ff8fab", "#fbf2e6"],
       fonts: "family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&family=Parisienne&family=Jost:wght@400;500;600",
     },
-    fields: fields("recipient_name", "sender_name", { key: "since_date", required: true }, "letter", "milestones", "reasons"),
+    fields: fields("recipient_name", "sender_name", { key: "since_date", label: "The day you got together", required: true }, "letter", "milestones", "reasons"),
     photos: PHOTOS,
     music: { default: "mus_canon" },
     story: {
@@ -152,7 +152,7 @@ export const LOVE_TEMPLATES: TemplateInput[] = [
       fx: ["#a9c6ff", "#c3a6ff", "#ffe29a", "#ffffff"],
       fonts: "family=Bodoni+Moda:ital,wght@0,500;0,700;1,500&family=Mrs+Saint+Delafield&family=Manrope:wght@400;500;700",
     },
-    fields: fields("recipient_name", "sender_name", "since_date", "letter"),
+    fields: fields("recipient_name", "sender_name", { key: "since_date", label: "The night it all began" }, "letter"),
     photos: PHOTOS,
     music: { default: "mus_canon" },
     story: {
@@ -317,7 +317,7 @@ export const LOVE_TEMPLATES: TemplateInput[] = [
       fx: ["#ff4ecd", "#6ae3ff", "#ffe066", "#9b5de5", "#ffffff"],
       fonts: "family=Unbounded:wght@500;700&family=Sacramento&family=Sora:wght@400;500;600",
     },
-    fields: fields("recipient_name", "sender_name", "big_question", "since_date", "quiz", "letter"),
+    fields: fields("recipient_name", "sender_name", "big_question", { key: "since_date", label: "The day you met" }, "quiz", "letter"),
     photos: PHOTOS,
     music: { default: "mus_canon" },
     story: {

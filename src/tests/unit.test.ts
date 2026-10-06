@@ -56,6 +56,23 @@ describe("template catalog", () => {
     const anni = CATALOG.find((x) => x.slug === "anni-forever-always")!;
     expect(builtinLines(anni).meter_levels.split("\n")).toHaveLength(5);
   });
+  it("never makes up facts: dates, stories, quizzes, reasons, promises, treats and wishes come from the customer", () => {
+    for (const t of CATALOG.filter((x) => x.layout === "story")) {
+      const byKey = new Map(t.fields.map((f) => [f.key, f]));
+      for (const c of t.story!.chapters) {
+        const key = "field" in c ? c.field : undefined;
+        if (!key || !["counter", "timeline", "quiz", "flips", "bouquet", "promises", "wheel", "hero"].includes(c.type)) continue;
+        const f = byKey.get(key)!;
+        expect(f.required && !f.default, `${t.slug} ${c.type} ${key}`).toBe(true);
+      }
+    }
+    const t = CATALOG.find((x) => x.slug === "anni-polaroid-diaries")!;
+    const ok = { recipient_name: "Lisa", sender_name: "Andrew", letter: "Hi", secret_line: "Goa", wishes: "a\nb\nc", milestones: "2019 | Met\n2020 | Dated\n2021 | Moved", quiz: "Q1 | yes | no\nQ2 | yes | no" };
+    expect(validateValues(t, ok)).toEqual({});
+    expect(validateValues(t, { ...ok, milestones: "2019 | Met" }).milestones).toMatch(/at least 3 lines/);
+    expect(validateValues(t, { ...ok, quiz: "Q1 | yes\nQ2 | yes | no" }).quiz).toMatch(/Line 1/);
+    expect(validateValues(t, { ...ok, wishes: "" }).wishes).toBeTruthy();
+  });
   it("rejects a story chapter that uses an unknown field", () => {
     const bad = { ...story, story: { ...story.story!, chapters: [...story.story!.chapters, { type: "letter", eyebrow: "x", title: "y", style: "envelope", field: "nope" }] } };
     expect(templateConfigSchema.safeParse(bad).success).toBe(false);
