@@ -3,13 +3,14 @@
 import { useEffect, useMemo, useRef, useState, type PointerEvent as RPointerEvent, type ReactNode } from "react";
 import type { Chapter } from "@/lib/templates/schema";
 import { Floater, Motif, seeded } from "./art";
+import { LoveLock, LOVE_CHAPTERS, RingBox } from "./love";
 import type { StoryContext } from "./Story";
 
 type Of<T extends Chapter["type"]> = Extract<Chapter, { type: T }>;
 type P<T extends Chapter["type"]> = { chapter: Of<T>; ctx: StoryContext; num: number | null };
 
 /** Customer lines for a list chapter (one per line), topped up from the template's defaults. */
-function listFrom(ctx: StoryContext, field: string | undefined, defaults: string[], count: number, max = 200) {
+export function listFrom(ctx: StoryContext, field: string | undefined, defaults: string[], count: number, max = 200) {
   const own = (field ? ctx.values[field] ?? "" : "")
     .split("\n")
     .map((s) => s.trim())
@@ -23,7 +24,7 @@ function listFrom(ctx: StoryContext, field: string | undefined, defaults: string
   return out;
 }
 
-function Head({ chapter, ctx, num, center }: { chapter: { eyebrow: string; title: string; lead?: string }; ctx: StoryContext; num: number | null; center?: boolean }) {
+export function Head({ chapter, ctx, num, center }: { chapter: { eyebrow: string; title: string; lead?: string }; ctx: StoryContext; num: number | null; center?: boolean }) {
   return (
     <div className={center ? "st-head center" : "st-head"}>
       <p className="st-eyebrow">{num ? `Chapter ${num} · ` : ""}{ctx.fill(chapter.eyebrow)}</p>
@@ -33,7 +34,7 @@ function Head({ chapter, ctx, num, center }: { chapter: { eyebrow: string; title
   );
 }
 
-function Section({ children, className = "", center }: { children: ReactNode; className?: string; center?: boolean }) {
+export function Section({ children, className = "", center }: { children: ReactNode; className?: string; center?: boolean }) {
   return (
     <section className={`st-sec ${className}`}>
       <div className={center ? "st-wrap center" : "st-wrap"}>{children}</div>
@@ -127,9 +128,9 @@ function Hero({ chapter, ctx }: P<"hero">) {
           ))}
         </div>
       )}
-      <button className="st-cue" ref={cue} onClick={() => ctx.scrollToNext(cue.current)}>
-        More surprises below
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+      <button className={`st-cue${ctx.swipe ? " st-cue-side" : ""}`} ref={cue} onClick={() => ctx.scrollToNext(cue.current)}>
+        {ctx.swipe ? "Swipe for more surprises" : "More surprises below"}
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={ctx.swipe ? "M9 6l6 6-6 6" : "M6 9l6 6 6-6"} /></svg>
       </button>
     </section>
   );
@@ -578,7 +579,8 @@ function Scratch({ chapter, ctx, num }: P<"scratch">) {
 
 function Ritual({ chapter, ctx, num }: P<"ritual">) {
   const k = chapter.kind;
-  const count = k === "champagne" ? 1 : chapter.count;
+  const single = k === "champagne" || k === "lovelock" || k === "ringbox";
+  const count = single ? 1 : chapter.count;
   // Candles start lit and get blown out; diyas, lanterns and rockets start waiting.
   const [state, setState] = useState<boolean[]>(() => Array(count).fill(false));
   const finished = state.every(Boolean);
@@ -626,6 +628,8 @@ function Ritual({ chapter, ctx, num }: P<"ritual">) {
             {finished && <span className="foam">{Array.from({ length: 14 }, (_, i) => <i key={i} style={{ left: `${(i * 37) % 100}%`, animationDelay: `${(i % 7) * 0.12}s` }} />)}</span>}
           </button>
         )}
+        {k === "lovelock" && <LoveLock done={finished} onDo={() => act(0)} ctx={ctx} />}
+        {k === "ringbox" && <RingBox done={finished} onDo={() => act(0)} ctx={ctx} />}
         {(k === "lanterns" || k === "rockets") && (
           <div className="st-launch">
             {state.map((up, i) => (
@@ -651,7 +655,7 @@ function Ritual({ chapter, ctx, num }: P<"ritual">) {
           <button className="st-btn ghost" onClick={reset}>{ctx.fill(chapter.again)}</button>
         </div>
       ) : (
-        <p className="st-lead center" style={{ marginTop: 18 }}>{state.filter(Boolean).length} of {count}</p>
+        !single && <p className="st-lead center" style={{ marginTop: 18 }}>{state.filter(Boolean).length} of {count}</p>
       )}
     </Section>
   );
@@ -686,6 +690,16 @@ function Letter({ chapter, ctx, num }: P<"letter">) {
               <path d="M52 62h76M52 70h60" stroke="var(--paper-ink)" strokeOpacity=".4" strokeWidth="2" transform="rotate(-4 90 65)" />
             </svg>
           )}
+          {chapter.style === "scroll" && (
+            <span className="scr"><span className="rod" /><span className="roll"><span className="tie"><Motif kind={ctx.story.motif} fill={ctx.theme.accent} size={22} /></span></span><span className="rod" /></span>
+          )}
+          {chapter.style === "postcard" && (
+            <span className="pc">
+              <span className="pc-pic" style={{ backgroundImage: ctx.photos[0] ? `url(${ctx.photos[0]})` : undefined }} />
+              <span className="pc-lines"><i /><i /><i /></span>
+              <span className="pc-stamp"><Motif kind={ctx.story.motif} fill={ctx.theme.accent} size={22} /></span>
+            </span>
+          )}
           {chapter.style === "terminal" && (
             <span className="term"><span className="bar"><i /><i /><i /></span><span className="cmd">&gt; open message_for_{(ctx.values.recipient_name || "you").toLowerCase().replace(/\W+/g, "_")}.txt<span className="caret" /></span></span>
           )}
@@ -713,6 +727,7 @@ function Finale({ chapter, ctx }: P<"finale">) {
     return {
       stars: Array.from({ length: 50 }, (_, i) => ({ i, l: r() * 100, t: r() * 100, z: 1 + r() * 2.2, d: 1.5 + r() * 3, dl: -r() * 4 })),
       works: Array.from({ length: 7 }, (_, i) => ({ i, x: 10 + r() * 80, y: 14 + r() * 50, dl: r() * 2.4, c: ctx.palette[i % ctx.palette.length] })),
+      rain: Array.from({ length: 34 }, (_, i) => ({ i, l: r() * 100, d: 4 + r() * 4, dl: r() * 4, z: 14 + r() * 22, c: ctx.palette[i % ctx.palette.length] })),
     };
   }, [ctx.palette]);
   const start = () => { setOn(true); ctx.celebrate(); ctx.finished(); };
@@ -739,6 +754,15 @@ function Finale({ chapter, ctx }: P<"finale">) {
                   ))}
                 </div>
               ))}
+            {(chapter.effect === "hearts" || chapter.effect === "petals") && !ctx.reduce && (
+              <div className={`st-rain st-rain-${chapter.effect}`} aria-hidden="true">
+                {sky.rain.map((d) => (
+                  <span key={d.i} style={{ left: `${d.l}%`, animationDuration: `${d.d}s`, animationDelay: `${d.dl}s` }}>
+                    <Motif kind={chapter.effect === "hearts" ? "heart" : "petal"} fill={d.c} size={d.z} />
+                  </span>
+                ))}
+              </div>
+            )}
             <div className="st-finale-copy">
               <p className="st-finale-name">{ctx.fill(chapter.headline)}</p>
               <p className="st-lead center">{ctx.fill(chapter.signoff)}</p>
@@ -764,4 +788,5 @@ export const CHAPTERS = {
   ritual: Ritual,
   letter: Letter,
   finale: Finale,
+  ...LOVE_CHAPTERS,
 } as const;

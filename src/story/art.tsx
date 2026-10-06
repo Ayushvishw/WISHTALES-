@@ -79,6 +79,31 @@ export function Motif({ kind, fill, size = 24, className, style }: { kind: Motif
           <path d="M8 9.5c2.5 1 5.5 1 8 0M7.6 13c2.8 1.2 6 1.2 8.8 0" stroke="#fff" strokeWidth="1.3" fill="none" opacity=".8" />
         </svg>
       );
+    case "ring":
+      return (
+        <svg {...p}>
+          <path d="M9 4h6l2 3-5 5-5-5z" fill="#eaf6ff" stroke={fill} strokeWidth=".8" />
+          <circle cx="12" cy="15.5" r="6" fill="none" stroke={fill} strokeWidth="2.4" />
+        </svg>
+      );
+    case "rose":
+      return (
+        <svg {...p}>
+          <path d="M12 21v-7" stroke="#4f7a3a" strokeWidth="1.6" />
+          <path d="M12 17c-3-2-5-1-6 1 3 1 5 1 6-1zM12 16c3-2 5-1 6 1-3 1-5 1-6-1z" fill="#4f7a3a" />
+          <path d="M12 3c4 0 7 2.5 7 6s-3 5.5-7 5.5S5 12.5 5 9s3-6 7-6z" fill={fill} />
+          <path d="M12 5.5c2 0 3.5 1.2 3.5 3S14 11 12 11s-3-1-3-2.5c0-1.2 1-2 2.2-2" stroke="rgba(0,0,0,.25)" strokeWidth="1.1" fill="none" />
+        </svg>
+      );
+    case "moon":
+      return <svg {...p}><path d="M14.5 2.5a9.5 9.5 0 1 0 7 15.5A8 8 0 1 1 14.5 2.5z" fill={fill} /></svg>;
+    case "key":
+      return (
+        <svg {...p}>
+          <circle cx="7" cy="12" r="4.5" fill="none" stroke={fill} strokeWidth="2.4" />
+          <path d="M11.5 12H22M18 12v4M21 12v3" stroke={fill} strokeWidth="2.4" strokeLinecap="round" />
+        </svg>
+      );
     case "butterfly":
       return (
         <svg {...p}>
@@ -93,7 +118,16 @@ export function Motif({ kind, fill, size = 24, className, style }: { kind: Motif
 }
 
 /** Things that float up the hero and can be popped. */
-export function Floater({ kind, color, w }: { kind: "balloons" | "bubbles" | "lanterns"; color: string; w: number }) {
+export function Floater({ kind, color, w }: { kind: "balloons" | "bubbles" | "lanterns" | "hearts"; color: string; w: number }) {
+  if (kind === "hearts") {
+    return (
+      <svg width={w} height={w * 1.6} viewBox="0 0 80 128" aria-hidden="true">
+        <path d="M40 78S6 58 6 32C6 16 18 6 30 6c5 0 8 2 10 6 2-4 5-6 10-6 12 0 24 10 24 26 0 26-34 46-34 46z" fill={color} />
+        <ellipse cx="24" cy="26" rx="6" ry="11" fill="#fff" opacity=".35" transform="rotate(-30 24 26)" />
+        <path d="M40 80c-6 12 6 24 0 46" stroke="currentColor" strokeOpacity=".5" strokeWidth="1.5" fill="none" />
+      </svg>
+    );
+  }
   if (kind === "bubbles") {
     return (
       <svg width={w} height={w} viewBox="0 0 80 80" aria-hidden="true">

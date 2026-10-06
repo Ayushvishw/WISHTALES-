@@ -6,7 +6,7 @@ import { Motif } from "@/story/art";
 import { Tilt } from "./fx";
 import { hasPoster, Poster } from "./Poster";
 
-const OPENER: Record<string, string> = { gift: "Opens with a gift box", envelope: "Opens with a sealed letter", chest: "Opens with a treasure chest" };
+const OPENER: Record<string, string> = { gift: "Opens with a gift box", envelope: "Opens with a sealed letter", chest: "Opens with a treasure chest", ringbox: "Opens with a ring box" };
 
 /** A template in the shop: a living mini banner in its own colours, then the details. */
 export function TemplateCard({ t, children, priority = false }: { t: TemplateConfig; children?: ReactNode; priority?: boolean }) {
@@ -14,6 +14,8 @@ export function TemplateCard({ t, children, priority = false }: { t: TemplateCon
   const story = t.story;
   const motifs = Array.from({ length: 7 }, (_, i) => i);
   const skin = hasPoster(story?.skin) ? story!.skin! : undefined;
+  const hero = story?.chapters.find((c) => c.type === "hero");
+  const kicker = hero && hero.type === "hero" ? hero.kicker : "Happy birthday";
   return (
     <Tilt className="tc" style={{ "--ta": th.accent, "--tb": th.accent2 } as React.CSSProperties}>
       {th.fonts && <link rel="stylesheet" href={`https://fonts.googleapis.com/css2?${th.fonts}&display=swap`} precedence={priority ? "high" : "thumbs"} />}
@@ -26,7 +28,7 @@ export function TemplateCard({ t, children, priority = false }: { t: TemplateCon
             ))}
           </span>
         )}
-        <span className="tc-kicker" style={{ color: th.accent3 ?? th.accent2 }}>Happy birthday</span>
+        <span className="tc-kicker" style={{ color: th.accent3 ?? th.accent2 }}>{kicker}</span>
         <span className="tc-name" style={{ fontFamily: th.display }}>Lisa</span>
         <span className="tc-play"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z" fill="currentColor" /></svg>Watch sample</span>
       </Link>
@@ -40,7 +42,7 @@ export function TemplateCard({ t, children, priority = false }: { t: TemplateCon
           {t.traits.slice(0, 4).map((x) => <span key={x}>{x}</span>)}
         </div>
         <div className="tc-meta">
-          {story ? `${story.chapters.length} chapters · ${OPENER[story.opener.kind]}` : `${t.scenes.length} scenes`}
+          {story ? `${story.flow === "swipe" ? "Swipe story" : "Scroll story"} · ${story.chapters.length} chapters · ${OPENER[story.opener.kind]}` : `${t.scenes.length} scenes`}
         </div>
         {children}
       </div>

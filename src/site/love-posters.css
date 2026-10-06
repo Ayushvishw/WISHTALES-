@@ -1,0 +1,33 @@
+/* Poster name styles and small animations for the anniversary and proposal skins. */
+.tc-poster .lp-rings{animation:pzBob 4s ease-in-out infinite}
+.tc-poster .lp-glow{filter:drop-shadow(0 0 18px #ffe29a)}
+.tc-poster .lp-steam{animation:lpSteam 3s ease-in-out infinite}
+.tc-poster .lp-ring{animation:pzBob 3s ease-in-out infinite}
+.tc-poster .lp-neon{animation:lpFlicker 4s linear infinite}
+.tc-poster .lp-bulb{animation:lpBulb 2s ease-in-out infinite alternate;filter:drop-shadow(0 0 6px #ffd27f)}
+.tc-poster .lp-inf{stroke-dasharray:400;animation:lpDraw 5s ease-in-out infinite alternate}
+@keyframes lpSteam{0%,100%{opacity:.2;transform:translateY(4px)}50%{opacity:.8;transform:translateY(-4px)}}
+@keyframes lpFlicker{0%,18%,22%,62%,64%,100%{opacity:1}20%,63%{opacity:.35}}
+@keyframes lpBulb{from{opacity:.45}to{opacity:1}}
+@keyframes lpDraw{from{stroke-dashoffset:400}to{stroke-dashoffset:0}}
+
+.tc-art[data-skin="timeless"] .tc-name{color:#e8b86a;font-style:italic;text-shadow:0 0 22px rgba(232,184,106,.4)}
+.tc-art[data-skin="timeless"] .tc-kicker{color:#f6d7a7!important}
+.tc-art[data-skin="diary"] .tc-name{color:#23395b;rotate:-3deg;margin-left:-70px}
+.tc-art[data-skin="diary"] .tc-kicker{color:#e4572e!important;margin-left:-70px}
+.tc-art[data-skin="moonlit"] .tc-name{color:#eef1ff;font-style:italic;text-shadow:0 0 20px rgba(169,198,255,.6);margin-right:60px}
+.tc-art[data-skin="moonlit"] .tc-kicker{color:#a9c6ff!important;margin-right:60px}
+.tc-art[data-skin="cafe"] .tc-name{color:#fdf5e8;margin-top:30px;margin-right:60px}
+.tc-art[data-skin="cafe"] .tc-kicker{color:#e07a5f!important;margin-right:60px}
+.tc-art[data-skin="golden"] .tc-name{color:#2f6b4f;letter-spacing:.06em;font-size:clamp(36px,4vw,48px);margin-top:20px}
+.tc-art[data-skin="golden"] .tc-kicker{color:#b8862b!important;margin-top:20px}
+.tc-art[data-skin="velvet"] .tc-name{color:#ffd9df;margin-bottom:70px;text-shadow:0 0 26px rgba(255,79,109,.6)}
+.tc-art[data-skin="velvet"] .tc-kicker{color:#f5c86b!important}
+.tc-art[data-skin="nebula"] .tc-name{color:#fff;text-transform:uppercase;letter-spacing:.04em;font-size:clamp(34px,4vw,46px);text-shadow:0 0 18px #ff4ecd,0 0 40px #9b5de5;margin-bottom:60px}
+.tc-art[data-skin="nebula"] .tc-kicker{color:#6ae3ff!important}
+.tc-art[data-skin="blush"] .tc-name{color:#e75480}
+.tc-art[data-skin="blush"] .tc-kicker{color:#a02c55!important}
+.tc-art[data-skin="neon"] .tc-name{color:#fff;text-shadow:0 0 8px #05d9e8,0 0 22px #05d9e8,0 0 42px #05d9e8;margin-bottom:60px}
+.tc-art[data-skin="neon"] .tc-kicker{color:#ff2a6d!important;text-shadow:0 0 10px #ff2a6d}
+.tc-art[data-skin="fairy"] .tc-name{color:#ffd27f;text-shadow:0 0 22px rgba(255,210,127,.55)}
+.tc-art[data-skin="fairy"] .tc-kicker{color:#fff3c4!important}

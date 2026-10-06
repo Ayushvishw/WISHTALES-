@@ -7,7 +7,7 @@ import { track } from "@/lib/analytics";
 import { CUSTOM_MUSIC_ID, SONG_RULES } from "@/lib/audio-files";
 import { validatePhotoCount, validateValues, type FieldErrors, type Values } from "@/lib/personalization";
 import type { TemplateConfig, TemplateField } from "@/lib/templates/schema";
-import { SAMPLE } from "@/lib/sample";
+import { sampleFor } from "@/lib/sample";
 
 type Photo = { id: string; url: string; thumbUrl: string };
 type Music = { id: string; title: string; source: string; license: string };
@@ -216,7 +216,7 @@ export function DraftEditor(props: { draftKey: string; config: TemplateConfig; v
           <legend>Names and words</legend>
           <div className="f2">{config.fields.map(field)}</div>
           <div className="row">
-            <button type="button" className="btn ghost small" onClick={() => change({ ...SAMPLE, event_date: new Date().toISOString().slice(0, 10) })}>Fill with sample details</button>
+            <button type="button" className="btn ghost small" onClick={() => change({ ...sampleFor(config.occasion), event_date: new Date().toISOString().slice(0, 10) })}>Fill with sample details</button>
             <span className="saving" role="status">{{ idle: "", saving: "Saving…", saved: "Saved", error: "Couldn't save. We'll retry when you continue." }[saving]}</span>
           </div>
         </fieldset>

@@ -10,6 +10,8 @@ import { Motif, seeded } from "./art";
 import { CHAPTERS } from "./chapters";
 import "./story.css";
 import "./skins.css";
+import "./love.css";
+import "./love-skins.css";
 
 export type StoryContext = {
   values: Record<string, string>;
@@ -17,6 +19,8 @@ export type StoryContext = {
   theme: Theme;
   story: Story;
   reduce: boolean;
+  /** "swipe" stories show one chapter per screen and move sideways. */
+  swipe: boolean;
   /** Colors for game pieces, wheel slices and confetti. */
   palette: string[];
   fill(s: string): string;
@@ -79,7 +83,7 @@ type Props = {
 
 type Piece = { id: number; l: number; w: number; h: number; c: string; d: number; dl: number };
 
-/** One long, scrolling birthday page made of chapters (games, photos, a letter, a finale). */
+/** One story made of chapters (games, photos, a letter, a finale): a long scrolling page, or swipeable screens. */
 export function StoryExperience({ experience, ribbon, protect, onEvent }: Props) {
   const { config, values, photos, music } = experience;
   const story = config.story!;
@@ -95,6 +99,9 @@ export function StoryExperience({ experience, ribbon, protect, onEvent }: Props)
   const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const confettiId = useRef(0);
   const done = useRef(false);
+  const swipe = story.flow === "swipe";
+  const [page, setPage] = useState(0);
+  const [pages, setPages] = useState(0);
 
   const palette = useMemo(
     () => [...new Set([theme.accent, theme.accent2, theme.accent3 ?? theme.accent2, ...theme.fx, ...story.ambient.colors])],
@@ -156,7 +163,7 @@ export function StoryExperience({ experience, ribbon, protect, onEvent }: Props)
 
   const ctx: StoryContext = useMemo(
     () => ({
-      values, photos, theme, story, reduce, palette,
+      values, photos, theme, story, reduce, swipe, palette,
       fill: (s: string) => fillText(s, values),
       toast,
       celebrate,
@@ -165,7 +172,9 @@ export function StoryExperience({ experience, ribbon, protect, onEvent }: Props)
         while (next && next.tagName !== "SECTION") next = next.nextElementSibling;
         // Scroll only the story's own scroller, never the page around it (the home page embeds a live story).
         const box = from?.closest(".st-scroll");
-        if (next && box) box.scrollTo({ top: (next as HTMLElement).offsetTop, behavior: reduce ? "auto" : "smooth" });
+        if (!next || !box) return;
+        const at = next as HTMLElement;
+        box.scrollTo(swipe ? { left: at.offsetLeft, behavior: reduce ? "auto" : "smooth" } : { top: at.offsetTop, behavior: reduce ? "auto" : "smooth" });
       },
       finished: () => {
         if (done.current) return;
@@ -173,8 +182,28 @@ export function StoryExperience({ experience, ribbon, protect, onEvent }: Props)
         onEvent?.("experience_completed");
       },
     }),
-    [values, photos, theme, story, reduce, palette, toast, celebrate, onEvent],
+    [values, photos, theme, story, reduce, swipe, palette, toast, celebrate, onEvent],
   );
+
+  // Swipe stories: keep track of the screen in view for the progress bar and arrows.
+  useEffect(() => {
+    const box = scroller.current;
+    if (!swipe || phase !== "open" || !box) return;
+    const measure = () => {
+      setPages(box.querySelectorAll(":scope > section").length);
+      setPage(Math.round(box.scrollLeft / Math.max(1, box.clientWidth)));
+    };
+    measure();
+    box.addEventListener("scroll", measure, { passive: true });
+    window.addEventListener("resize", measure);
+    return () => { box.removeEventListener("scroll", measure); window.removeEventListener("resize", measure); };
+  }, [swipe, phase]);
+  const go = (to: number) => {
+    const box = scroller.current;
+    if (!box) return;
+    const target = Math.max(0, Math.min(pages - 1, to));
+    box.scrollTo({ left: target * box.clientWidth, behavior: reduce ? "auto" : "smooth" });
+  };
 
   let n = 1;
   const shown = protect?.locked ? story.chapters.filter((c) => c.type !== "letter" && c.type !== "finale") : story.chapters;
@@ -198,14 +227,14 @@ export function StoryExperience({ experience, ribbon, protect, onEvent }: Props)
       {story.skin && <div className="st-skin back" aria-hidden="true"><span className="big" /><span className="b2" /></div>}
       {ribbon && <div className="st-ribbon">{ribbon}</div>}
 
-      <div className="st-scroll" ref={scroller} aria-hidden={phase !== "open"}>
+      <div className={`st-scroll${swipe ? " swipe" : ""}`} ref={scroller} aria-hidden={phase !== "open"}>
         {phase === "open" &&
           numbered.map(({ c, num }, k) => {
             const View = CHAPTERS[c.type] as (p: { chapter: Chapter; ctx: StoryContext; num: number | null }) => ReactNode;
             return (
               <ChapterBoundary key={k}>
                 <View chapter={c} ctx={ctx} num={num} />
-                {(k < numbered.length - 1 || protect?.locked) && c.type !== "hero" && <div className="st-divider" aria-hidden="true" />}
+                {!swipe && (k < numbered.length - 1 || protect?.locked) && c.type !== "hero" && <div className="st-divider" aria-hidden="true" />}
               </ChapterBoundary>
             );
           })}
@@ -225,6 +254,23 @@ export function StoryExperience({ experience, ribbon, protect, onEvent }: Props)
           </section>
         )}
       </div>
+
+      {swipe && phase === "open" && pages > 1 && (
+        <>
+          <div className="st-bars" aria-hidden="true">
+            {Array.from({ length: pages }, (_, i) => <span key={i} className={i < page ? "seen" : i === page ? "now" : ""} />)}
+          </div>
+          <nav className="st-pager" aria-label="Chapters">
+            <button onClick={() => go(page - 1)} disabled={page === 0} aria-label="Previous chapter">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
+            </button>
+            <span>{page + 1} / {pages}</span>
+            <button onClick={() => go(page + 1)} disabled={page >= pages - 1} aria-label="Next chapter" className={page === 0 ? "hint" : ""}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+            </button>
+          </nav>
+        </>
+      )}
 
       {protect && <div className="st-wm" aria-hidden="true" style={{ backgroundImage: watermarkTile(protect.watermark) }} />}
 
@@ -307,6 +353,12 @@ function Opener({ story, ctx, opening, onOpen }: { story: Story; ctx: StoryConte
           <span className="env">
             <span className="flap" />
             <span className="seal"><Motif kind={story.motif} fill={ctx.theme.paper} size={26} /></span>
+          </span>
+        )}
+        {opener.kind === "ringbox" && (
+          <span className="rb">
+            <span className="rb-lid" />
+            <span className="rb-box"><span className="rb-ring"><Motif kind="ring" fill={ctx.theme.accent3 ?? ctx.theme.accent} size={64} /></span></span>
           </span>
         )}
         {opener.kind === "chest" && (

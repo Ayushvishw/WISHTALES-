@@ -15,6 +15,11 @@ const F: Record<string, FieldInput> = {
   letter: { key: "letter", label: "Your letter", type: "textarea", required: true, max: 1500, help: "It types itself out like a real letter near the end. Write it the way you talk." },
   reasons: { key: "reasons", label: "Things you love about them (one per line)", type: "textarea", max: 600, help: "Up to 6 short lines for the flip cards. Leave it empty and we'll use sweet ones." },
   treats: { key: "treats", label: "Treats on the wheel (one per line)", type: "textarea", max: 220, help: "Up to 8 short treats, like \"Movie night\". Leave it empty to use ours." },
+  since_date: { key: "since_date", label: "The day your story began", type: "date", help: "The day you met, first dated or got married. We count the days from here." },
+  milestones: { key: "milestones", label: "Your story in steps (one per line)", type: "textarea", max: 700, help: "Write it as When | What happened, like \"June 2019 | We met at Priya's wedding\". Up to 6 lines. Leave it empty to use ours." },
+  quiz: { key: "quiz", label: "Quiz questions (one per line)", type: "textarea", max: 700, help: "Write Question | right answer | wrong answer | wrong answer. Up to 5 lines. Leave it empty to use ours." },
+  promises: { key: "promises", label: "Your promises (one per line)", type: "textarea", max: 600, help: "Up to 6 short promises. Leave it empty and we'll use sweet ones." },
+  big_question: { key: "big_question", label: "The big question", type: "text", max: 60, default: "Will you marry me?", help: "Asked near the end. They can only say yes." },
   closing_line: { key: "closing_line", label: "The very last line they read", type: "text", max: 90, help: "People remember the ending most. Keep it short." },
 };
 

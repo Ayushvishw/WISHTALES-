@@ -49,7 +49,7 @@ export type Scene = z.infer<typeof sceneSchema>;
 
 /* ---------------- story layout: one scrolling page of chapters ---------------- */
 
-export const MOTIFS = ["heart", "star", "petal", "bubble", "pixel", "marigold", "candy", "sparkle", "butterfly", "shell", "note"] as const;
+export const MOTIFS = ["heart", "star", "petal", "bubble", "pixel", "marigold", "candy", "sparkle", "butterfly", "shell", "note", "ring", "rose", "moon", "key"] as const;
 const motif = z.enum(MOTIFS);
 const copy = { eyebrow: z.string(), title: z.string(), lead: z.string().optional() };
 
@@ -58,7 +58,7 @@ export const chapterSchema = z.discriminatedUnion("type", [
     type: z.literal("hero"),
     kicker: z.string(),
     lead: z.string(),
-    floaters: z.enum(["balloons", "bubbles", "lanterns", "none"]),
+    floaters: z.enum(["balloons", "bubbles", "lanterns", "hearts", "none"]),
     nameStyle: z.enum(["script", "display", "pixel"]),
     /** Shown one by one as floaters are popped. */
     wishes: z.array(z.string()).min(1),
@@ -75,27 +75,46 @@ export const chapterSchema = z.discriminatedUnion("type", [
     /** Wheel slices when the customer leaves the field empty. Exactly 8. */
     items: z.array(z.string().max(18)).length(8), field: z.string().optional(), done: z.string(),
   }),
-  z.object({ type: z.literal("gallery"), ...copy, style: z.enum(["polaroid", "frames", "film"]), captions: z.array(z.string()).optional() }),
+  z.object({ type: z.literal("gallery"), ...copy, style: z.enum(["polaroid", "frames", "film", "string"]), captions: z.array(z.string()).optional() }),
   z.object({ type: z.literal("flips"), ...copy, items: z.array(z.string()).min(3).max(8), field: z.string().optional() }),
   z.object({ type: z.literal("memory"), ...copy, pairs: z.number().int().min(3).max(6), done: z.string() }),
   z.object({ type: z.literal("scratch"), ...copy, reveal: z.string(), cover: z.string() }),
   z.object({
-    type: z.literal("ritual"), ...copy, kind: z.enum(["candles", "diyas", "champagne", "lanterns", "rockets"]),
+    type: z.literal("ritual"), ...copy, kind: z.enum(["candles", "diyas", "champagne", "lanterns", "rockets", "lovelock", "ringbox"]),
     count: z.number().int().min(1).max(9), done: z.string(), again: z.string(),
   }),
-  z.object({ type: z.literal("letter"), ...copy, style: z.enum(["envelope", "bottle", "terminal"]), field: z.string() }),
+  z.object({ type: z.literal("letter"), ...copy, style: z.enum(["envelope", "bottle", "terminal", "scroll", "postcard"]), field: z.string() }),
   z.object({
-    type: z.literal("finale"), ...copy, button: z.string(), headline: z.string(), signoff: z.string(), effect: z.enum(["fireworks", "confetti"]),
+    type: z.literal("finale"), ...copy, button: z.string(), headline: z.string(), signoff: z.string(), effect: z.enum(["fireworks", "confetti", "hearts", "petals"]),
   }),
+  /** Counts the time since a date field: days, hours, minutes, live. */
+  z.object({ type: z.literal("counter"), ...copy, field: z.string(), fallback: z.string(), done: z.string() }),
+  /** Milestones of a story ("When | What" per line), each with a photo. Scrolls sideways in a scrolling story. */
+  z.object({ type: z.literal("timeline"), ...copy, items: z.array(z.string()).min(3).max(8), field: z.string().optional() }),
+  /** Tap the stars in order to draw a shape; the line is revealed at the end. */
+  z.object({ type: z.literal("stars"), ...copy, shape: z.enum(["heart", "ring", "infinity"]), reveal: z.string() }),
+  /** Press and hold to fill a love meter past 100%. */
+  z.object({ type: z.literal("meter"), ...copy, levels: z.array(z.string()).min(3).max(6), done: z.string() }),
+  /** Tap to grow a flower per reason, building a bouquet. */
+  z.object({ type: z.literal("bouquet"), ...copy, items: z.array(z.string()).min(3).max(7), field: z.string().optional(), done: z.string() }),
+  /** Multiple choice: "Question | right answer | wrong | wrong" per line. */
+  z.object({ type: z.literal("quiz"), ...copy, items: z.array(z.string()).min(2).max(6), field: z.string().optional(), win: z.string(), lose: z.string() }),
+  /** Promise cards sealed one by one with a wax stamp. */
+  z.object({ type: z.literal("promises"), ...copy, items: z.array(z.string()).min(3).max(7), field: z.string().optional(), done: z.string() }),
 ]);
 export type Chapter = z.infer<typeof chapterSchema>;
 
 /** A whole visual style for a story template: decorations, frames, dividers and the shop poster. */
-export const SKINS = ["starlit", "royal", "arcade", "ocean", "garden", "galaxy", "desi", "candy", "gala", "scrapbook"] as const;
+export const SKINS = [
+  "starlit", "royal", "arcade", "ocean", "garden", "galaxy", "desi", "candy", "gala", "scrapbook",
+  "timeless", "diary", "moonlit", "cafe", "golden", "velvet", "nebula", "blush", "neon", "fairy",
+] as const;
 
 export const storySchema = z.object({
   skin: z.enum(SKINS).optional(),
-  opener: z.object({ kind: z.enum(["gift", "envelope", "chest"]), eyebrow: z.string(), hint: z.string(), sub: z.string() }),
+  /** "scroll" reads top to bottom; "swipe" shows one chapter per screen and moves sideways. */
+  flow: z.enum(["scroll", "swipe"]).optional(),
+  opener: z.object({ kind: z.enum(["gift", "envelope", "chest", "ringbox"]), eyebrow: z.string(), hint: z.string(), sub: z.string() }),
   motif,
   ambient: z.object({
     orbs: z.array(color).length(3),

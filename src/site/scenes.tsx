@@ -2,9 +2,9 @@
 
 export const OCCASION_LOOK: Record<string, { a: string; b: string; line: string; blurb: string }> = {
   birthday: { a: "#ff6b9a", b: "#ffc861", line: "Balloons, games, candles and a letter they open one surprise at a time.", blurb: "10 templates" },
-  anniversary: { a: "#ff4d6d", b: "#ffb4a2", line: "Every year you've shared, in one story they can relive.", blurb: "Coming soon" },
+  anniversary: { a: "#ff4d6d", b: "#ffb4a2", line: "Count every day together, relive your story, and lock your love on a bridge.", blurb: "5 templates" },
   friendship: { a: "#4fd1c5", b: "#ffd166", line: "Inside jokes, old photos, and a thank-you they won't forget.", blurb: "Coming soon" },
-  proposal: { a: "#b388ff", b: "#ff8fab", line: "Build up to the question. They tap Yes at the end.", blurb: "Coming soon" },
+  proposal: { a: "#b388ff", b: "#ff8fab", line: "Build up to the question with a ring box and a love meter. They can only say yes.", blurb: "5 templates" },
   wedding: { a: "#ff9f1c", b: "#e63946", line: "Blessings, memories and a toast from far away.", blurb: "Coming soon" },
   "mothers-day": { a: "#ff8fab", b: "#ffd6a5", line: "Thank her for everything, in her favourite colours.", blurb: "Coming soon" },
   "fathers-day": { a: "#5aa9e6", b: "#7fc8a9", line: "For the man who never says it first.", blurb: "Coming soon" },
