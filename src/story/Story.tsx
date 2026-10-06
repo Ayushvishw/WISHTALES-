@@ -55,16 +55,32 @@ class ChapterBoundary extends Component<{ children: ReactNode }, { failed: boole
   }
 }
 
+/** A tiled, tilted text pattern for the watermark layer. */
+function watermarkTile(text: string) {
+  const esc = text.replace(/[<>&"]/g, "");
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="170"><g transform="rotate(-24 150 85)" font-family="system-ui,sans-serif" font-size="17" font-weight="700" letter-spacing="2" fill="#fff" stroke="#000" stroke-opacity=".35" stroke-width=".6"><text x="10" y="70">${esc}</text><text x="160" y="155">${esc}</text></g></svg>`;
+  return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+}
+
+/** Guards for pages that show an experience before it is bought. */
+export type Protect = {
+  /** Faint moving text across the whole experience, e.g. "Sample · WishTales". */
+  watermark: string;
+  /** When set, the letter and finale are held back and this call to action shows in their place. */
+  locked?: ReactNode;
+};
+
 type Props = {
   experience: PublicExperience;
   ribbon?: string;
+  protect?: Protect;
   onEvent?(name: "experience_completed"): void;
 };
 
 type Piece = { id: number; l: number; w: number; h: number; c: string; d: number; dl: number };
 
 /** One long, scrolling birthday page made of chapters (games, photos, a letter, a finale). */
-export function StoryExperience({ experience, ribbon, onEvent }: Props) {
+export function StoryExperience({ experience, ribbon, protect, onEvent }: Props) {
   const { config, values, photos, music } = experience;
   const story = config.story!;
   const theme = config.theme;
@@ -161,13 +177,22 @@ export function StoryExperience({ experience, ribbon, onEvent }: Props) {
   );
 
   let n = 1;
-  const numbered = story.chapters.map((c) => {
+  const shown = protect?.locked ? story.chapters.filter((c) => c.type !== "letter" && c.type !== "finale") : story.chapters;
+  const numbered = shown.map((c) => {
     const num = c.type === "hero" || c.type === "finale" ? null : ++n;
     return { c, num };
   });
 
   return (
-    <div className="st" ref={root} style={vars(theme, story)} data-motif={story.motif} data-skin={story.skin}>
+    <div
+      className={`st${protect ? " st-guard" : ""}`}
+      ref={root}
+      style={vars(theme, story)}
+      data-motif={story.motif}
+      data-skin={story.skin}
+      onContextMenu={protect ? (e) => e.preventDefault() : undefined}
+      onDragStart={protect ? (e) => e.preventDefault() : undefined}
+    >
       {theme.fonts && <link rel="stylesheet" href={`https://fonts.googleapis.com/css2?${theme.fonts}&display=swap`} precedence="story" />}
       <Ambient story={story} reduce={reduce} />
       {story.skin && <div className="st-skin back" aria-hidden="true"><span className="big" /><span className="b2" /></div>}
@@ -180,11 +205,28 @@ export function StoryExperience({ experience, ribbon, onEvent }: Props) {
             return (
               <ChapterBoundary key={k}>
                 <View chapter={c} ctx={ctx} num={num} />
-                {k < numbered.length - 1 && c.type !== "hero" && <div className="st-divider" aria-hidden="true" />}
+                {(k < numbered.length - 1 || protect?.locked) && c.type !== "hero" && <div className="st-divider" aria-hidden="true" />}
               </ChapterBoundary>
             );
           })}
+        {phase === "open" && protect?.locked && (
+          <section className="st-sec st-locked">
+            <div className="st-wrap center">
+              <div className="st-lock-card">
+                <span className="st-lock-icon" aria-hidden="true">
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
+                </span>
+                <p className="st-eyebrow">The best part is locked</p>
+                <h2 className="st-h2">The letter and the grand finale</h2>
+                <p className="st-lead center">They open in your own version, with your names, photos, song and words.</p>
+                {protect.locked}
+              </div>
+            </div>
+          </section>
+        )}
       </div>
+
+      {protect && <div className="st-wm" aria-hidden="true" style={{ backgroundImage: watermarkTile(protect.watermark) }} />}
 
       {story.skin && <div className="st-skin front" aria-hidden="true"><span className="f1" /><span className="f2" /><span className="f3" /><span className="f4" /></div>}
 

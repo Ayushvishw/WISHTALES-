@@ -19,12 +19,12 @@ export default async function PreviewPage({ params }: { params: Promise<{ key: s
   return (
     <Shell step={2} state={d.state}>
       <div className="stagewrap">
-        <PreviewStage experience={exp} template={d.config.slug} />
+        <PreviewStage experience={exp} template={d.config.slug} paid={paid} />
         <aside className="side">
           <div className="panel">
             <div className="eyebrow">Preview</div>
             <h3>This is exactly what {exp.values.recipient_name} will see</h3>
-            <p className="note" style={{ margin: 0 }}>It runs on the same template and data as the paid version. Only the ribbon is removed after payment.</p>
+            <p className="note" style={{ margin: 0 }}>It runs on the same template and data as the paid version. The ribbon and the watermark are removed after payment.</p>
             {paid ? (
               <Link className="btn accent" href={`/d/${key}/share`}>Go to your link</Link>
             ) : (
