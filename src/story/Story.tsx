@@ -9,6 +9,7 @@ import type { Chapter, Story, Theme } from "@/lib/templates/schema";
 import { Motif, seeded } from "./art";
 import { CHAPTERS } from "./chapters";
 import "./story.css";
+import "./skins.css";
 
 export type StoryContext = {
   values: Record<string, string>;
@@ -166,9 +167,10 @@ export function StoryExperience({ experience, ribbon, onEvent }: Props) {
   });
 
   return (
-    <div className="st" ref={root} style={vars(theme, story)} data-motif={story.motif}>
+    <div className="st" ref={root} style={vars(theme, story)} data-motif={story.motif} data-skin={story.skin}>
       {theme.fonts && <link rel="stylesheet" href={`https://fonts.googleapis.com/css2?${theme.fonts}&display=swap`} precedence="story" />}
       <Ambient story={story} reduce={reduce} />
+      {story.skin && <div className="st-skin back" aria-hidden="true"><span className="big" /><span className="b2" /></div>}
       {ribbon && <div className="st-ribbon">{ribbon}</div>}
 
       <div className="st-scroll" ref={scroller} aria-hidden={phase !== "open"}>
@@ -183,6 +185,8 @@ export function StoryExperience({ experience, ribbon, onEvent }: Props) {
             );
           })}
       </div>
+
+      {story.skin && <div className="st-skin front" aria-hidden="true"><span className="f1" /><span className="f2" /><span className="f3" /><span className="f4" /></div>}
 
       {phase !== "open" && <Opener story={story} ctx={ctx} opening={phase === "opening"} onOpen={open} />}
 

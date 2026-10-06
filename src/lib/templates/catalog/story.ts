@@ -5,9 +5,10 @@ import { fields } from "./fields";
  * Story templates (v2.0.0): one scrolling page of chapters with games,
  * photos, a letter and a finale. Each has its own look, games and copy.
  * Published versions are immutable: add a new version to change one.
+ * 2.1.0 gives each template its own skin (decorations, frames, poster).
  */
 
-const base = { version: "2.0.0", occasion: "birthday", currency: "INR" as const, layout: "story" as const, scenes: [] };
+const base = { version: "2.1.0", occasion: "birthday", currency: "INR" as const, layout: "story" as const, scenes: [] };
 const PHOTOS = { min: 4, max: 8 };
 
 const REASONS = [
@@ -39,6 +40,7 @@ export const STORY_TEMPLATES: TemplateInput[] = [
     photos: PHOTOS,
     music: { default: "mus_warm_keys" },
     story: {
+      skin: "starlit",
       opener: { kind: "gift", eyebrow: "Psst… someone made something for you", hint: "Tap the gift to open", sub: "Turn your sound on for the full surprise" },
       motif: "heart",
       ambient: { orbs: ["#ff5c8a", "#ffc95e", "#a98bff"], particles: "petals", colors: ["#ff8fb1", "#ffc95e", "#c792ff"] },
@@ -78,6 +80,7 @@ export const STORY_TEMPLATES: TemplateInput[] = [
     photos: PHOTOS,
     music: { default: "mus_warm_keys" },
     story: {
+      skin: "royal",
       opener: { kind: "envelope", eyebrow: "An invitation, sealed with love", hint: "Tap the seal to open", sub: "Sound on, please" },
       motif: "petal",
       ambient: { orbs: ["#b3264d", "#e8a598", "#f3cf8e"], particles: "petals", colors: ["#e8a598", "#b3264d", "#f3cf8e"] },
@@ -115,6 +118,7 @@ export const STORY_TEMPLATES: TemplateInput[] = [
     photos: PHOTOS,
     music: { default: "mus_hbd_box" },
     story: {
+      skin: "arcade",
       opener: { kind: "chest", eyebrow: "A loot box has dropped", hint: "Tap to open the loot box", sub: "Sound on for the full game" },
       motif: "pixel",
       ambient: { orbs: ["#ff2e88", "#00e5ff", "#7b2cff"], particles: "stars", colors: ["#00e5ff", "#ff2e88", "#ffe600"] },
@@ -153,6 +157,7 @@ export const STORY_TEMPLATES: TemplateInput[] = [
     photos: PHOTOS,
     music: { default: "mus_warm_keys" },
     story: {
+      skin: "ocean",
       opener: { kind: "chest", eyebrow: "The tide brought something for you", hint: "Tap the treasure chest", sub: "Sound on for the waves" },
       motif: "shell",
       backdrop: "linear-gradient(180deg, #0e2a47 0%, #15406a 60%, #3d4f7a 100%)",
@@ -180,8 +185,8 @@ export const STORY_TEMPLATES: TemplateInput[] = [
     traits: ["For Mom", "Light and gentle", "Scratch-card note", "Memory match"],
     priceMinor: 24900,
     theme: {
-      bg: "#fff8f1", fg: "#3e3a36", muted: "#6f655e", line: "#eadfd3", card: "#fdeee3",
-      accent: "#c2547a", accent2: "#6f9473", accent3: "#c9822a", onAccent: "#ffffff", paper: "#ffffff", paperInk: "#3e3a36",
+      bg: "#e8f2e1", fg: "#22402b", muted: "#4f6b55", line: "#c9dcc0", card: "#f7fbf3",
+      accent: "#d9577a", accent2: "#4f9a5b", accent3: "#e3a224", onAccent: "#ffffff", paper: "#fffdf7", paperInk: "#22402b",
       display: "'Cormorant Garamond', Georgia, serif", hand: "'Dancing Script', cursive", body: "'Karla', system-ui, sans-serif", letter: "'Lora', Georgia, serif",
       fx: ["#f4a7b9", "#a8d5ba", "#c8b6e2", "#ffd6a5", "#c2547a"],
       fonts: "family=Cormorant+Garamond:wght@500;700&family=Dancing+Script:wght@500;700&family=Karla:wght@400;500;700&family=Lora:ital@0;1",
@@ -190,9 +195,10 @@ export const STORY_TEMPLATES: TemplateInput[] = [
     photos: PHOTOS,
     music: { default: "mus_warm_keys" },
     story: {
+      skin: "garden",
       opener: { kind: "envelope", eyebrow: "A little something from the garden", hint: "Tap the envelope", sub: "Sound on, if you can" },
       motif: "butterfly",
-      ambient: { orbs: ["#f4a7b9", "#a8d5ba", "#c8b6e2"], particles: "petals", colors: ["#f4a7b9", "#c8b6e2", "#a8d5ba"] },
+      ambient: { orbs: ["#9fd39a", "#f6a9bd", "#f5d77a"], particles: "petals", colors: ["#f6a9bd", "#ffffff", "#f5d77a"] },
       chapters: [
         { type: "hero", kicker: "Happy Birthday", lead: "Everything good in me started growing in your garden.", floaters: "balloons", nameStyle: "script",
           wishes: ["A wish for you: rest, and plenty of it.", "May your chai always be the perfect temperature.", "Wish found: a day where we do everything you like.", "May every flower you plant bloom twice.", "Wish found: a long call, no rushing.", "To a year as warm as your hugs."] },
@@ -227,6 +233,7 @@ export const STORY_TEMPLATES: TemplateInput[] = [
     photos: PHOTOS,
     music: { default: "mus_warm_keys" },
     story: {
+      skin: "galaxy",
       opener: { kind: "gift", eyebrow: "A parcel arrived from deep space", hint: "Tap to open the parcel", sub: "Sound on for the full voyage" },
       motif: "star",
       ambient: { orbs: ["#7b5cff", "#4cc9f0", "#f72585"], particles: "stars", colors: ["#ffffff", "#4cc9f0", "#ffd166"] },
@@ -264,6 +271,7 @@ export const STORY_TEMPLATES: TemplateInput[] = [
     photos: PHOTOS,
     music: { default: "mus_hbd_box" },
     story: {
+      skin: "desi",
       opener: { kind: "gift", eyebrow: "Arre! Someone sent you something", hint: "Tap to open your gift", sub: "Volume up, it's a celebration" },
       motif: "marigold",
       ambient: { orbs: ["#e0218a", "#ff9f1c", "#ffd166"], particles: "petals", colors: ["#ff9f1c", "#ffd166", "#e0218a"] },
@@ -292,8 +300,8 @@ export const STORY_TEMPLATES: TemplateInput[] = [
     traits: ["For kids", "Candy catch game", "Memory match", "Treat wheel"],
     priceMinor: 19900,
     theme: {
-      bg: "#fff0f7", fg: "#3b2340", muted: "#6e4f72", line: "#f6d6e8", card: "#ffe2f0",
-      accent: "#d42a7e", accent2: "#1fa784", accent3: "#e38b00", onAccent: "#ffffff", paper: "#ffffff", paperInk: "#3b2340",
+      bg: "#ffc2e2", fg: "#43124a", muted: "#6d3a72", line: "#ff9fd0", card: "#ffffff",
+      accent: "#ff1f8f", accent2: "#00a8e8", accent3: "#ff9f00", onAccent: "#ffffff", paper: "#ffffff", paperInk: "#43124a",
       display: "'Fredoka', system-ui, sans-serif", hand: "'Pacifico', cursive", body: "'Nunito', system-ui, sans-serif", letter: "'Nunito', system-ui, sans-serif",
       fx: ["#ff4fa3", "#36c9a0", "#ffb703", "#4dabf7", "#9b5de5"],
       fonts: "family=Fredoka:wght@500;700&family=Pacifico&family=Nunito:wght@400;600;700",
@@ -302,9 +310,10 @@ export const STORY_TEMPLATES: TemplateInput[] = [
     photos: PHOTOS,
     music: { default: "mus_hbd_box" },
     story: {
+      skin: "candy",
       opener: { kind: "gift", eyebrow: "Yay! A present for you", hint: "Tap the present!", sub: "Turn the sound on" },
       motif: "candy",
-      ambient: { orbs: ["#ff9ecd", "#9be7d0", "#ffd88a"], particles: "confetti", colors: ["#ff4fa3", "#36c9a0", "#ffb703", "#4dabf7"] },
+      ambient: { orbs: ["#ff6ec7", "#7ee0ff", "#ffd166"], particles: "confetti", colors: ["#ff1f8f", "#00a8e8", "#ff9f00", "#7ed957"] },
       chapters: [
         { type: "hero", kicker: "Happy Birthday", lead: "It's your special day! Pop all the balloons.", floaters: "balloons", nameStyle: "display", showAge: true,
           wishes: ["Yay! Extra cake for you!", "Wish found: a giant ice cream.", "You are super awesome!", "Wish found: a day at the park.", "Hooray! Presents are coming!", "Wish found: a big hug from {{sender_name}}."] },
@@ -340,6 +349,7 @@ export const STORY_TEMPLATES: TemplateInput[] = [
     photos: PHOTOS,
     music: { default: "mus_warm_keys" },
     story: {
+      skin: "gala",
       opener: { kind: "envelope", eyebrow: "You are cordially invited", hint: "Break the seal", sub: "Sound on for the full evening" },
       motif: "sparkle",
       ambient: { orbs: ["#d4af37", "#7a5c1e", "#f7e7ce"], particles: "sparks", colors: ["#d4af37", "#f7e7ce"] },
@@ -368,8 +378,8 @@ export const STORY_TEMPLATES: TemplateInput[] = [
     traits: ["For a best friend", "Scrapbook photos", "Memory game", "Typewriter letter"],
     priceMinor: 24900,
     theme: {
-      bg: "#efe4d2", fg: "#3b2f2f", muted: "#66574b", line: "#d9c8ae", card: "#f7efe2",
-      accent: "#b23a2c", accent2: "#2f6f73", accent3: "#a8701a", onAccent: "#ffffff", paper: "#fffaf0", paperInk: "#3b2f2f",
+      bg: "#d8bf94", fg: "#33241a", muted: "#5c4634", line: "#bfa37a", card: "#f3e6cc",
+      accent: "#a8402a", accent2: "#2f6f73", accent3: "#8a5a12", onAccent: "#ffffff", paper: "#fbf5e6", paperInk: "#33241a",
       display: "'Libre Baskerville', Georgia, serif", hand: "'Homemade Apple', cursive", body: "'Work Sans', system-ui, sans-serif", letter: "'Special Elite', 'Courier New', monospace",
       fx: ["#c0392b", "#2f6f73", "#e1a730", "#8e6c8a", "#3b2f2f"],
       fonts: "family=Libre+Baskerville:wght@400;700&family=Homemade+Apple&family=Work+Sans:wght@400;500;600&family=Special+Elite",
@@ -378,9 +388,10 @@ export const STORY_TEMPLATES: TemplateInput[] = [
     photos: PHOTOS,
     music: { default: "mus_warm_keys" },
     story: {
+      skin: "scrapbook",
       opener: { kind: "envelope", eyebrow: "Something came in the post", hint: "Tap to open the envelope", sub: "Sound on" },
       motif: "star",
-      ambient: { orbs: ["#e1a730", "#c0392b", "#2f6f73"], particles: "confetti", colors: ["#c0392b", "#2f6f73", "#e1a730"] },
+      ambient: { orbs: ["#c9a46a", "#e8d3a8", "#b98a5a"], particles: "none", colors: ["#a8402a", "#2f6f73", "#d9a441"] },
       chapters: [
         { type: "hero", kicker: "Happy Birthday", lead: "A scrapbook of us, made by hand, just for you.", floaters: "balloons", nameStyle: "script",
           wishes: ["Wish found: another year of terrible jokes.", "Gold star for surviving me another year.", "Wish found: a trip we actually take.", "May your playlists always slap.", "Wish found: snacks, on {{sender_name}}.", "To more 2 a.m. conversations."] },

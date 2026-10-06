@@ -4,6 +4,7 @@ import { inr } from "@/components/Shell";
 import type { TemplateConfig } from "@/lib/templates/schema";
 import { Motif } from "@/story/art";
 import { Tilt } from "./fx";
+import { hasPoster, Poster } from "./Poster";
 
 const OPENER: Record<string, string> = { gift: "Opens with a gift box", envelope: "Opens with a sealed letter", chest: "Opens with a treasure chest" };
 
@@ -12,12 +13,13 @@ export function TemplateCard({ t, children, priority = false }: { t: TemplateCon
   const th = t.theme;
   const story = t.story;
   const motifs = Array.from({ length: 7 }, (_, i) => i);
+  const skin = hasPoster(story?.skin) ? story!.skin! : undefined;
   return (
     <Tilt className="tc" style={{ "--ta": th.accent, "--tb": th.accent2 } as React.CSSProperties}>
       {th.fonts && <link rel="stylesheet" href={`https://fonts.googleapis.com/css2?${th.fonts}&display=swap`} precedence={priority ? "high" : "thumbs"} />}
-      <Link href={`/sample/${t.slug}`} className="tc-art" style={{ background: story?.backdrop ?? th.bg, color: th.fg }} aria-label={`Watch the ${t.name} sample`}>
-        <span className="tc-glow" aria-hidden="true" />
-        {story && (
+      <Link href={`/sample/${t.slug}`} className="tc-art" style={{ background: story?.backdrop ?? th.bg, color: th.fg }} aria-label={`Watch the ${t.name} sample`} data-skin={skin}>
+        {skin ? <Poster skin={skin} /> : <span className="tc-glow" aria-hidden="true" />}
+        {story && !skin && (
           <span className="tc-motifs" aria-hidden="true">
             {motifs.map((i) => (
               <Motif key={i} kind={story.motif} fill={[th.accent, th.accent2, th.accent3 ?? th.accent][i % 3]} size={14 + ((i * 7) % 16)} className={`m m${i}`} />

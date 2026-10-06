@@ -90,7 +90,11 @@ export const chapterSchema = z.discriminatedUnion("type", [
 ]);
 export type Chapter = z.infer<typeof chapterSchema>;
 
+/** A whole visual style for a story template: decorations, frames, dividers and the shop poster. */
+export const SKINS = ["starlit", "royal", "arcade", "ocean", "garden", "galaxy", "desi", "candy", "gala", "scrapbook"] as const;
+
 export const storySchema = z.object({
+  skin: z.enum(SKINS).optional(),
   opener: z.object({ kind: z.enum(["gift", "envelope", "chest"]), eyebrow: z.string(), hint: z.string(), sub: z.string() }),
   motif,
   ambient: z.object({
