@@ -6,7 +6,7 @@ import type { Scene, Theme } from "@/lib/templates/schema";
 import { isPlaying, playAudio, stopAudio } from "./audio";
 import { burst, useReducedMotion } from "./hooks";
 import { SCENES } from "./scenes";
-import { StoryExperience } from "@/story/Story";
+import { StoryExperience, type Protect } from "@/story/Story";
 import "./experience.css";
 
 export type SceneContext = {
@@ -58,6 +58,8 @@ type Props = {
   experience: PublicExperience;
   /** Label shown in the corner, e.g. "Preview" for the creator. Never set on the recipient's page. */
   ribbon?: string;
+  /** Watermark and held-back chapters for samples and unpaid previews. */
+  protect?: Protect;
   onEvent?(name: "experience_completed"): void;
 };
 
