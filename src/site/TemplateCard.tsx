@@ -24,7 +24,7 @@ export function TemplateCard({ t, children, priority = false }: { t: TemplateCon
         {skin ? <Poster skin={skin} /> : <span className="tc-glow" aria-hidden="true" />}
         {skin && (
           <span className="tc-objs" aria-hidden="true">
-            {skinObjects(skin).slice(0, 2).map((o, i) => <Obj key={o} name={o} size={i ? 66 : 84} className={`o${i}`} />)}
+            <Obj name={skinObjects(skin)[0]} size={72} className="o0" />
           </span>
         )}
         {story && !skin && (

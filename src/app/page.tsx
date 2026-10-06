@@ -58,9 +58,6 @@ export default async function Home() {
       <Spotlight className="hero2">
         <div className="aurora" aria-hidden="true"><i /><i /><i /><i /></div>
         <div className="stars" aria-hidden="true" />
-        <div className="floaties" aria-hidden="true">
-          {(["balloon", "wrapped_gift", "love_letter", "sparkles", "birthday_cake", "ring"] as const).map((o, i) => <Obj key={o} name={o} size={[86, 74, 70, 56, 92, 64][i]} className={`fy f${i + 1}`} />)}
-        </div>
         <div className="hero2-in">
           <div className="hero2-copy">
             <Reveal><span className="pill-glow"><i />{liveOcc.length > 1 ? `${liveOcc.map((o) => o.name).join(", ").replace(/, ([^,]*)$/, " and $1")} are live` : "Birthday collection is live"} · {everything.length} templates</span></Reveal>
@@ -104,7 +101,7 @@ export default async function Home() {
             {[0, 1].map((k) => (
               <span key={k}>
                 {(row ? ["Proposals", "Weddings", "Mother's Day", "Father's Day", "Friendship", "Anniversaries"] : ["Birthdays", "First dates", "Long distance", "Best friends", "Surprises", "Big milestones"]).map((w) => (
-                  <b key={w}>{w}<Obj name="sparkles" size={30} className="marq-ic" /></b>
+                  <b key={w}>{w}<i className="marq-dot" /></b>
                 ))}
               </span>
             ))}

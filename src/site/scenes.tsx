@@ -12,23 +12,24 @@ export const OCCASION_LOOK: Record<string, { a: string; b: string; line: string;
   "fathers-day": { a: "#5aa9e6", b: "#7fc8a9", line: "For the man who never says it first.", blurb: "Coming soon" },
 };
 
-/** Each occasion's 3D still life: one hero object in front, two companions behind. */
-const SCENE_OBJECTS: Record<string, [ObjName, ObjName, ObjName, ObjName]> = {
-  birthday: ["birthday_cake", "balloon", "wrapped_gift", "party_popper"],
-  anniversary: ["two_hearts", "clinking_glasses", "rose", "sparkles"],
-  proposal: ["ring", "rose", "heart_with_ribbon", "sparkles"],
-  friendship: ["teddy_bear", "camera", "four_leaf_clover", "party_popper"],
-  wedding: ["wedding", "bouquet", "ring", "sparkles"],
-  "mothers-day": ["bouquet", "teacup_without_handle", "sparkling_heart", "tulip"],
-  "fathers-day": ["trophy", "hot_beverage", "crown", "sparkles"],
+/** Each occasion's single hero object, shown alone on a soft glow. */
+const SCENE_OBJECT: Record<string, ObjName> = {
+  birthday: "birthday_cake",
+  anniversary: "two_hearts",
+  proposal: "ring",
+  friendship: "teddy_bear",
+  wedding: "bouquet",
+  "mothers-day": "tulip",
+  "fathers-day": "trophy",
 };
 
 export function Scene({ slug }: { slug: string }) {
-  const objs = SCENE_OBJECTS[slug];
-  if (!objs) return null;
+  const obj = SCENE_OBJECT[slug];
+  if (!obj) return null;
   return (
     <div className={`scene scene3d scene-${slug}`} aria-hidden="true">
-      {objs.map((o, i) => <Obj key={o + i} name={o} size={i === 0 ? 200 : i === 3 ? 70 : 120} className={`s3 s3-${i}`} />)}
+      <i className="s3-glow" />
+      <Obj name={obj} size={220} className="s3 s3-hero" />
     </div>
   );
 }
