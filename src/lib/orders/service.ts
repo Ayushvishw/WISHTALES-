@@ -368,6 +368,36 @@ export async function getPublicExperience(token: string): Promise<{ status: "act
 }
 
 /** Same shape for the creator's preview, so preview and paid experience render identically. */
+/** The view-only preview link for this draft, made on first request. Only before payment. */
+export async function sharePreview(draftKey: string): Promise<string> {
+  return db.transaction(async (tx) => {
+    const o = await requireDraft(tx, draftKey);
+    if (PAID_OR_LATER.includes(o.state)) throw new UserError("This order is already paid, so share your real link instead.", 409);
+    if (o.state === "DRAFT") throw new UserError("Finish the details and photos before sharing the preview.", 422);
+    if (o.previewToken) return o.previewToken;
+    const token = randomToken(22);
+    await tx.update(orders).set({ previewToken: token, updatedAt: new Date() }).where(eq(orders.id, o.id));
+    return token;
+  });
+}
+
+/**
+ * What someone sees on a shared preview link. Only while the draft is complete and
+ * unpaid: after payment the real link takes over, and an incomplete draft shows nothing.
+ */
+export async function getSharedPreview(token: string): Promise<{ status: "active"; experience: PublicExperience } | { status: "editing" | "sent" | "not_found" }> {
+  const [row] = await db
+    .select({ order: orders, config: templateVersions.config, values: personalizations.values })
+    .from(orders)
+    .innerJoin(templateVersions, eq(templateVersions.id, orders.templateVersionId))
+    .innerJoin(personalizations, eq(personalizations.orderId, orders.id))
+    .where(eq(orders.previewToken, token));
+  if (!row) return { status: "not_found" };
+  if (PAID_OR_LATER.includes(row.order.state)) return { status: "sent" };
+  if (!["PREVIEW_READY", "CHECKOUT_STARTED", "PAYMENT_PENDING"].includes(row.order.state)) return { status: "editing" };
+  return { status: "active", experience: await buildExperience(row.order, row.config, row.values) };
+}
+
 export async function getPreviewExperience(draftKey: string): Promise<PublicExperience | null> {
   const [row] = await db
     .select({ order: orders, config: templateVersions.config, values: personalizations.values })

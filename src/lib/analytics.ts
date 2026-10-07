@@ -6,6 +6,8 @@ export const ANALYTICS_EVENTS = [
   "form_started",
   "song_uploaded",
   "preview_generated",
+  "preview_shared",
+  "shared_preview_opened",
   "checkout_started",
   "payment_success",
   "payment_failure",

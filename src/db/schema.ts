@@ -74,6 +74,8 @@ export const orders = pgTable(
     musicId: text("music_id").references(() => musicTracks.id),
     contactEmail: text("contact_email"),
     contactPhone: text("contact_phone"),
+    /** Secret, view-only link to the watermarked preview, for showing family before paying. Never allows edits. */
+    previewToken: text("preview_token").unique(),
     paidAt: timestamp("paid_at", { withTimezone: true }),
     activatedAt: timestamp("activated_at", { withTimezone: true }),
     createdAt: createdAt(),

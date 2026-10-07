@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { PreviewStage } from "@/components/PreviewStage";
+import { SharePreviewPanel } from "@/components/SharePreviewPanel";
 import { Shell } from "@/components/Shell";
 import { getDraft, getPreviewExperience } from "@/lib/orders/service";
 
@@ -34,6 +35,7 @@ export default async function PreviewPage({ params }: { params: Promise<{ key: s
               </>
             )}
           </div>
+          {!paid && <SharePreviewPanel draftKey={key} recipient={exp.values.recipient_name} template={d.config.slug} />}
         </aside>
       </div>
     </Shell>

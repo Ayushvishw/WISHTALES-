@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { db, schema } from "@/db";
 import { seed } from "@/db/seed";
 import {
-  addPhoto, addSong, applyWebhook, getPreviewExperience, removeSong, createDraft, getDraft, getPublicExperience, removePhoto, reorderPhotos, startCheckout, updateDraft, UserError,
+  addPhoto, addSong, applyWebhook, getPreviewExperience, getSharedPreview, sharePreview, removeSong, createDraft, getDraft, getPublicExperience, removePhoto, reorderPhotos, startCheckout, updateDraft, UserError,
 } from "@/lib/orders/service";
 import type { WebhookEvent } from "@/lib/payments/provider";
 
@@ -68,6 +68,28 @@ describe("draft lifecycle", () => {
     for (const p of d.photos.slice(0, 2)) await removePhoto(key, p.id);
     expect(await amount()).toBe(39900);
     expect((await startCheckout(key)).amountMinor).toBe(39900);
+  });
+
+  it("shares a view-only preview only while the draft is complete and unpaid", async () => {
+    const draft = await createDraft("bday-starlit-love");
+    await expect(sharePreview(draft)).rejects.toThrow(/Finish/);
+    const key = await readyDraft();
+    const token = await sharePreview(key);
+    expect(await sharePreview(key)).toBe(token); // same link every time
+    const r = await getSharedPreview(token);
+    expect(r.status).toBe("active");
+    if (r.status === "active") expect(r.experience.values.recipient_name).toBe("Riya");
+    // Removing photos below the minimum hides it while editing.
+    const d = (await getDraft(key))!;
+    for (const p of d.photos.slice(0, 5)) await removePhoto(key, p.id);
+    expect((await getSharedPreview(token)).status).toBe("editing");
+    await addPhoto(key, await jpeg(9), "image/jpeg");
+    // After payment the real link takes over.
+    const s = await startCheckout(key);
+    await applyWebhook("mock", captured(s.providerOrderId, s.amountMinor), {});
+    expect((await getSharedPreview(token)).status).toBe("sent");
+    await expect(sharePreview(key)).rejects.toThrow(/already paid/);
+    expect((await getSharedPreview("nope")).status).toBe("not_found");
   });
 
   it("rejects non-images, and re-encodes photos without metadata", async () => {
