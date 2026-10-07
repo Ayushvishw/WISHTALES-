@@ -2,6 +2,7 @@ import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { CUSTOM_MUSIC_ID, SONG_RULES, sniffAudio, songTitle } from "@/lib/audio-files";
 import { processPhoto } from "@/lib/images";
+import { priceFor } from "@/lib/pricing";
 import { paymentProvider } from "@/lib/payments";
 import type { WebhookEvent } from "@/lib/payments/provider";
 import { resolveValues, sanitizeValues, validatePhotoCount, validateValues, type FieldErrors, type Values } from "@/lib/personalization";
@@ -10,7 +11,7 @@ import type { TemplateConfig } from "@/lib/templates/schema";
 import { orderReference, randomToken } from "@/lib/tokens";
 import { assertTransition, EDITABLE, PAID_OR_LATER, type OrderState } from "./state";
 
-const { orders, personalizations, media, templateVersions, templates, occasions, payments, paymentEvents, publicLinks, auditLog, musicTracks } = schema;
+const { orders, personalizations, media, templateVersions, templates, occasions, payments, paymentEvents, publicLinks, auditLog, musicTracks, rsvps } = schema;
 
 export class UserError extends Error {
   constructor(message: string, public status = 400, public fieldErrors?: FieldErrors) {
@@ -64,7 +65,7 @@ export async function createDraft(templateSlug: string) {
   await db.transaction(async (tx) => {
     const [o] = await tx
       .insert(orders)
-      .values({ reference: orderReference(), draftKey, templateVersionId: v.id, amountMinor: v.priceMinor, currency: v.currency, musicId: v.config.music.default })
+      .values({ reference: orderReference(), draftKey, templateVersionId: v.id, amountMinor: priceFor(v.config, 0), currency: v.currency, musicId: v.config.music.default })
       .returning();
     await tx.insert(personalizations).values({ orderId: o.id, values: {} });
   });
@@ -119,6 +120,9 @@ async function refreshReadiness(tx: Tx, o: Order) {
   const [p] = await tx.select({ values: personalizations.values }).from(personalizations).where(eq(personalizations.orderId, o.id));
   const [{ count }] = await tx.select({ count: sql<number>`count(*)::int` }).from(media).where(and(eq(media.orderId, o.id), eq(media.kind, "photo")));
   const ready = !Object.keys(validateValues(cfgRow.config, p.values)).length && !validatePhotoCount(cfgRow.config, count);
+  // The price follows the photo tier, so adding or removing photos updates the total.
+  const amountMinor = priceFor(cfgRow.config, count);
+  if (amountMinor !== o.amountMinor) [o] = await tx.update(orders).set({ amountMinor, updatedAt: new Date() }).where(eq(orders.id, o.id)).returning();
   return setState(tx, o, ready ? "PREVIEW_READY" : "DRAFT");
 }
 
@@ -315,6 +319,10 @@ export async function applyWebhook(provider: string, event: WebhookEvent, payloa
       return "processed";
     }
     await tx.update(payments).set({ status: "captured", providerPaymentId: event.providerPaymentId, updatedAt: new Date() }).where(eq(payments.id, pay.id));
+    if (pay.amountMinor !== o.amountMinor) {
+      // Photos were added or removed after this checkout opened. Publish what was paid for, and flag it for support.
+      await tx.insert(auditLog).values({ actor: "system", action: "payment.price_changed", target: o.reference, details: { paid: pay.amountMinor, current: o.amountMinor } });
+    }
     if (PAID_OR_LATER.includes(o.state)) {
       // A second successful payment for an already-paid order: keep one experience, flag for refund.
       await tx.insert(auditLog).values({ actor: "system", action: "payment.duplicate_capture", target: o.reference, details: { providerPaymentId: event.providerPaymentId } });
@@ -337,11 +345,15 @@ export async function applyWebhook(provider: string, event: WebhookEvent, payloa
 
 /* ---------------- public experience ---------------- */
 
+export type Wish = { name: string; message: string };
+
 export type PublicExperience = {
   config: TemplateConfig;
   values: Values;
   photos: string[];
   music: { source: string } | null;
+  /** Invitations only: where guests reply (null in previews and samples) and the wishes they left. */
+  guestbook?: { token: string | null; wishes: Wish[] };
 };
 
 /** Only what the recipient's page needs. No ids, prices, contact details or order data. */
@@ -356,6 +368,88 @@ export async function getPublicExperience(token: string): Promise<{ status: "act
   if (!row) return { status: "not_found" };
   if (row.link.status === "expired" || row.order.state === "EXPIRED" || (row.link.expiresAt && row.link.expiresAt < new Date())) return { status: "expired" };
   if (row.link.status !== "active" || row.order.state !== "ACTIVE") return { status: "unavailable" };
+  const experience = await buildExperience(row.order, row.config, row.values);
+  if (takesRsvps(row.config)) experience.guestbook = { token, wishes: await wishesFor(row.order.id) };
+  return { status: "active", experience };
+}
+
+/* ---------------- invitations: guest replies ---------------- */
+
+export const takesRsvps = (t: TemplateConfig) => !!t.story?.chapters.some((c) => c.type === "rsvp" || c.type === "wishes");
+
+/** Guests' first names only, newest first, never the hidden ones. */
+async function wishesFor(orderId: string): Promise<Wish[]> {
+  const rows = await db
+    .select({ name: rsvps.name, message: rsvps.message })
+    .from(rsvps)
+    .where(and(eq(rsvps.orderId, orderId), eq(rsvps.hidden, false), sql`${rsvps.message} is not null`))
+    .orderBy(desc(rsvps.createdAt))
+    .limit(60);
+  return rows.map((r) => ({ name: r.name.split(/\s+/)[0], message: r.message! }));
+}
+
+const MAX_REPLIES = 2000;
+
+/** A guest replies on the invitation's public link. */
+export async function addRsvp(token: string, input: { name?: unknown; attending?: unknown; guests?: unknown; message?: unknown }) {
+  const r = await getPublicExperience(token);
+  if (r.status !== "active" || !takesRsvps(r.experience.config)) throw new UserError("This invitation isn't taking replies.", 404);
+  const name = String(input.name ?? "").replace(/[\u0000-\u001F\u007F]/g, "").trim().slice(0, 40);
+  const attending = String(input.attending ?? "");
+  const guests = Math.round(Number(input.guests ?? 1));
+  const message = String(input.message ?? "").replace(/[\u0000-\u0009\u000B-\u001F\u007F]/g, "").trim().slice(0, 280);
+  if (!name) throw new UserError("Add your name.");
+  if (attending !== "yes" && attending !== "no" && attending !== "maybe") throw new UserError("Choose whether you can come.");
+  if (!Number.isFinite(guests) || guests < 1 || guests > 10) throw new UserError("Guests must be from 1 to 10.");
+  const [link] = await db.select({ orderId: publicLinks.orderId }).from(publicLinks).where(eq(publicLinks.token, token));
+  const [{ count }] = await db.select({ count: sql<number>`count(*)::int` }).from(rsvps).where(eq(rsvps.orderId, link.orderId));
+  if (count >= MAX_REPLIES) throw new UserError("This invitation has reached its reply limit.", 409);
+  await db.insert(rsvps).values({ orderId: link.orderId, name, attending, guests: attending === "no" ? 0 : guests, message: message || null });
+  return { wish: message ? { name: name.split(/\s+/)[0], message } : null };
+}
+
+/** The host's view of every reply, on their order page. */
+export async function listRsvps(draftKey: string) {
+  const [o] = await db.select({ id: orders.id }).from(orders).where(eq(orders.draftKey, draftKey));
+  if (!o) throw new UserError("We couldn't find that order.", 404);
+  return db.select().from(rsvps).where(eq(rsvps.orderId, o.id)).orderBy(desc(rsvps.createdAt));
+}
+
+/** The host hides (or shows again) a wish on the public wishes wall. */
+export async function setRsvpHidden(draftKey: string, id: string, hidden: boolean) {
+  const [o] = await db.select({ id: orders.id }).from(orders).where(eq(orders.draftKey, draftKey));
+  if (!o) throw new UserError("We couldn't find that order.", 404);
+  const [row] = await db.update(rsvps).set({ hidden }).where(and(eq(rsvps.id, id), eq(rsvps.orderId, o.id))).returning();
+  if (!row) throw new UserError("That reply isn't part of this order.", 404);
+}
+
+/** The view-only preview link for this draft, made on first request. Only before payment. */
+export async function sharePreview(draftKey: string): Promise<string> {
+  return db.transaction(async (tx) => {
+    const o = await requireDraft(tx, draftKey);
+    if (PAID_OR_LATER.includes(o.state)) throw new UserError("This order is already paid, so share your real link instead.", 409);
+    if (o.state === "DRAFT") throw new UserError("Finish the details and photos before sharing the preview.", 422);
+    if (o.previewToken) return o.previewToken;
+    const token = randomToken(22);
+    await tx.update(orders).set({ previewToken: token, updatedAt: new Date() }).where(eq(orders.id, o.id));
+    return token;
+  });
+}
+
+/**
+ * What someone sees on a shared preview link. Only while the draft is complete and
+ * unpaid: after payment the real link takes over, and an incomplete draft shows nothing.
+ */
+export async function getSharedPreview(token: string): Promise<{ status: "active"; experience: PublicExperience } | { status: "editing" | "sent" | "not_found" }> {
+  const [row] = await db
+    .select({ order: orders, config: templateVersions.config, values: personalizations.values })
+    .from(orders)
+    .innerJoin(templateVersions, eq(templateVersions.id, orders.templateVersionId))
+    .innerJoin(personalizations, eq(personalizations.orderId, orders.id))
+    .where(eq(orders.previewToken, token));
+  if (!row) return { status: "not_found" };
+  if (PAID_OR_LATER.includes(row.order.state)) return { status: "sent" };
+  if (!["PREVIEW_READY", "CHECKOUT_STARTED", "PAYMENT_PENDING"].includes(row.order.state)) return { status: "editing" };
   return { status: "active", experience: await buildExperience(row.order, row.config, row.values) };
 }
 
@@ -381,7 +475,10 @@ async function buildExperience(o: Order, config: TemplateConfig, values: Values)
       if (song) music = { source: mediaUrl(song.key) };
     } else if (m && m.source !== "none") music = { source: m.source.startsWith("builtin:") ? m.source : mediaUrl(m.source) };
   }
-  return { config, values: resolveValues(config, values), photos: photos.map((p) => mediaUrl(p.key)), music };
+  const experience: PublicExperience = { config, values: resolveValues(config, values), photos: photos.map((p) => mediaUrl(p.key)), music };
+  // Previews show the reply form and wall without collecting anything; the paid link swaps in its token.
+  if (takesRsvps(config)) experience.guestbook = { token: null, wishes: [] };
+  return experience;
 }
 
 export const mediaUrl = (key: string) => `/api/media/${key}`;

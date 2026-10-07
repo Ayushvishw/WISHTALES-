@@ -42,7 +42,7 @@ export default async function Home() {
         name: config.name,
         experience: {
           config,
-          values: resolveValues(config, { ...sampleFor(config.occasion), event_date: today }),
+          values: resolveValues(config, sampleFor(config.occasion, config.slug)),
           photos: SAMPLE_PHOTOS.slice(0, Math.max(config.photos.min, Math.min(config.photos.max, 8))),
           music: source ? { source } : null,
         },

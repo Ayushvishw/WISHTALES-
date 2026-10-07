@@ -20,6 +20,19 @@ const F: Record<string, FieldInput> = {
   quiz: { key: "quiz", label: "Quiz questions (one per line)", type: "textarea", max: 700, help: "Write Question | right answer | wrong answer | wrong answer. Up to 5 lines. Leave it empty to use ours." },
   promises: { key: "promises", label: "Your promises (one per line)", type: "textarea", max: 600, help: "Up to 6 short promises. Leave it empty and we'll use sweet ones." },
   big_question: { key: "big_question", label: "The big question", type: "text", max: 60, default: "Will you marry me?", help: "Asked near the end. They can only say yes." },
+  // Invitations
+  couple_one: { key: "couple_one", label: "First name (bride or partner)", type: "text", required: true, max: 30 },
+  couple_two: { key: "couple_two", label: "Second name (groom or partner)", type: "text", required: true, max: 30 },
+  invitation_from: { key: "sender_name", label: "Invitation from", type: "text", required: true, max: 60, placeholder: "The Kapoor and Mehta families", help: "Shown at the end and on the calendar entry." },
+  guests: { key: "recipient_name", label: "Who you're inviting", type: "text", max: 40, default: "our family and friends" },
+  families: { key: "families", label: "Family names (optional)", type: "textarea", max: 200, placeholder: "Daughter of Mr & Mrs Kapoor\nSon of Mr & Mrs Mehta", help: "One line each. Shown on the invitation card." },
+  event_day: { key: "event_date", label: "Date", type: "date", required: true },
+  event_time: { key: "event_time", label: "Time", type: "text", max: 40, placeholder: "7 pm onwards" },
+  venue_name: { key: "venue_name", label: "Venue", type: "text", required: true, max: 80, placeholder: "The Leela Palace" },
+  venue_address: { key: "venue_address", label: "Venue address", type: "text", max: 160, placeholder: "Lake Pichola, Udaipur, Rajasthan" },
+  map_link: { key: "map_link", label: "Google Maps link (optional)", type: "text", max: 400, placeholder: "https://maps.app.goo.gl/…", help: "Paste the share link from Google Maps. Without it, we search the address." },
+  events: { key: "events", label: "Your functions (one per line)", type: "textarea", required: true, max: 900, placeholder: "Haldi | Friday, 10 am | Poolside lawns\nSangeet | Friday, 7 pm | Durbar Hall\nWedding | Saturday, 7 pm | Durbar Hall", help: "Write Function | Day and time | Place | Google Maps link (optional). Up to 8 lines." },
+  note: { key: "letter", label: "A note to your guests", type: "textarea", required: true, max: 900, help: "A few warm lines. It opens like a real letter." },
   closing_line: { key: "closing_line", label: "The very last line they read", type: "text", max: 90, help: "People remember the ending most. Keep it short." },
 };
 

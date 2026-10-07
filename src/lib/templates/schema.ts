@@ -101,6 +101,21 @@ export const chapterSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("quiz"), ...copy, items: z.array(z.string()).min(2).max(6), field: z.string().optional(), win: z.string(), lose: z.string() }),
   /** Promise cards sealed one by one with a wax stamp. */
   z.object({ type: z.literal("promises"), ...copy, items: z.array(z.string()).min(3).max(7), field: z.string().optional(), done: z.string() }),
+  /**
+   * Invitations: the card itself, opening the story like a hero. Shows the names, the occasion,
+   * and the date, time and venue from the event_date, event_time and venue_name fields.
+   */
+  z.object({ type: z.literal("invite"), eyebrow: z.string(), intro: z.string(), names: z.string(), line: z.string(), families: z.string().optional() }),
+  /** Live countdown to a date field. */
+  z.object({ type: z.literal("countdown"), ...copy, field: z.string(), done: z.string() }),
+  /** The schedule: "Event | When | Where | Map link" per line, each with directions. */
+  z.object({ type: z.literal("events"), ...copy, field: z.string() }),
+  /** Venue, address, directions and "add to calendar" from the venue_name, venue_address, map_link and event fields. */
+  z.object({ type: z.literal("venue"), ...copy }),
+  /** Guests reply: coming or not, how many, and a wish for the hosts. Replies reach the host's order page. */
+  z.object({ type: z.literal("rsvp"), ...copy, thanks: z.string() }),
+  /** A wall of the wishes guests left with their replies. */
+  z.object({ type: z.literal("wishes"), ...copy, empty: z.string() }),
 ]);
 export type Chapter = z.infer<typeof chapterSchema>;
 
@@ -153,6 +168,12 @@ export const templateConfigSchema = z
     theme: themeSchema,
     fields: z.array(fieldSchema).min(1),
     photos: z.object({ min: z.number().int().min(0), max: z.number().int().positive() }),
+    /**
+     * Price steps by number of photos, e.g. 2 photos included, 4 photos +₹50.
+     * The customer pays the smallest step that fits their photos. Without
+     * tiers the price is the same for any number of photos.
+     */
+    photoTiers: z.array(z.object({ photos: z.number().int().positive(), addMinor: z.number().int().min(0) })).min(1).max(10).optional(),
     music: z.object({ default: z.string() }),
     /** Classic step-by-step scenes, or one scrolling page of chapters ("story"). */
     layout: z.enum(["scenes", "story"]).default("scenes"),
@@ -173,7 +194,7 @@ export const templateConfigSchema = z
       if (!t.story) ctx.addIssue({ code: "custom", message: "A story template needs a story" });
       for (const c of t.story?.chapters ?? []) {
         if (c.type === "slide" && c.photo >= t.photos.min) ctx.addIssue({ code: "custom", message: "The slide puzzle uses a photo slot beyond the required minimum" });
-        if (c.type === "memory" && c.pairs > t.photos.min) ctx.addIssue({ code: "custom", message: "The memory game needs more pairs than the required photos" });
+        if (c.type === "memory" && c.pairs > t.photos.max) ctx.addIssue({ code: "custom", message: "The memory game needs more pairs than the template takes photos" });
         for (const k of ["field" in c ? c.field : undefined].filter(Boolean) as string[]) {
           if (!keys.has(k)) ctx.addIssue({ code: "custom", message: `Chapter ${c.type} reads unknown field ${k}` });
         }
@@ -188,6 +209,16 @@ export const templateConfigSchema = z
       }
     }
     if (t.photos.min > t.photos.max) ctx.addIssue({ code: "custom", message: "photos.min is greater than photos.max" });
+    if (t.photoTiers) {
+      const tiers = t.photoTiers;
+      if (tiers[0].photos !== t.photos.min) ctx.addIssue({ code: "custom", message: "The first photo tier must be the minimum number of photos" });
+      if (tiers[tiers.length - 1].photos !== t.photos.max) ctx.addIssue({ code: "custom", message: "The last photo tier must be the maximum number of photos" });
+      if (tiers[0].addMinor !== 0) ctx.addIssue({ code: "custom", message: "The first photo tier is included in the price, so it adds nothing" });
+      for (let i = 1; i < tiers.length; i++) {
+        if (tiers[i].photos <= tiers[i - 1].photos) ctx.addIssue({ code: "custom", message: "Photo tiers must go up in number of photos" });
+        if (tiers[i].addMinor < tiers[i - 1].addMinor) ctx.addIssue({ code: "custom", message: "A photo tier can't cost less than a smaller one" });
+      }
+    }
   });
 export type TemplateConfig = z.infer<typeof templateConfigSchema>;
 export type TemplateInput = z.input<typeof templateConfigSchema>;

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, type PointerEvent as RPointerEven
 import type { Chapter } from "@/lib/templates/schema";
 import { Floater, isRomantic, Motif, seeded } from "./art";
 import { Obj, skinObjects } from "./obj";
+import { INVITE_CHAPTERS } from "./invite";
 import { LoveLock, LOVE_CHAPTERS, RingBox } from "./love";
 import type { StoryContext } from "./Story";
 
@@ -781,4 +782,5 @@ export const CHAPTERS = {
   letter: Letter,
   finale: Finale,
   ...LOVE_CHAPTERS,
+  ...INVITE_CHAPTERS,
 } as const;

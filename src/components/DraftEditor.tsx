@@ -1,11 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Experience } from "@/experience/Experience";
+import { inr } from "@/components/Shell";
 import { playAudio, stopAudio } from "@/experience/audio";
 import { track } from "@/lib/analytics";
 import { CUSTOM_MUSIC_ID, SONG_RULES } from "@/lib/audio-files";
-import { validatePhotoCount, validateValues, type FieldErrors, type Values } from "@/lib/personalization";
+import { resolveValues, validatePhotoCount, validateValues, type FieldErrors, type Values } from "@/lib/personalization";
+import { MEMORY_MIN_PHOTOS, photoTiers, priceFor, tierFor } from "@/lib/pricing";
 import type { TemplateConfig, TemplateField } from "@/lib/templates/schema";
 import { sampleFor } from "@/lib/sample";
 
@@ -40,6 +43,19 @@ export function DraftEditor(props: { draftKey: string; config: TemplateConfig; v
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const pending = useRef<Values | null>(null);
   const base = `/api/drafts/${draftKey}`;
+  const tiers = photoTiers(config);
+  const tiered = tiers.length > 1;
+  // The tier the customer picked. It grows on its own if they add more photos than it holds.
+  const [picked, setPicked] = useState(() => tierFor(config, props.photos.length).photos);
+  const plan = tierFor(config, Math.max(picked, photos.length));
+  const limit = tiered ? plan.photos : config.photos.max;
+  const total = priceFor(config, Math.max(photos.length, config.photos.min));
+
+  // The live preview: the real template with the customer's words and photos, sample words filling any gaps.
+  const live = useMemo(() => {
+    const own = Object.fromEntries(Object.entries(values).filter(([, v]) => v.trim()));
+    return { config, values: resolveValues(config, { ...sampleFor(config.occasion, config.slug), ...own }), photos: photos.map((p) => p.url), music: null };
+  }, [config, values, photos]);
 
   useEffect(() => {
     if (!Object.keys(props.values).length) track("form_started", config.slug);
@@ -85,6 +101,8 @@ export function DraftEditor(props: { draftKey: string; config: TemplateConfig; v
         const p = await api<Photo>(`${base}/photos`, { method: "POST", body: fd });
         setPhotos((ps) => [...ps, p]);
         count++;
+        const grown = tierFor(config, count).photos;
+        setPicked((t) => Math.max(t, grown));
       } catch (e) {
         msgs.push(`${f.name}: ${(e as Error).message} You can choose it again to retry.`);
       } finally {
@@ -95,7 +113,7 @@ export function DraftEditor(props: { draftKey: string; config: TemplateConfig; v
   };
 
   const useSamplePhotos = async () => {
-    const need = config.photos.max - photos.length;
+    const need = limit - photos.length;
     const files = await Promise.all(
       Array.from({ length: need }, async (_, i) => {
         const blob = await (await fetch(`/samples/${((photos.length + i) % 8) + 1}.webp`)).blob();
@@ -208,7 +226,15 @@ export function DraftEditor(props: { draftKey: string; config: TemplateConfig; v
     );
   };
 
-  const slots = Math.max(config.photos.max, photos.length);
+  const slots = Math.max(limit, photos.length);
+  const pick = (n: number) => {
+    if (n < photos.length) { setPhotoMsg(`You have ${photos.length} photos. Remove ${photos.length - n} to pick ${n}.`); return; }
+    setPhotoMsg("");
+    setPicked(n);
+  };
+  const hasMemory = config.story?.chapters.some((c) => c.type === "memory");
+  const adds = (n: number, k: number) =>
+    k === 0 ? "Included" : hasMemory && n >= MEMORY_MIN_PHOTOS && tiers[k - 1].photos < MEMORY_MIN_PHOTOS ? "+ memory game" : k === tiers.length - 1 ? "Full story" : "Bigger gallery";
   return (
     <div className="cols">
       <form className="form" onSubmit={(e) => { e.preventDefault(); void preview(); }} noValidate>
@@ -216,28 +242,41 @@ export function DraftEditor(props: { draftKey: string; config: TemplateConfig; v
           <legend>Names and words</legend>
           <div className="f2">{config.fields.map(field)}</div>
           <div className="row">
-            <button type="button" className="btn ghost small" onClick={() => change({ ...sampleFor(config.occasion), event_date: new Date().toISOString().slice(0, 10) })}>Fill with sample details</button>
+            <button type="button" className="btn ghost small" onClick={() => change(sampleFor(config.occasion, config.slug))}>Fill with sample details</button>
             <span className="saving" role="status">{{ idle: "", saving: "Saving…", saved: "Saved", error: "Couldn't save. We'll retry when you continue." }[saving]}</span>
           </div>
         </fieldset>
 
         <fieldset>
           <legend>Photos</legend>
+          {tiered && (
+            <div className="tiers" role="radiogroup" aria-label="How many photos">
+              {tiers.map((t, k) => (
+                <button type="button" role="radio" aria-checked={plan.photos === t.photos} key={t.photos} className={`tier${plan.photos === t.photos ? " on" : ""}`} onClick={() => pick(t.photos)}>
+                  {k === Math.min(2, tiers.length - 1) && k > 0 && <span className="tier-tag">Most chosen</span>}
+                  <b>{t.photos} photos</b>
+                  <span className="tier-price">{inr(config.priceMinor + t.addMinor)}</span>
+                  <small>{adds(t.photos, k)}</small>
+                </button>
+              ))}
+            </div>
+          )}
+          <a className="live-jump" href="#live-preview">See your photos in the live preview ↓</a>
           <div className="drop">
             <div>
-              <b>Add {config.photos.min} to {config.photos.max} photos</b>
-              <div className="note">JPG, PNG or WebP, up to 10 MB each. They appear in this order.</div>
+              <b>{tiered ? `Add up to ${limit} photos` : `Add ${config.photos.min} to ${config.photos.max} photos`}</b>
+              <div className="note">{tiered ? `At least ${config.photos.min}. Watch them appear in the live preview.` : "JPG, PNG or WebP, up to 10 MB each."} They appear in this order.</div>
             </div>
             <div className="row">
               <label className="btn small" htmlFor="file">Choose photos</label>
               <input id="file" type="file" accept="image/jpeg,image/png,image/webp" multiple hidden onChange={(e) => { void upload([...(e.target.files ?? [])]); e.target.value = ""; }} />
-              {photos.length < config.photos.max && <button type="button" className="btn ghost small" onClick={useSamplePhotos}>Use sample photos</button>}
+              {photos.length < limit && <button type="button" className="btn ghost small" onClick={useSamplePhotos}>Use sample photos</button>}
             </div>
           </div>
           <div className="photos">
             {Array.from({ length: slots }, (_, k) => {
               const p = photos[k];
-              if (!p) return <div key={`e${k}`} className={k < photos.length + uploading ? "ph busy" : "ph empty"}>{k < photos.length + uploading ? "Uploading…" : k < config.photos.min ? "Needed" : "Optional"}</div>;
+              if (!p) return <div key={`e${k}`} className={k < photos.length + uploading ? "ph busy" : "ph empty"}>{k < photos.length + uploading ? "Uploading…" : k < config.photos.min ? "Needed" : tiered ? "Included" : "Optional"}</div>;
               return (
                 <div className="ph" key={p.id}>
                   <img src={p.thumbUrl} alt={`Photo ${k + 1}`} />
@@ -292,11 +331,19 @@ export function DraftEditor(props: { draftKey: string; config: TemplateConfig; v
         </div>
       </form>
 
-      <aside className="side">
+      <aside className="side editor-side">
         <div className="panel">
           <div className="eyebrow">Your template</div>
           <h3>{config.name}</h3>
-          <p className="note" style={{ margin: 0 }}>{config.description}</p>
+          <dl className="kv">
+            <dt>Template</dt><dd>{inr(config.priceMinor)}</dd>
+            {tiered && <><dt>{tierFor(config, Math.max(photos.length, config.photos.min)).photos} photos</dt><dd>{total > config.priceMinor ? `+${inr(total - config.priceMinor)}` : "Included"}</dd></>}
+            <dt>Total</dt><dd><b>{inr(total)}</b></dd>
+          </dl>
+          {tiered && <p className="note" style={{ margin: 0 }}>You pay for the photos you add, so the total follows your photos.</p>}
+          {tiered && photos.length > 0 && photos.length < tierFor(config, photos.length).photos && (
+            <p className="note" style={{ margin: 0 }}>Your price covers {tierFor(config, photos.length).photos} photos. You can add {tierFor(config, photos.length).photos - photos.length} more at no extra cost.</p>
+          )}
         </div>
         <div className="panel">
           <h3>Writing that moves people</h3>
@@ -306,6 +353,15 @@ export function DraftEditor(props: { draftKey: string; config: TemplateConfig; v
             <li><b>Save one surprise.</b> Put it where they have to uncover it.</li>
             <li><b>End short.</b> The last line is what they remember.</li>
           </ul>
+        </div>
+        <div className="panel live-panel" id="live-preview">
+          <div className="eyebrow">Live preview</div>
+          <div className="phone livephone">
+            <div className="screen">
+              <Experience experience={live} ribbon="Live preview" protect={{ watermark: "PREVIEW · WISHTALES" }} />
+            </div>
+          </div>
+          <p className="note" style={{ margin: 0 }}>Tap to open it. Your words and photos appear as you add them; sample words fill any gaps.</p>
         </div>
       </aside>
     </div>

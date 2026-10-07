@@ -1,3 +1,4 @@
+import { DEFAULT_PHOTO_TIERS } from "@/lib/pricing";
 import type { TemplateInput } from "../schema";
 import { fields } from "./fields";
 
@@ -9,10 +10,11 @@ import { fields } from "./fields";
  * and a ring box. "swipe" templates show one chapter per screen.
  */
 
-const common = { version: "1.0.0", currency: "INR" as const, layout: "story" as const, scenes: [] };
+const common = { version: "1.2.0", currency: "INR" as const, layout: "story" as const, scenes: [] };
 const anni = { ...common, occasion: "anniversary" };
 const prop = { ...common, occasion: "proposal" };
-const PHOTOS = { min: 4, max: 8 };
+const PHOTOS = { min: 2, max: 8 };
+const photoTiers = DEFAULT_PHOTO_TIERS;
 
 const REASONS = [
   "The way you look at me when you think I'm not looking.",
@@ -77,6 +79,7 @@ export const LOVE_TEMPLATES: TemplateInput[] = [
     },
     fields: fields("recipient_name", "sender_name", { key: "since_date", required: true }, "letter", "milestones", "reasons"),
     photos: PHOTOS,
+    photoTiers,
     music: { default: "mus_canon" },
     story: {
       skin: "timeless",
@@ -115,6 +118,7 @@ export const LOVE_TEMPLATES: TemplateInput[] = [
     },
     fields: fields("recipient_name", "sender_name", "letter", "quiz", { key: "secret_line", label: "A secret for the scratch card", help: "A plan, a promise, or something you have never said." }, "milestones"),
     photos: PHOTOS,
+    photoTiers,
     music: { default: "mus_warm_keys" },
     story: {
       skin: "diary",
@@ -153,6 +157,7 @@ export const LOVE_TEMPLATES: TemplateInput[] = [
     },
     fields: fields("recipient_name", "sender_name", "since_date", "letter"),
     photos: PHOTOS,
+    photoTiers,
     music: { default: "mus_canon" },
     story: {
       skin: "moonlit",
@@ -192,6 +197,7 @@ export const LOVE_TEMPLATES: TemplateInput[] = [
     },
     fields: fields("recipient_name", "sender_name", "letter", "milestones", "reasons", { key: "treats", label: "Date nights on the wheel (one per line)", help: "Up to 8 short ideas, like \"Rooftop dinner\". Leave it empty to use ours." }),
     photos: PHOTOS,
+    photoTiers,
     music: { default: "mus_warm_keys" },
     story: {
       skin: "cafe",
@@ -236,6 +242,7 @@ export const LOVE_TEMPLATES: TemplateInput[] = [
       { key: "promises", label: "Promises they made each other (one per line)" },
     ),
     photos: PHOTOS,
+    photoTiers,
     music: { default: "mus_canon" },
     story: {
       skin: "golden",
@@ -280,6 +287,7 @@ export const LOVE_TEMPLATES: TemplateInput[] = [
     },
     fields: fields("recipient_name", "sender_name", "big_question", "milestones", "reasons", "promises", "letter"),
     photos: PHOTOS,
+    photoTiers,
     music: { default: "mus_canon" },
     story: {
       skin: "velvet",
@@ -318,6 +326,7 @@ export const LOVE_TEMPLATES: TemplateInput[] = [
     },
     fields: fields("recipient_name", "sender_name", "big_question", "since_date", "quiz", "letter"),
     photos: PHOTOS,
+    photoTiers,
     music: { default: "mus_canon" },
     story: {
       skin: "nebula",
@@ -357,6 +366,7 @@ export const LOVE_TEMPLATES: TemplateInput[] = [
     },
     fields: fields("recipient_name", "sender_name", "big_question", "reasons", { key: "secret_line", label: "A secret for the scratch card", default: "I've been planning this for weeks. Swipe once more." }, "letter"),
     photos: PHOTOS,
+    photoTiers,
     music: { default: "mus_canon" },
     story: {
       skin: "blush",
@@ -395,6 +405,7 @@ export const LOVE_TEMPLATES: TemplateInput[] = [
     },
     fields: fields("recipient_name", "sender_name", { key: "big_question", default: "Will you be mine?" }, "quiz", { key: "treats", label: "Dates on the wheel (one per line)", help: "Up to 8 short ideas, like \"Rooftop dinner\". Leave it empty to use ours." }, "letter"),
     photos: PHOTOS,
+    photoTiers,
     music: { default: "mus_warm_keys" },
     story: {
       skin: "neon",
@@ -434,6 +445,7 @@ export const LOVE_TEMPLATES: TemplateInput[] = [
     },
     fields: fields("recipient_name", "sender_name", "big_question", "milestones", "reasons", "promises", "letter"),
     photos: PHOTOS,
+    photoTiers,
     music: { default: "mus_canon" },
     story: {
       skin: "fairy",

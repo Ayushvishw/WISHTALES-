@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { audit, createSession, endSession, hasAnyAdmin, requireAdmin, verifyPassword, type Permission, type Role } from "@/lib/admin/auth";
 import {
-  changePrice, createAdmin, createVersion, markRefunded, removeAdmin, setLinkStatus, setMusicStatus, setOccasionStatus, setTemplateStatus, setVersionStatus,
+  changePhotoPrices, changePrice, createAdmin, createVersion, markRefunded, removeAdmin, setLinkStatus, setMusicStatus, setOccasionStatus, setTemplateStatus, setVersionStatus,
 } from "@/lib/admin/service";
 import { db, schema } from "@/db";
 import { eq } from "drizzle-orm";
@@ -89,6 +89,11 @@ export async function refund(f: FormData) {
 export async function price(f: FormData) {
   const slug = s(f, "slug");
   await run(`/admin/templates/${slug}`, "templates.manage", async (a) => `New price is live as version ${await changePrice(a, slug, Number(s(f, "rupees")))}.`);
+}
+export async function photoPrices(f: FormData) {
+  const slug = s(f, "slug");
+  const adds = f.getAll("add").map((v) => Number(v));
+  await run(`/admin/templates/${slug}`, "templates.manage", async (a) => `New photo prices are live as version ${await changePhotoPrices(a, slug, adds)}.`);
 }
 export async function newVersion(f: FormData) {
   const slug = s(f, "slug");

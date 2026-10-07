@@ -3,16 +3,18 @@
 import { Component, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { audioLevel, isPlaying, playAudio, stopAudio } from "@/experience/audio";
 import { useReducedMotion } from "@/experience/hooks";
-import type { PublicExperience } from "@/lib/orders/service";
+import type { PublicExperience, Wish } from "@/lib/orders/service";
 import { fillText } from "@/lib/personalization";
 import type { Chapter, Story, Theme } from "@/lib/templates/schema";
 import { isRomantic, Motif, seeded } from "./art";
 import { Obj, type ObjName } from "./obj";
+import { MEMORY_MIN_PHOTOS } from "@/lib/pricing";
 import { CHAPTERS } from "./chapters";
 import "./story.css";
 import "./skins.css";
 import "./love.css";
 import "./love-skins.css";
+import "./invite.css";
 
 export type StoryContext = {
   values: Record<string, string>;
@@ -29,6 +31,8 @@ export type StoryContext = {
   celebrate(): void;
   scrollToNext(from: HTMLElement | null): void;
   finished(): void;
+  /** Invitations: where guest replies go (null in previews) and the wishes wall. */
+  guest?: { token: string | null; wishes: Wish[]; add(w: Wish): void };
 };
 
 function isDark(hex: string) {
@@ -86,7 +90,12 @@ type Piece = { id: number; l: number; w: number; h: number; c: string; d: number
 
 /** One story made of chapters (games, photos, a letter, a finale): a long scrolling page, or swipeable screens. */
 export function StoryExperience({ experience, ribbon, protect, onEvent }: Props) {
-  const { config, values, photos, music } = experience;
+  const { config, values, photos, music, guestbook } = experience;
+  const [wishes, setWishes] = useState<Wish[]>(guestbook?.wishes ?? []);
+  const guest = useMemo(
+    () => (guestbook ? { token: guestbook.token, wishes, add: (w: Wish) => setWishes((ws) => [w, ...ws]) } : undefined),
+    [guestbook, wishes],
+  );
   const story = config.story!;
   const theme = config.theme;
   const reduce = useReducedMotion();
@@ -164,7 +173,7 @@ export function StoryExperience({ experience, ribbon, protect, onEvent }: Props)
 
   const ctx: StoryContext = useMemo(
     () => ({
-      values, photos, theme, story, reduce, swipe, palette,
+      values, photos, theme, story, reduce, swipe, palette, guest,
       fill: (s: string) => fillText(s, values),
       toast,
       celebrate,
@@ -183,7 +192,7 @@ export function StoryExperience({ experience, ribbon, protect, onEvent }: Props)
         onEvent?.("experience_completed");
       },
     }),
-    [values, photos, theme, story, reduce, swipe, palette, toast, celebrate, onEvent],
+    [values, photos, theme, story, reduce, swipe, palette, guest, toast, celebrate, onEvent],
   );
 
   // Swipe stories: keep track of the screen in view for the progress bar and arrows.
@@ -207,9 +216,14 @@ export function StoryExperience({ experience, ribbon, protect, onEvent }: Props)
   };
 
   let n = 1;
-  const shown = protect?.locked ? story.chapters.filter((c) => c.type !== "letter" && c.type !== "finale") : story.chapters;
+  const invitation = story.chapters.some((c) => c.type === "invite");
+  // Fewer photos means fewer photo games: the memory game appears from the 4-photo tier up.
+  const shown = story.chapters
+    .filter((c) => !protect?.locked || (c.type !== "letter" && c.type !== "finale"))
+    .filter((c) => c.type !== "memory" || photos.length >= MEMORY_MIN_PHOTOS);
   const numbered = shown.map((c) => {
-    const num = c.type === "hero" || c.type === "finale" ? null : ++n;
+    // Invitations read as one card, not chapters, so their sections go unnumbered.
+    const num = invitation || c.type === "hero" || c.type === "finale" ? null : ++n;
     return { c, num };
   });
 
@@ -235,7 +249,7 @@ export function StoryExperience({ experience, ribbon, protect, onEvent }: Props)
             return (
               <ChapterBoundary key={k}>
                 <View chapter={c} ctx={ctx} num={num} />
-                {!swipe && (k < numbered.length - 1 || protect?.locked) && c.type !== "hero" && <div className="st-divider" aria-hidden="true" />}
+                {!swipe && (k < numbered.length - 1 || protect?.locked) && c.type !== "hero" && c.type !== "invite" && <div className="st-divider" aria-hidden="true" />}
               </ChapterBoundary>
             );
           })}

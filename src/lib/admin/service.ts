@@ -227,6 +227,19 @@ export async function changePrice(admin: Admin, slug: string, rupees: number) {
   return createVersion(admin, slug, JSON.stringify(next), true);
 }
 
+/** Change what each photo tier adds to the price. Creates and publishes a patch version, like a price change. */
+export async function changePhotoPrices(admin: Admin, slug: string, addRupees: number[]) {
+  const detail = await templateDetail(slug);
+  if (!detail?.versions.length) throw new UserError("Template not found.", 404);
+  const base = detail.versions.find((v) => v.status === "published") ?? detail.versions[0];
+  const tiers = base.config.photoTiers;
+  if (!tiers?.length) throw new UserError("This template has one price for any number of photos.");
+  if (addRupees.length !== tiers.length || addRupees.some((r) => !Number.isFinite(r) || r < 0 || r > 100000)) throw new UserError("Enter an amount from ₹0 to ₹1,00,000 for each step.");
+  const photoTiers = tiers.map((t, i) => ({ photos: t.photos, addMinor: i === 0 ? 0 : Math.round(addRupees[i] * 100) }));
+  const next = { ...base.config, version: bumpPatch(detail.versions[0].version), photoTiers };
+  return createVersion(admin, slug, JSON.stringify(next), true);
+}
+
 /* ---------------- occasions + music ---------------- */
 
 export const listOccasionsAdmin = () => db.select().from(occasions).orderBy(asc(occasions.sort));

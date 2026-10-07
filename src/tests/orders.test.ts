@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { db, schema } from "@/db";
 import { seed } from "@/db/seed";
 import {
-  addPhoto, addSong, applyWebhook, getPreviewExperience, removeSong, createDraft, getDraft, getPublicExperience, removePhoto, reorderPhotos, startCheckout, updateDraft, UserError,
+  addPhoto, addSong, applyWebhook, getPreviewExperience, getSharedPreview, sharePreview, addRsvp, listRsvps, setRsvpHidden, removeSong, createDraft, getDraft, getPublicExperience, removePhoto, reorderPhotos, startCheckout, updateDraft, UserError,
 } from "@/lib/orders/service";
 import type { WebhookEvent } from "@/lib/payments/provider";
 
@@ -40,14 +40,56 @@ describe("draft lifecycle", () => {
   it("stays DRAFT until values and photos are complete", async () => {
     const key = await createDraft("bday-starlit-love");
     expect(await updateDraft(key, { values })).toBe("DRAFT");
-    for (let i = 0; i < 3; i++) await addPhoto(key, await jpeg(i), "image/jpeg");
+    await addPhoto(key, await jpeg(0), "image/jpeg");
     expect((await getDraft(key))!.state).toBe("DRAFT");
-    await addPhoto(key, await jpeg(3), "image/jpeg");
+    await addPhoto(key, await jpeg(1), "image/jpeg");
     expect((await getDraft(key))!.state).toBe("PREVIEW_READY");
     // Removing a photo makes it incomplete again.
     const d = (await getDraft(key))!;
     await removePhoto(key, d.photos[0].id);
     expect((await getDraft(key))!.state).toBe("DRAFT");
+  });
+
+  it("prices the order by photo tier: 2 included, then +₹50 per 2 more", async () => {
+    const key = await createDraft("bday-starlit-love"); // ₹299
+    await updateDraft(key, { values });
+    const amount = async () => (await getDraft(key))!.amountMinor;
+    expect(await amount()).toBe(29900);
+    for (let i = 0; i < 2; i++) await addPhoto(key, await jpeg(i), "image/jpeg");
+    expect(await amount()).toBe(29900);
+    await addPhoto(key, await jpeg(2), "image/jpeg"); // 3 photos fall in the 4-photo tier
+    expect(await amount()).toBe(34900);
+    for (let i = 3; i < 8; i++) await addPhoto(key, await jpeg(i), "image/jpeg");
+    expect(await amount()).toBe(44900);
+    const s = await startCheckout(key);
+    expect(s.amountMinor).toBe(44900);
+    // Back to 6 photos: the total drops, and a new checkout charges the new total.
+    const d = (await getDraft(key))!;
+    for (const p of d.photos.slice(0, 2)) await removePhoto(key, p.id);
+    expect(await amount()).toBe(39900);
+    expect((await startCheckout(key)).amountMinor).toBe(39900);
+  });
+
+  it("shares a view-only preview only while the draft is complete and unpaid", async () => {
+    const draft = await createDraft("bday-starlit-love");
+    await expect(sharePreview(draft)).rejects.toThrow(/Finish/);
+    const key = await readyDraft();
+    const token = await sharePreview(key);
+    expect(await sharePreview(key)).toBe(token); // same link every time
+    const r = await getSharedPreview(token);
+    expect(r.status).toBe("active");
+    if (r.status === "active") expect(r.experience.values.recipient_name).toBe("Riya");
+    // Removing photos below the minimum hides it while editing.
+    const d = (await getDraft(key))!;
+    for (const p of d.photos.slice(0, 5)) await removePhoto(key, p.id);
+    expect((await getSharedPreview(token)).status).toBe("editing");
+    await addPhoto(key, await jpeg(9), "image/jpeg");
+    // After payment the real link takes over.
+    const s = await startCheckout(key);
+    await applyWebhook("mock", captured(s.providerOrderId, s.amountMinor), {});
+    expect((await getSharedPreview(token)).status).toBe("sent");
+    await expect(sharePreview(key)).rejects.toThrow(/already paid/);
+    expect((await getSharedPreview("nope")).status).toBe("not_found");
   });
 
   it("rejects non-images, and re-encodes photos without metadata", async () => {
@@ -174,5 +216,51 @@ describe("payment and link", () => {
     expect(r.experience.config.layout).toBe("story");
     expect(JSON.stringify(r.experience)).not.toContain(key);
     expect(await getPublicExperience("A".repeat(22))).toEqual({ status: "not_found" });
+  });
+});
+
+describe("invitations", () => {
+  const invite = {
+    couple_one: "Riya", couple_two: "Aarav", sender_name: "The Kapoor family", event_date: "2030-02-14", venue_name: "Lake Palace",
+    events: "Wedding | Saturday 7 pm | Lake Palace", letter: "Come celebrate with us",
+  };
+  async function paidInvite() {
+    const key = await createDraft("inv-ivory-vows");
+    await updateDraft(key, { values: invite });
+    for (let i = 0; i < 2; i++) await addPhoto(key, await jpeg(i), "image/jpeg");
+    const s = await startCheckout(key);
+    expect(s.amountMinor).toBe(59900);
+    await applyWebhook("mock", captured(s.providerOrderId, s.amountMinor), {});
+    return { key, token: (await getDraft(key))!.linkToken! };
+  }
+
+  it("collects replies, shows wishes on the wall and lets the host hide them", async () => {
+    const { key, token } = await paidInvite();
+    const r0 = await getPublicExperience(token);
+    expect(r0.status === "active" && r0.experience.guestbook).toEqual({ token, wishes: [] });
+    await addRsvp(token, { name: "Meera Shah", attending: "yes", guests: 3, message: "So happy for you!" });
+    await addRsvp(token, { name: "Kabir", attending: "no", guests: 4 });
+    await expect(addRsvp(token, { name: "", attending: "yes" })).rejects.toThrow(/name/);
+    await expect(addRsvp(token, { name: "X", attending: "sure" })).rejects.toThrow(/come/);
+    await expect(addRsvp(token, { name: "X", attending: "yes", guests: 50 })).rejects.toThrow(/1 to 10/);
+    const list = await listRsvps(key);
+    expect(list.map((r) => [r.name, r.attending, r.guests])).toEqual([["Kabir", "no", 0], ["Meera Shah", "yes", 3]]);
+    let r = await getPublicExperience(token);
+    expect(r.status === "active" && r.experience.guestbook!.wishes).toEqual([{ name: "Meera", message: "So happy for you!" }]);
+    await setRsvpHidden(key, list[1].id, true);
+    r = await getPublicExperience(token);
+    expect(r.status === "active" && r.experience.guestbook!.wishes).toEqual([]);
+    // Another order's key can't touch this reply.
+    await expect(setRsvpHidden(await readyDraft(), list[1].id, false)).rejects.toThrow(/isn't part/);
+  });
+
+  it("doesn't take replies on previews or on wish templates", async () => {
+    const key = await readyDraft(); // a birthday story, not an invitation
+    const s = await startCheckout(key);
+    await applyWebhook("mock", captured(s.providerOrderId, s.amountMinor), {});
+    const token = (await getDraft(key))!.linkToken!;
+    await expect(addRsvp(token, { name: "A", attending: "yes" })).rejects.toThrow(/isn't taking replies/);
+    const draft = await createDraft("inv-party-time");
+    expect((await getPreviewExperience(draft))!.guestbook).toEqual({ token: null, wishes: [] });
   });
 });
