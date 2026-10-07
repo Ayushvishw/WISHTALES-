@@ -3,10 +3,12 @@
 import { useRef, useState } from "react";
 import { track } from "@/lib/analytics";
 
-export function SharePanel({ url, recipient, template }: { url: string; recipient: string; template: string }) {
+export function SharePanel({ url, recipient, template, invitation = false }: { url: string; recipient: string; template: string; invitation?: boolean }) {
   const [note, setNote] = useState("");
   const input = useRef<HTMLInputElement>(null);
-  const text = `${recipient}, I made something for you. Open it when you have a quiet minute: ${url}`;
+  const text = invitation
+    ? `You're invited! Open your invitation and let us know if you can make it: ${url}`
+    : `${recipient}, I made something for you. Open it when you have a quiet minute: ${url}`;
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(url);
@@ -27,7 +29,7 @@ export function SharePanel({ url, recipient, template }: { url: string; recipien
         <a className="btn accent" href={`https://wa.me/?text=${encodeURIComponent(text)}`} target="_blank" rel="noopener noreferrer" onClick={() => track("share_whatsapp", template)}>
           Share on WhatsApp
         </a>
-        <a className="btn ghost" href={url} target="_blank" rel="noopener noreferrer">Open it as {recipient} would</a>
+        <a className="btn ghost" href={url} target="_blank" rel="noopener noreferrer">{invitation ? "Open it as a guest would" : `Open it as ${recipient} would`}</a>
       </div>
       <p className="note" role="status" style={{ margin: 0 }}>{note}</p>
     </>

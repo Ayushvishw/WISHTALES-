@@ -101,6 +101,21 @@ export const chapterSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("quiz"), ...copy, items: z.array(z.string()).min(2).max(6), field: z.string().optional(), win: z.string(), lose: z.string() }),
   /** Promise cards sealed one by one with a wax stamp. */
   z.object({ type: z.literal("promises"), ...copy, items: z.array(z.string()).min(3).max(7), field: z.string().optional(), done: z.string() }),
+  /**
+   * Invitations: the card itself, opening the story like a hero. Shows the names, the occasion,
+   * and the date, time and venue from the event_date, event_time and venue_name fields.
+   */
+  z.object({ type: z.literal("invite"), eyebrow: z.string(), intro: z.string(), names: z.string(), line: z.string(), families: z.string().optional() }),
+  /** Live countdown to a date field. */
+  z.object({ type: z.literal("countdown"), ...copy, field: z.string(), done: z.string() }),
+  /** The schedule: "Event | When | Where | Map link" per line, each with directions. */
+  z.object({ type: z.literal("events"), ...copy, field: z.string() }),
+  /** Venue, address, directions and "add to calendar" from the venue_name, venue_address, map_link and event fields. */
+  z.object({ type: z.literal("venue"), ...copy }),
+  /** Guests reply: coming or not, how many, and a wish for the hosts. Replies reach the host's order page. */
+  z.object({ type: z.literal("rsvp"), ...copy, thanks: z.string() }),
+  /** A wall of the wishes guests left with their replies. */
+  z.object({ type: z.literal("wishes"), ...copy, empty: z.string() }),
 ]);
 export type Chapter = z.infer<typeof chapterSchema>;
 

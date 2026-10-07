@@ -54,7 +54,7 @@ export function DraftEditor(props: { draftKey: string; config: TemplateConfig; v
   // The live preview: the real template with the customer's words and photos, sample words filling any gaps.
   const live = useMemo(() => {
     const own = Object.fromEntries(Object.entries(values).filter(([, v]) => v.trim()));
-    return { config, values: resolveValues(config, { ...sampleFor(config.occasion), ...own }), photos: photos.map((p) => p.url), music: null };
+    return { config, values: resolveValues(config, { ...sampleFor(config.occasion, config.slug), ...own }), photos: photos.map((p) => p.url), music: null };
   }, [config, values, photos]);
 
   useEffect(() => {
@@ -242,7 +242,7 @@ export function DraftEditor(props: { draftKey: string; config: TemplateConfig; v
           <legend>Names and words</legend>
           <div className="f2">{config.fields.map(field)}</div>
           <div className="row">
-            <button type="button" className="btn ghost small" onClick={() => change({ ...sampleFor(config.occasion), event_date: new Date().toISOString().slice(0, 10) })}>Fill with sample details</button>
+            <button type="button" className="btn ghost small" onClick={() => change(sampleFor(config.occasion, config.slug))}>Fill with sample details</button>
             <span className="saving" role="status">{{ idle: "", saving: "Saving…", saved: "Saved", error: "Couldn't save. We'll retry when you continue." }[saving]}</span>
           </div>
         </fieldset>

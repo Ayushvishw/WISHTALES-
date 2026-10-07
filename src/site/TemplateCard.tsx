@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { inr } from "@/components/Shell";
+import { fillText } from "@/lib/personalization";
+import { sampleFor } from "@/lib/sample";
 import type { TemplateConfig } from "@/lib/templates/schema";
 import { Motif } from "@/story/art";
 import { Obj, skinObjects } from "@/story/obj";
@@ -16,7 +18,10 @@ export function TemplateCard({ t, children, priority = false }: { t: TemplateCon
   const motifs = Array.from({ length: 7 }, (_, i) => i);
   const skin = hasPoster(story?.skin) ? story!.skin! : undefined;
   const hero = story?.chapters.find((c) => c.type === "hero");
-  const kicker = hero && hero.type === "hero" ? hero.kicker : "Happy birthday";
+  const card = story?.chapters.find((c) => c.type === "invite");
+  const sample = sampleFor(t.occasion, t.slug);
+  const kicker = card && card.type === "invite" ? fillText(card.eyebrow, sample) : hero && hero.type === "hero" ? hero.kicker : "Happy birthday";
+  const name = card && card.type === "invite" ? fillText(card.names, sample) : "Lisa";
   return (
     <Tilt className="tc" style={{ "--ta": th.accent, "--tb": th.accent2 } as React.CSSProperties}>
       {th.fonts && <link rel="stylesheet" href={`https://fonts.googleapis.com/css2?${th.fonts}&display=swap`} precedence={priority ? "high" : "thumbs"} />}
@@ -35,7 +40,7 @@ export function TemplateCard({ t, children, priority = false }: { t: TemplateCon
           </span>
         )}
         <span className="tc-kicker" style={{ color: th.accent3 ?? th.accent2 }}>{kicker}</span>
-        <span className="tc-name" style={{ fontFamily: th.display }}>Lisa</span>
+        <span className={`tc-name${name.length > 10 ? " long" : ""}`} style={{ fontFamily: card ? th.hand : th.display }}>{name}</span>
         <span className="tc-play"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z" fill="currentColor" /></svg>Watch sample</span>
       </Link>
       <div className="tc-body">

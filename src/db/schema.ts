@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
-  bigserial, index, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid,
+  bigserial, boolean, index, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid,
 } from "drizzle-orm/pg-core";
 import { ORDER_STATES } from "@/lib/orders/state";
 import type { TemplateConfig } from "@/lib/templates/schema";
@@ -109,6 +109,23 @@ export const media = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index("media_order_position").on(t.orderId, t.position)],
+);
+
+/** Guest replies to an invitation. Only the host (through their order page) sees the full list. */
+export const rsvps = pgTable(
+  "rsvps",
+  {
+    id: id(),
+    orderId: uuid("order_id").notNull().references(() => orders.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    attending: text("attending", { enum: ["yes", "no", "maybe"] }).notNull(),
+    guests: integer("guests").notNull().default(1),
+    /** A wish for the hosts. Shown on the invitation's wishes wall unless the host hides it. */
+    message: text("message"),
+    hidden: boolean("hidden").notNull().default(false),
+    createdAt: createdAt(),
+  },
+  (t) => [index("rsvps_order").on(t.orderId, t.createdAt)],
 );
 
 export const payments = pgTable("payments", {

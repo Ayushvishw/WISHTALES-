@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { db, schema } from "@/db";
 import { seed } from "@/db/seed";
 import {
-  addPhoto, addSong, applyWebhook, getPreviewExperience, getSharedPreview, sharePreview, removeSong, createDraft, getDraft, getPublicExperience, removePhoto, reorderPhotos, startCheckout, updateDraft, UserError,
+  addPhoto, addSong, applyWebhook, getPreviewExperience, getSharedPreview, sharePreview, addRsvp, listRsvps, setRsvpHidden, removeSong, createDraft, getDraft, getPublicExperience, removePhoto, reorderPhotos, startCheckout, updateDraft, UserError,
 } from "@/lib/orders/service";
 import type { WebhookEvent } from "@/lib/payments/provider";
 
@@ -216,5 +216,51 @@ describe("payment and link", () => {
     expect(r.experience.config.layout).toBe("story");
     expect(JSON.stringify(r.experience)).not.toContain(key);
     expect(await getPublicExperience("A".repeat(22))).toEqual({ status: "not_found" });
+  });
+});
+
+describe("invitations", () => {
+  const invite = {
+    couple_one: "Riya", couple_two: "Aarav", sender_name: "The Kapoor family", event_date: "2030-02-14", venue_name: "Lake Palace",
+    events: "Wedding | Saturday 7 pm | Lake Palace", letter: "Come celebrate with us",
+  };
+  async function paidInvite() {
+    const key = await createDraft("inv-ivory-vows");
+    await updateDraft(key, { values: invite });
+    for (let i = 0; i < 2; i++) await addPhoto(key, await jpeg(i), "image/jpeg");
+    const s = await startCheckout(key);
+    expect(s.amountMinor).toBe(59900);
+    await applyWebhook("mock", captured(s.providerOrderId, s.amountMinor), {});
+    return { key, token: (await getDraft(key))!.linkToken! };
+  }
+
+  it("collects replies, shows wishes on the wall and lets the host hide them", async () => {
+    const { key, token } = await paidInvite();
+    const r0 = await getPublicExperience(token);
+    expect(r0.status === "active" && r0.experience.guestbook).toEqual({ token, wishes: [] });
+    await addRsvp(token, { name: "Meera Shah", attending: "yes", guests: 3, message: "So happy for you!" });
+    await addRsvp(token, { name: "Kabir", attending: "no", guests: 4 });
+    await expect(addRsvp(token, { name: "", attending: "yes" })).rejects.toThrow(/name/);
+    await expect(addRsvp(token, { name: "X", attending: "sure" })).rejects.toThrow(/come/);
+    await expect(addRsvp(token, { name: "X", attending: "yes", guests: 50 })).rejects.toThrow(/1 to 10/);
+    const list = await listRsvps(key);
+    expect(list.map((r) => [r.name, r.attending, r.guests])).toEqual([["Kabir", "no", 0], ["Meera Shah", "yes", 3]]);
+    let r = await getPublicExperience(token);
+    expect(r.status === "active" && r.experience.guestbook!.wishes).toEqual([{ name: "Meera", message: "So happy for you!" }]);
+    await setRsvpHidden(key, list[1].id, true);
+    r = await getPublicExperience(token);
+    expect(r.status === "active" && r.experience.guestbook!.wishes).toEqual([]);
+    // Another order's key can't touch this reply.
+    await expect(setRsvpHidden(await readyDraft(), list[1].id, false)).rejects.toThrow(/isn't part/);
+  });
+
+  it("doesn't take replies on previews or on wish templates", async () => {
+    const key = await readyDraft(); // a birthday story, not an invitation
+    const s = await startCheckout(key);
+    await applyWebhook("mock", captured(s.providerOrderId, s.amountMinor), {});
+    const token = (await getDraft(key))!.linkToken!;
+    await expect(addRsvp(token, { name: "A", attending: "yes" })).rejects.toThrow(/isn't taking replies/);
+    const draft = await createDraft("inv-party-time");
+    expect((await getPreviewExperience(draft))!.guestbook).toEqual({ token: null, wishes: [] });
   });
 });

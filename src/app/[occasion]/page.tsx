@@ -32,6 +32,14 @@ const FOR: Record<string, string[]> = {
   "prop-love-letters": ["marry", "date"],
   "prop-neon-nights": ["date"],
   "prop-fairy-garden": ["marry"],
+  "inv-shubh-vivah": ["wedding"],
+  "inv-ivory-vows": ["wedding"],
+  "inv-garden-wedding": ["wedding"],
+  "inv-emerald-nights": ["wedding"],
+  "inv-ring-ceremony": ["engagement"],
+  "inv-party-time": ["party"],
+  "inv-new-home": ["home"],
+  "inv-little-one": ["baby"],
 };
 const FILTERS = [
   { key: "partner", label: "For a partner" },
@@ -41,6 +49,11 @@ const FILTERS = [
   { key: "parents", label: "For parents" },
   { key: "marry", label: "Marriage proposal" },
   { key: "date", label: "Ask them out" },
+  { key: "wedding", label: "Wedding" },
+  { key: "engagement", label: "Engagement" },
+  { key: "party", label: "Birthday party" },
+  { key: "home", label: "Housewarming" },
+  { key: "baby", label: "Baby shower" },
   { key: "swipe", label: "Swipe stories" },
   { key: "scroll", label: "Scroll stories" },
 ];
@@ -91,7 +104,7 @@ export default async function OccasionPage({ params }: { params: Promise<{ occas
         <div className="obanner-in">
           <Reveal className="obanner-copy">
             <span className="pill-glow"><i />{list.length} templates · from {inr(Math.min(...list.map((t) => t.priceMinor)))}</span>
-            <h1 className="h-mega sm">{occ.name} <em>surprises</em></h1>
+            <h1 className="h-mega sm">{occ.name} <em>{occ.slug === "invitations" ? "that open like a gift" : "surprises"}</em></h1>
             <p className="lead">{look.line} Watch any sample for free, then make it yours.</p>
           </Reveal>
           <Reveal delay={150} className="obanner-art" style={banner}><Scene slug={occ.slug} /></Reveal>
