@@ -229,6 +229,7 @@ em{font-style:italic}
 .tc-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
 .tc-top h3{font-family:var(--display);font-weight:500;font-size:24px;letter-spacing:-.02em}
 .tc-price{font-weight:800;font-size:17px;color:var(--gold);font-variant-numeric:tabular-nums}
+.tc-price small{font-weight:500;font-size:12px;opacity:.8}
 .tc-body p{margin:0;font-size:14px;color:var(--muted);line-height:1.5}
 .tc-chips{display:flex;flex-wrap:wrap;gap:6px}
 .tc-chips span{font-size:11.5px;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}

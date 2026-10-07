@@ -1,3 +1,4 @@
+import { DEFAULT_PHOTO_TIERS } from "@/lib/pricing";
 import type { TemplateInput } from "../schema";
 import { fields } from "./fields";
 
@@ -8,8 +9,9 @@ import { fields } from "./fields";
  * 2.1.0 gives each template its own skin (decorations, frames, poster).
  */
 
-const base = { version: "2.1.0", occasion: "birthday", currency: "INR" as const, layout: "story" as const, scenes: [] };
-const PHOTOS = { min: 4, max: 8 };
+const base = { version: "2.3.0", occasion: "birthday", currency: "INR" as const, layout: "story" as const, scenes: [] };
+const PHOTOS = { min: 2, max: 8 };
+const photoTiers = DEFAULT_PHOTO_TIERS;
 
 const REASONS = [
   "The way your whole face changes when you laugh.",
@@ -38,6 +40,7 @@ export const STORY_TEMPLATES: TemplateInput[] = [
     },
     fields: fields("recipient_name", "sender_name", "age", "letter", "reasons", "treats"),
     photos: PHOTOS,
+    photoTiers,
     music: { default: "mus_warm_keys" },
     story: {
       skin: "starlit",
@@ -78,6 +81,7 @@ export const STORY_TEMPLATES: TemplateInput[] = [
     },
     fields: fields("recipient_name", "sender_name", "age", "letter", "reasons", { key: "secret_line", label: "A secret for the scratch card", help: "A plan, a promise, or something you have never said." }),
     photos: PHOTOS,
+    photoTiers,
     music: { default: "mus_warm_keys" },
     story: {
       skin: "royal",
@@ -116,6 +120,7 @@ export const STORY_TEMPLATES: TemplateInput[] = [
     },
     fields: fields("recipient_name", "sender_name", "age", { key: "letter", label: "Your message" }, "treats"),
     photos: PHOTOS,
+    photoTiers,
     music: { default: "mus_hbd_box" },
     story: {
       skin: "arcade",
@@ -155,6 +160,7 @@ export const STORY_TEMPLATES: TemplateInput[] = [
     },
     fields: fields("recipient_name", "sender_name", "age", "letter", "reasons"),
     photos: PHOTOS,
+    photoTiers,
     music: { default: "mus_warm_keys" },
     story: {
       skin: "ocean",
@@ -193,6 +199,7 @@ export const STORY_TEMPLATES: TemplateInput[] = [
     },
     fields: fields("recipient_name", "sender_name", "age", "letter", { key: "reasons", label: "Things they taught you (one per line)" }, { key: "secret_line", label: "A note for the scratch card", help: "A thank-you, a plan, or a little surprise." }),
     photos: PHOTOS,
+    photoTiers,
     music: { default: "mus_warm_keys" },
     story: {
       skin: "garden",
@@ -231,6 +238,7 @@ export const STORY_TEMPLATES: TemplateInput[] = [
     },
     fields: fields("recipient_name", "sender_name", "age", { key: "letter", label: "Your message" }, "treats"),
     photos: PHOTOS,
+    photoTiers,
     music: { default: "mus_warm_keys" },
     story: {
       skin: "galaxy",
@@ -269,6 +277,7 @@ export const STORY_TEMPLATES: TemplateInput[] = [
     },
     fields: fields("recipient_name", "sender_name", "age", "letter", "treats", { key: "secret_line", label: "A secret for the scratch card", help: "A plan, a party, or a promise." }),
     photos: PHOTOS,
+    photoTiers,
     music: { default: "mus_hbd_box" },
     story: {
       skin: "desi",
@@ -308,6 +317,7 @@ export const STORY_TEMPLATES: TemplateInput[] = [
     },
     fields: fields("recipient_name", "sender_name", "age", { key: "letter", label: "Your message", max: 700 }, "treats"),
     photos: PHOTOS,
+    photoTiers,
     music: { default: "mus_hbd_box" },
     story: {
       skin: "candy",
@@ -347,6 +357,7 @@ export const STORY_TEMPLATES: TemplateInput[] = [
     },
     fields: fields("recipient_name", "sender_name", "age", "letter", { key: "reasons", label: "What makes them legendary (one per line)" }, "treats", { key: "secret_line", label: "A secret for the scratch card" }),
     photos: PHOTOS,
+    photoTiers,
     music: { default: "mus_warm_keys" },
     story: {
       skin: "gala",
@@ -386,6 +397,7 @@ export const STORY_TEMPLATES: TemplateInput[] = [
     },
     fields: fields("recipient_name", "sender_name", "age", "letter", { key: "reasons", label: "Things only you two understand (one per line)" }, { key: "secret_line", label: "An inside joke for the scratch card" }),
     photos: PHOTOS,
+    photoTiers,
     music: { default: "mus_warm_keys" },
     story: {
       skin: "scrapbook",

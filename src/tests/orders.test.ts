@@ -40,14 +40,34 @@ describe("draft lifecycle", () => {
   it("stays DRAFT until values and photos are complete", async () => {
     const key = await createDraft("bday-starlit-love");
     expect(await updateDraft(key, { values })).toBe("DRAFT");
-    for (let i = 0; i < 3; i++) await addPhoto(key, await jpeg(i), "image/jpeg");
+    await addPhoto(key, await jpeg(0), "image/jpeg");
     expect((await getDraft(key))!.state).toBe("DRAFT");
-    await addPhoto(key, await jpeg(3), "image/jpeg");
+    await addPhoto(key, await jpeg(1), "image/jpeg");
     expect((await getDraft(key))!.state).toBe("PREVIEW_READY");
     // Removing a photo makes it incomplete again.
     const d = (await getDraft(key))!;
     await removePhoto(key, d.photos[0].id);
     expect((await getDraft(key))!.state).toBe("DRAFT");
+  });
+
+  it("prices the order by photo tier: 2 included, then +₹50 per 2 more", async () => {
+    const key = await createDraft("bday-starlit-love"); // ₹299
+    await updateDraft(key, { values });
+    const amount = async () => (await getDraft(key))!.amountMinor;
+    expect(await amount()).toBe(29900);
+    for (let i = 0; i < 2; i++) await addPhoto(key, await jpeg(i), "image/jpeg");
+    expect(await amount()).toBe(29900);
+    await addPhoto(key, await jpeg(2), "image/jpeg"); // 3 photos fall in the 4-photo tier
+    expect(await amount()).toBe(34900);
+    for (let i = 3; i < 8; i++) await addPhoto(key, await jpeg(i), "image/jpeg");
+    expect(await amount()).toBe(44900);
+    const s = await startCheckout(key);
+    expect(s.amountMinor).toBe(44900);
+    // Back to 6 photos: the total drops, and a new checkout charges the new total.
+    const d = (await getDraft(key))!;
+    for (const p of d.photos.slice(0, 2)) await removePhoto(key, p.id);
+    expect(await amount()).toBe(39900);
+    expect((await startCheckout(key)).amountMinor).toBe(39900);
   });
 
   it("rejects non-images, and re-encodes photos without metadata", async () => {

@@ -4,6 +4,7 @@ import { canTransition } from "@/lib/orders/state";
 import { fillText, resolveValues, sanitizeValues, validatePhotoCount, validateValues } from "@/lib/personalization";
 import { CATALOG, RETIRED_TEMPLATES } from "@/lib/templates/catalog";
 import { templateConfigSchema } from "@/lib/templates/schema";
+import { DEFAULT_PHOTO_TIERS, priceFor } from "@/lib/pricing";
 import { isToken, randomToken } from "@/lib/tokens";
 import { hmacHex } from "@/lib/payments/provider";
 import { MockProvider } from "@/lib/payments/mock";
@@ -126,5 +127,23 @@ describe("song files", () => {
     expect(songTitle(".mp3")).toBe("Your song");
     expect(mediaContentType("songs/abc.m4a")).toBe("audio/mp4");
     expect(mediaContentType("photos/abc.webp")).toBe("image/webp");
+  });
+});
+
+describe("photo tier pricing", () => {
+  const t = { priceMinor: 29900, photos: { min: 2, max: 8 }, photoTiers: DEFAULT_PHOTO_TIERS };
+  it("charges the smallest tier that fits", () => {
+    expect([0, 1, 2, 3, 4, 5, 6, 7, 8].map((n) => priceFor(t, n))).toEqual([29900, 29900, 29900, 34900, 34900, 39900, 39900, 44900, 44900]);
+  });
+  it("keeps one flat price for templates without tiers", () => {
+    expect(priceFor({ priceMinor: 19900, photos: { min: 6, max: 8 } }, 8)).toBe(19900);
+  });
+  it("rejects tiers that don't match the photo limits or go down in price", () => {
+    const cfg = CATALOG.find((c) => c.slug === "bday-starlit-love")!;
+    expect(templateConfigSchema.safeParse({ ...cfg, photoTiers: [{ photos: 2, addMinor: 0 }, { photos: 6, addMinor: 100 }] }).success).toBe(false);
+    expect(templateConfigSchema.safeParse({ ...cfg, photoTiers: [{ photos: 2, addMinor: 0 }, { photos: 4, addMinor: 500 }, { photos: 8, addMinor: 100 }] }).success).toBe(false);
+  });
+  it("starts every story template at 2 photos", () => {
+    for (const c of CATALOG.filter((x) => x.layout === "story")) expect([c.photos.min, c.photoTiers?.length]).toEqual([2, 4]);
   });
 });

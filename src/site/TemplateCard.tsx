@@ -41,7 +41,7 @@ export function TemplateCard({ t, children, priority = false }: { t: TemplateCon
       <div className="tc-body">
         <div className="tc-top">
           <h3>{t.name}</h3>
-          <span className="tc-price">{inr(t.priceMinor)}</span>
+          <span className="tc-price">{t.photoTiers && t.photoTiers.length > 1 && <small>from </small>}{inr(t.priceMinor)}</span>
         </div>
         <p>{t.description}</p>
         <div className="tc-chips">

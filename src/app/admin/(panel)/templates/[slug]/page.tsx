@@ -4,7 +4,7 @@ import { inr } from "@/components/Shell";
 import { Banner, Pill, when, type SP } from "@/components/admin";
 import { can, requireAdmin } from "@/lib/admin/auth";
 import { bumpPatch, templateDetail } from "@/lib/admin/service";
-import { newVersion, price, templateStatus, versionStatus } from "../../../actions";
+import { newVersion, photoPrices, price, templateStatus, versionStatus } from "../../../actions";
 
 export default async function TemplatePage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: SP }) {
   const a = await requireAdmin("orders.view");
@@ -44,6 +44,24 @@ export default async function TemplatePage({ params, searchParams }: { params: P
             <button className="btn small">Update price</button>
           </form>
           <small className="note">People who already paid keep their price. Drafts started before the change keep the old price too.</small>
+        </section>
+      )}
+
+      {edit && live?.config.photoTiers && live.config.photoTiers.length > 1 && (
+        <section className="panel">
+          <h2>Photo prices</h2>
+          <p className="note" style={{ margin: 0 }}>The template price includes {live.config.photoTiers[0].photos} photos. Customers pay the smallest step that fits their photos.</p>
+          <form action={photoPrices} className="inline">
+            <input type="hidden" name="slug" value={slug} />
+            {live.config.photoTiers.map((t, i) => (
+              <label key={t.photos} className="note" style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                {t.photos} photos: + ₹
+                {i === 0 ? <><input type="hidden" name="add" value="0" /><input type="number" value={0} disabled style={{ width: 90 }} /></> : <input name="add" type="number" min={0} max={100000} step="1" defaultValue={t.addMinor / 100} required style={{ width: 90 }} />}
+                <small>Total {inr(live.priceMinor + t.addMinor)}</small>
+              </label>
+            ))}
+            <button className="btn small">Update photo prices</button>
+          </form>
         </section>
       )}
 

@@ -2,6 +2,7 @@ import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { CUSTOM_MUSIC_ID, SONG_RULES, sniffAudio, songTitle } from "@/lib/audio-files";
 import { processPhoto } from "@/lib/images";
+import { priceFor } from "@/lib/pricing";
 import { paymentProvider } from "@/lib/payments";
 import type { WebhookEvent } from "@/lib/payments/provider";
 import { resolveValues, sanitizeValues, validatePhotoCount, validateValues, type FieldErrors, type Values } from "@/lib/personalization";
@@ -64,7 +65,7 @@ export async function createDraft(templateSlug: string) {
   await db.transaction(async (tx) => {
     const [o] = await tx
       .insert(orders)
-      .values({ reference: orderReference(), draftKey, templateVersionId: v.id, amountMinor: v.priceMinor, currency: v.currency, musicId: v.config.music.default })
+      .values({ reference: orderReference(), draftKey, templateVersionId: v.id, amountMinor: priceFor(v.config, 0), currency: v.currency, musicId: v.config.music.default })
       .returning();
     await tx.insert(personalizations).values({ orderId: o.id, values: {} });
   });
@@ -119,6 +120,9 @@ async function refreshReadiness(tx: Tx, o: Order) {
   const [p] = await tx.select({ values: personalizations.values }).from(personalizations).where(eq(personalizations.orderId, o.id));
   const [{ count }] = await tx.select({ count: sql<number>`count(*)::int` }).from(media).where(and(eq(media.orderId, o.id), eq(media.kind, "photo")));
   const ready = !Object.keys(validateValues(cfgRow.config, p.values)).length && !validatePhotoCount(cfgRow.config, count);
+  // The price follows the photo tier, so adding or removing photos updates the total.
+  const amountMinor = priceFor(cfgRow.config, count);
+  if (amountMinor !== o.amountMinor) [o] = await tx.update(orders).set({ amountMinor, updatedAt: new Date() }).where(eq(orders.id, o.id)).returning();
   return setState(tx, o, ready ? "PREVIEW_READY" : "DRAFT");
 }
 
@@ -315,6 +319,10 @@ export async function applyWebhook(provider: string, event: WebhookEvent, payloa
       return "processed";
     }
     await tx.update(payments).set({ status: "captured", providerPaymentId: event.providerPaymentId, updatedAt: new Date() }).where(eq(payments.id, pay.id));
+    if (pay.amountMinor !== o.amountMinor) {
+      // Photos were added or removed after this checkout opened. Publish what was paid for, and flag it for support.
+      await tx.insert(auditLog).values({ actor: "system", action: "payment.price_changed", target: o.reference, details: { paid: pay.amountMinor, current: o.amountMinor } });
+    }
     if (PAID_OR_LATER.includes(o.state)) {
       // A second successful payment for an already-paid order: keep one experience, flag for refund.
       await tx.insert(auditLog).values({ actor: "system", action: "payment.duplicate_capture", target: o.reference, details: { providerPaymentId: event.providerPaymentId } });

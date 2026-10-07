@@ -8,6 +8,7 @@ import { fillText } from "@/lib/personalization";
 import type { Chapter, Story, Theme } from "@/lib/templates/schema";
 import { isRomantic, Motif, seeded } from "./art";
 import { Obj, type ObjName } from "./obj";
+import { MEMORY_MIN_PHOTOS } from "@/lib/pricing";
 import { CHAPTERS } from "./chapters";
 import "./story.css";
 import "./skins.css";
@@ -207,7 +208,10 @@ export function StoryExperience({ experience, ribbon, protect, onEvent }: Props)
   };
 
   let n = 1;
-  const shown = protect?.locked ? story.chapters.filter((c) => c.type !== "letter" && c.type !== "finale") : story.chapters;
+  // Fewer photos means fewer photo games: the memory game appears from the 4-photo tier up.
+  const shown = story.chapters
+    .filter((c) => !protect?.locked || (c.type !== "letter" && c.type !== "finale"))
+    .filter((c) => c.type !== "memory" || photos.length >= MEMORY_MIN_PHOTOS);
   const numbered = shown.map((c) => {
     const num = c.type === "hero" || c.type === "finale" ? null : ++n;
     return { c, num };
