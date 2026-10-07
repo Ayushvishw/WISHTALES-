@@ -51,6 +51,10 @@ export type Scene = z.infer<typeof sceneSchema>;
 
 export const MOTIFS = ["heart", "star", "petal", "bubble", "pixel", "marigold", "candy", "sparkle", "butterfly", "shell", "note", "ring", "rose", "moon", "key"] as const;
 const motif = z.enum(MOTIFS);
+/** Painted artwork shipped with the site, in public/art. Commercial use is allowed for all of it. */
+export const BLESSING_ART = ["ganesha"] as const;
+export const SCENE_ART = ["entrance", "varmala", "phere"] as const;
+
 const copy = { eyebrow: z.string(), title: z.string(), lead: z.string().optional() };
 
 export const chapterSchema = z.discriminatedUnion("type", [
@@ -116,6 +120,12 @@ export const chapterSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("rsvp"), ...copy, thanks: z.string() }),
   /** A wall of the wishes guests left with their replies. */
   z.object({ type: z.literal("wishes"), ...copy, empty: z.string() }),
+  /** A painted blessing that opens the story full screen, e.g. Lord Ganesha with a mantra and a verse. */
+  z.object({ type: z.literal("blessing"), art: z.enum(BLESSING_ART), mantra: z.string(), verse: z.string().optional(), line: z.string() }),
+  /** A painted moment of the day (the couple's entry, varmala, pheras) played like a film scene. */
+  z.object({ type: z.literal("scene"), art: z.enum(SCENE_ART), eyebrow: z.string(), title: z.string(), line: z.string().optional() }),
+  /** The customer's photos as a film: each one fills the screen, drifts slowly and fades into the next. */
+  z.object({ type: z.literal("film"), ...copy, captions: z.array(z.string()).max(8).optional() }),
 ]);
 export type Chapter = z.infer<typeof chapterSchema>;
 

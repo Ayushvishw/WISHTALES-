@@ -249,7 +249,7 @@ export function StoryExperience({ experience, ribbon, protect, onEvent }: Props)
             return (
               <ChapterBoundary key={k}>
                 <View chapter={c} ctx={ctx} num={num} />
-                {!swipe && (k < numbered.length - 1 || protect?.locked) && c.type !== "hero" && c.type !== "invite" && <div className="st-divider" aria-hidden="true" />}
+                {!swipe && (k < numbered.length - 1 || protect?.locked) && !["hero", "invite", "blessing", "scene"].includes(c.type) && !["blessing", "scene"].includes(numbered[k + 1]?.c.type ?? "") && <div className="st-divider" aria-hidden="true" />}
               </ChapterBoundary>
             );
           })}
