@@ -1,0 +1,94 @@
+/* Wedding film chapters: painted scenes that fill the screen, and the couple's photos as a film. */
+
+/* ── full-screen painted scene ── */
+.st-scroll>.wf-sec,.st-scroll.swipe>.wf-sec{position:relative;min-height:100%;height:auto;padding:0;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;isolation:isolate;background:#000;color:#fff8ec}
+.st-scroll.swipe>.wf-sec{height:100%}
+.wf-art{position:absolute;inset:0;z-index:-3;overflow:hidden}
+.wf-art img{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.14);transform-origin:50% 60%;transition:transform 16s cubic-bezier(.2,.6,.3,1),filter 2.4s ease;filter:brightness(.55) saturate(.9)}
+.wf-sec.on .wf-art img{transform:scale(1.02);filter:brightness(1) saturate(1.05)}
+.wf-entrance .wf-art img{transform:scale(1);transform-origin:50% 45%}
+.wf-entrance.on .wf-art img{transform:scale(1.16)}
+.wf-varmala .wf-art img{transform:scale(1.12) translateX(3%)}
+.wf-varmala.on .wf-art img{transform:scale(1.04) translateX(-2%)}
+.wf-art .wf-haze{display:none}
+@container (min-width:700px){
+  .wf-art .wf-haze{display:block;position:absolute;inset:-6%;width:112%;height:112%;object-fit:cover;filter:blur(36px) brightness(.45) saturate(1.2)!important;transform:none!important}
+  .wf-art .wf-main{position:relative;object-fit:contain}
+}
+.wf-shade{position:absolute;inset:0;z-index:-2;background:linear-gradient(180deg,rgba(10,2,2,.72) 0%,rgba(10,2,2,.18) 26%,rgba(10,2,2,0) 50%,rgba(10,2,2,.25) 66%,rgba(10,2,2,.86) 100%)}
+
+/* letterbox bars slide in like a film */
+.wf-bar{position:absolute;left:0;right:0;height:7%;background:#000;z-index:2;transition:transform 1.4s cubic-bezier(.7,0,.2,1)}
+.wf-bar.top{top:0;transform:translateY(-100%)}
+.wf-bar.bottom{bottom:0;transform:translateY(100%)}
+.on .wf-bar{transform:none}
+
+/* text */
+.wf-top{padding:max(48px,9%) 24px 0;text-align:center}
+.wf-bottom{padding:0 26px max(44px,8%);text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}
+.wf-mantra{margin:0;font-family:'Tiro Devanagari Hindi',var(--display);font-size:clamp(24px,7cqi,40px);line-height:1.3;letter-spacing:.04em;color:transparent;background:linear-gradient(100deg,#ffd77a 0%,#fff3c4 22%,#ffb300 45%,#fff3c4 62%,#ffd77a 100%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;text-shadow:0 0 30px rgba(255,190,80,.25);opacity:0;transform:translateY(-12px);transition:opacity 1.6s ease .5s,transform 1.6s ease .5s}
+.on .wf-mantra{opacity:1;transform:none;animation:wfShine 6s linear 2s infinite}
+@keyframes wfShine{to{background-position:-250% 0}}
+.wf-verse{margin:0;max-width:30ch;font:italic 500 clamp(16px,4.4cqi,21px)/1.5 var(--letter);color:#ffe7b8;opacity:0;transform:translateY(12px);transition:opacity 1.4s ease 1.6s,transform 1.4s ease 1.6s;text-shadow:0 2px 12px rgba(0,0,0,.6)}
+.wf-line{margin:0;max-width:34ch;font:500 clamp(14px,3.8cqi,17px)/1.55 var(--body);letter-spacing:.03em;color:#fff3e0;opacity:0;transform:translateY(12px);transition:opacity 1.4s ease 2.3s,transform 1.4s ease 2.3s;text-shadow:0 2px 12px rgba(0,0,0,.7)}
+.on .wf-verse,.on .wf-line{opacity:.95;transform:none}
+.wf-more{margin-top:14px;width:22px;height:22px;border-right:2px solid #ffd77a;border-bottom:2px solid #ffd77a;transform:rotate(45deg);opacity:0;transition:opacity 1s ease 3.4s}
+.on .wf-more{opacity:.8;animation:wfNudge 2s ease-in-out 3.4s infinite}
+@keyframes wfNudge{50%{translate:0 6px}}
+
+.st-scroll>.wf-scene{justify-content:flex-end}
+.wf-caption{position:relative;z-index:3;padding:0 26px calc(7% + 34px);text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}
+.wf-eyebrow{margin:0;font:600 12px/1.4 var(--body);letter-spacing:.34em;text-transform:uppercase;color:#ffd77a;opacity:0;transition:opacity 1.2s ease 1.2s}
+.wf-title{margin:0;font-family:var(--script);font-weight:400;font-size:clamp(40px,12cqi,68px);line-height:1.05;color:#fff8ec;text-shadow:0 4px 24px rgba(0,0,0,.6);opacity:0;transform:translateY(16px) scale(.98);transition:opacity 1.6s ease 1.6s,transform 1.6s ease 1.6s;overflow-wrap:anywhere}
+.on .wf-eyebrow{opacity:1}
+.on .wf-title{opacity:1;transform:none}
+.wf-scene .wf-line{transition-delay:2.4s}
+
+/* diyas glow on the blessing */
+.wf-diyas{position:absolute;inset:auto 0 0;height:38%;z-index:-1;pointer-events:none;mix-blend-mode:screen}
+.wf-diyas i{position:absolute;bottom:14%;width:34%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(255,170,60,.42),rgba(255,120,30,0) 65%);animation:wfFlicker 2.6s ease-in-out infinite}
+.wf-diyas i:nth-child(1){left:-8%;animation-delay:-.4s}
+.wf-diyas i:nth-child(2){left:20%;bottom:4%;animation-delay:-1.3s}
+.wf-diyas i:nth-child(3){right:20%;bottom:4%;animation-delay:-.8s}
+.wf-diyas i:nth-child(4){right:-8%;animation-delay:-2s}
+@keyframes wfFlicker{0%,100%{opacity:.75;transform:scale(1)}30%{opacity:1;transform:scale(1.06)}55%{opacity:.6;transform:scale(.97)}80%{opacity:.95}}
+
+/* firelight on the pheras */
+.wf-fire{position:absolute;left:10%;right:10%;bottom:4%;height:42%;z-index:-1;pointer-events:none;mix-blend-mode:screen;background:radial-gradient(ellipse 50% 45% at 50% 70%,rgba(255,150,40,.5),rgba(255,90,20,0) 70%);animation:wfFlicker 1.7s ease-in-out infinite}
+
+/* petals and sparks */
+.wf-drift{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.wf-drift span{position:absolute;top:-6%;display:block;animation:wfFall linear infinite}
+.wf-drift.petals span{border-radius:80% 0 80% 0;background:linear-gradient(135deg,#ffb300,#ff6f00);opacity:.85;box-shadow:0 0 6px rgba(255,140,0,.35)}
+.wf-drift.petals span:nth-child(3n){background:linear-gradient(135deg,#ff5252,#b71c1c)}
+.wf-drift.petals span:nth-child(4n){background:linear-gradient(135deg,#fff3e0,#ffcc80)}
+@keyframes wfFall{0%{transform:translate(0,0) rotate(0)}50%{transform:translate(28px,55vh) rotate(200deg)}100%{transform:translate(-12px,112vh) rotate(420deg)}}
+.wf-drift.sparks span{top:auto;bottom:18%;width:4px!important;height:4px!important;border-radius:50%;background:#ffd77a;box-shadow:0 0 8px 2px rgba(255,170,60,.8);animation-name:wfRise}
+@keyframes wfRise{0%{transform:translate(0,0);opacity:0}15%{opacity:1}100%{transform:translate(18px,-60vh);opacity:0}}
+
+/* ── the couple's film ── */
+.wf-film{position:relative;display:block;margin:28px auto 0;padding:0;border:0;cursor:pointer;width:min(420px,100%);aspect-ratio:4/5;border-radius:14px;overflow:hidden;background:#000;box-shadow:0 30px 80px rgba(0,0,0,.45),0 0 0 1px color-mix(in srgb,var(--accent) 40%,transparent)}
+.wf-film img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.12);transition:opacity 1.3s ease,transform 6.5s linear}
+.wf-film img.now{opacity:1;transform:scale(1)}
+.wf-film img.k1{transform-origin:20% 30%}
+.wf-film img.k2{transform-origin:80% 70%}
+.wf-film .wf-bar{height:9%}
+.wf-grain{position:absolute;inset:-50%;z-index:1;pointer-events:none;opacity:.12;background-image:radial-gradient(rgba(255,255,255,.7) 1px,transparent 1px);background-size:3px 3px;animation:wfGrain 1s steps(4) infinite}
+@keyframes wfGrain{25%{transform:translate(-3%,2%)}50%{transform:translate(2%,-3%)}75%{transform:translate(-2%,-1%)}}
+.wf-film-cap{position:absolute;left:0;right:0;bottom:calc(9% + 14px);z-index:3;padding:0 18px;font-family:var(--script);font-size:clamp(26px,8cqi,38px);color:#fff8ec;text-shadow:0 2px 14px rgba(0,0,0,.8);animation:wfCap 1.2s ease both}
+@keyframes wfCap{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.wf-dots{margin:16px auto 0;display:flex;gap:6px;justify-content:center;width:min(420px,100%)}
+.wf-dots button{appearance:none;border:0;padding:8px 0;flex:1;max-width:48px;background:none;cursor:pointer}
+.wf-dots i{display:block;height:3px;border-radius:2px;background:color-mix(in srgb,var(--fg) 25%,transparent);position:relative;overflow:hidden}
+.wf-dots button.on i::after{content:"";position:absolute;inset:0;background:var(--accent);transform-origin:left;animation:wfProg linear forwards;animation-duration:inherit}
+.wf-dots button.on i[style]::after{animation-duration:inherit}
+.wf-dots button.on i:not([style])::after{animation:none}
+@keyframes wfProg{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+
+@media (prefers-reduced-motion:reduce){
+  .wf-art img,.wf-sec.on .wf-art img{transform:none;transition:none;filter:none}
+  .wf-mantra,.wf-verse,.wf-line,.wf-title,.wf-eyebrow,.wf-more{opacity:1;transform:none;transition:none;animation:none}
+  .wf-bar{display:none}
+  .wf-diyas i,.wf-fire,.wf-grain{animation:none}
+  .wf-film img{transition:opacity .3s}
+}

@@ -11,7 +11,7 @@ import type { StoryContext } from "./Story";
 type Of<T extends Chapter["type"]> = Extract<Chapter, { type: T }>;
 type P<T extends Chapter["type"]> = { chapter: Of<T>; ctx: StoryContext; num: number | null };
 
-function useInView(ref: RefObject<HTMLElement | null>) {
+export function useInView(ref: RefObject<HTMLElement | null>) {
   const [seen, setSeen] = useState(false);
   useEffect(() => {
     const el = ref.current;
