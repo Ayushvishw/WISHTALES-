@@ -152,6 +152,62 @@ export const storySchema = z.object({
 });
 export type Story = z.infer<typeof storySchema>;
 
+/* ---------------- video layout: a downloadable video invitation ---------------- */
+
+/** Decorations drawn around every scene of a video. */
+export const VIDEO_ORNAMENTS = ["mandala", "deco", "floral", "arch", "toran", "frame", "stars", "minimal"] as const;
+/** What drifts across the video. */
+export const VIDEO_PARTICLES = ["petals", "marigold", "sparkles", "bokeh", "confetti", "hearts", "stars", "lanterns", "none"] as const;
+/** Paintings a video scene can fill the screen with (public/art/wedding). */
+export const VIDEO_ART = ["ganesha", "entrance", "varmala", "phere"] as const;
+
+/** Background footage for a scene: public/video/clips/<clip>.mp4, played under the words. */
+const clip = { clip: z.string().regex(/^[a-z0-9-]+$/).optional() };
+const shot = { ...clip, seconds: z.number().min(2).max(12).optional() };
+const words = z.string().max(160);
+
+/**
+ * One scene of a video. Text may contain {{placeholders}}. A scene whose content is
+ * missing (no photo, no events, no family names) is skipped, so a video always reads well.
+ */
+export const videoSceneSchema = z.discriminatedUnion("kind", [
+  /** A painting filling the screen, slowly zooming, with words at the bottom. */
+  z.object({ kind: z.literal("art"), ...shot, art: z.enum(VIDEO_ART), eyebrow: words.optional(), title: words.optional(), line: words.optional() }),
+  /** Words on their own, e.g. a blessing or "Save the date". */
+  z.object({ kind: z.literal("title"), ...shot, eyebrow: words.optional(), title: words, line: words.optional() }),
+  /** The names, written out in the script font. */
+  z.object({ kind: z.literal("names"), ...shot, eyebrow: words.optional(), first: words, second: words.optional(), joiner: z.string().max(12).optional(), line: words.optional() }),
+  /** One photo in the design's frame. Skipped when the customer has fewer photos. */
+  z.object({ kind: z.literal("photo"), ...shot, photo: z.number().int().min(0), caption: words.optional() }),
+  /** Every photo from this one on, one after another. */
+  z.object({ kind: z.literal("gallery"), ...clip, from: z.number().int().min(0), caption: words.optional(), perPhoto: z.number().min(1.5).max(6).optional() }),
+  /** The family lines, from the families field. */
+  z.object({ kind: z.literal("families"), ...shot, eyebrow: words.optional() }),
+  /** The date, large, with the day and time. */
+  z.object({ kind: z.literal("date"), ...shot, eyebrow: words.optional(), line: words.optional() }),
+  /** The venue name and address. */
+  z.object({ kind: z.literal("venue"), ...shot, eyebrow: words.optional() }),
+  /** The functions, "Event | When | Where" per line, up to 6: one screen each, or all on one list. */
+  z.object({ kind: z.literal("events"), ...clip, eyebrow: words.optional(), title: words.optional(), each: z.boolean().optional(), perEvent: z.number().min(2.5).max(8).optional() }),
+  /** A short note from a text field. */
+  z.object({ kind: z.literal("message"), ...shot, eyebrow: words.optional(), field: z.string() }),
+  /** The last screen. */
+  z.object({ kind: z.literal("closing"), ...shot, title: words, line: words.optional(), signoff: words.optional() }),
+]);
+export type VideoScene = z.infer<typeof videoSceneSchema>;
+
+export const videoSchema = z.object({
+  ornament: z.enum(VIDEO_ORNAMENTS),
+  particles: z.enum(VIDEO_PARTICLES),
+  /** The shape photos are framed in. */
+  frame: z.enum(["arch", "circle", "rounded", "polaroid"]),
+  /** Background: top and bottom colours, and a soft glow behind the words. */
+  sky: z.tuple([color, color]),
+  glow: color,
+  scenes: z.array(videoSceneSchema).min(3).max(16),
+});
+export type VideoDesign = z.infer<typeof videoSchema>;
+
 export const themeSchema = z.object({
   bg: color, fg: color, muted: color, line: color, card: color,
   accent: color, accent2: color, onAccent: color, paper: color, paperInk: color,
@@ -185,10 +241,11 @@ export const templateConfigSchema = z
      */
     photoTiers: z.array(z.object({ photos: z.number().int().positive(), addMinor: z.number().int().min(0) })).min(1).max(10).optional(),
     music: z.object({ default: z.string() }),
-    /** Classic step-by-step scenes, or one scrolling page of chapters ("story"). */
-    layout: z.enum(["scenes", "story"]).default("scenes"),
+    /** Classic step-by-step scenes, one scrolling page of chapters ("story"), or a video to download ("video"). */
+    layout: z.enum(["scenes", "story", "video"]).default("scenes"),
     scenes: z.array(sceneSchema).default([]),
     story: storySchema.optional(),
+    video: videoSchema.optional(),
   })
   .superRefine((t, ctx) => {
     const keys = new Set<string>();
@@ -208,6 +265,13 @@ export const templateConfigSchema = z
         for (const k of ["field" in c ? c.field : undefined].filter(Boolean) as string[]) {
           if (!keys.has(k)) ctx.addIssue({ code: "custom", message: `Chapter ${c.type} reads unknown field ${k}` });
         }
+      }
+    }
+    if (t.layout === "video") {
+      if (!t.video) ctx.addIssue({ code: "custom", message: "A video template needs a video" });
+      for (const s of t.video?.scenes ?? []) {
+        if (s.kind === "message" && !keys.has(s.field)) ctx.addIssue({ code: "custom", message: `Video scene message reads unknown field ${s.field}` });
+        if (s.kind === "photo" && s.photo >= t.photos.max) ctx.addIssue({ code: "custom", message: "A video photo scene uses a photo slot beyond the maximum" });
       }
     }
     const ids = new Set<string>();

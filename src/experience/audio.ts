@@ -84,13 +84,11 @@ export function playAudio(source: string): boolean {
 
 const hz = (n: number) => 440 * Math.pow(2, (n - 69) / 12);
 
-function synth(c: AudioContext, gen: string): Player | null {
-  const bus = c.createGain();
-  bus.gain.value = 0.8;
-  bus.connect(out(c));
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  let alive = true;
-
+/**
+ * Schedules one pass of a built-in tune on any audio context (live or offline),
+ * starting at time t0. Returns its length in seconds, or null for an unknown tune.
+ */
+export function scheduleTune(c: BaseAudioContext, bus: AudioNode, gen: string, t0: number): number | null {
   const note = (f: number, t: number, d: number, pad = false) => {
     const o = c.createOscillator(), o2 = c.createOscillator(), g = c.createGain();
     o.type = "sine";
@@ -116,7 +114,7 @@ function synth(c: AudioContext, gen: string): Player | null {
       const beat = 0.4;
       const N: [number, number][] = [[67, .75], [67, .25], [69, 1], [67, 1], [72, 1], [71, 2], [67, .75], [67, .25], [69, 1], [67, 1], [74, 1], [72, 2],
         [67, .75], [67, .25], [79, 1], [76, 1], [72, 1], [71, 1], [69, 2], [77, .75], [77, .25], [76, 1], [72, 1], [74, 1], [72, 3]];
-      let t = c.currentTime + 0.08;
+      let t = t0;
       for (const [n, d] of N) { note(hz(n + 12), t, d * beat); t += d * beat; }
       return N.reduce((s, [, d]) => s + d, 0) * beat + 1.2;
     },
@@ -125,7 +123,7 @@ function synth(c: AudioContext, gen: string): Player | null {
       const ch = [[50, 62, 66, 69], [45, 61, 64, 69], [47, 62, 66, 71], [42, 61, 66, 69], [43, 59, 62, 67], [38, 57, 62, 66], [43, 59, 62, 67], [45, 61, 64, 69]];
       const top = [78, 76, 74, 73, 71, 69, 71, 73];
       const d = 2;
-      let t = c.currentTime + 0.08;
+      let t = t0;
       ch.forEach((cn, i) => {
         cn.forEach((n) => note(hz(n), t, d, true));
         note(hz(top[i]), t, 0.9);
@@ -139,7 +137,7 @@ function synth(c: AudioContext, gen: string): Player | null {
     chords: () => {
       const ch = [[60, 64, 67, 72], [57, 60, 64, 69], [53, 57, 60, 65], [55, 59, 62, 67]];
       const d = 2.4;
-      let t = c.currentTime + 0.08;
+      let t = t0;
       for (const cn of ch) {
         cn.forEach((n) => note(hz(n), t, d, true));
         note(hz(cn[3] + 12), t + 0.6, 0.5);
@@ -150,13 +148,26 @@ function synth(c: AudioContext, gen: string): Player | null {
     },
   };
   const loop = loops[gen];
-  if (!loop) return null;
-  const run = () => {
-    if (!alive) return;
-    const len = loop();
+  return loop ? loop() : null;
+}
+
+function synth(c: AudioContext, gen: string): Player | null {
+  const bus = c.createGain();
+  bus.gain.value = 0.8;
+  bus.connect(out(c));
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let alive = true;
+  const run = (): boolean => {
+    if (!alive) return true;
+    const len = scheduleTune(c, bus, gen, c.currentTime + 0.08);
+    if (len === null) return false;
     timer = setTimeout(run, len * 1000 - 120);
+    return true;
   };
-  run();
+  if (!run()) {
+    bus.disconnect();
+    return null;
+  }
   return {
     stop() {
       alive = false;
