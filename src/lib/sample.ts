@@ -42,11 +42,19 @@ const WEDDING = {
   venue_name: "The Lakeside Palace",
   venue_address: "Lake Pichola, Udaipur, Rajasthan",
   events: "Haldi | Friday · 10 am | Poolside lawns\nMehendi | Friday · 4 pm | Garden courtyard\nSangeet | Friday · 8 pm | Durbar Hall\nWedding | Saturday · 7 pm | Lakeside lawns\nReception | Sunday · 8 pm | Grand ballroom",
+  contact: "98765 43210 · 91234 56789",
   letter: "Dear family and friends,\nTwo families, one big celebration. We would be so happy to have you with us as Lisa and Andrew begin their life together.\nCome hungry, come ready to dance, and bring your blessings.",
 };
 
 /** Invitations differ by template, so their samples are per template. */
 const SAMPLE_BY_TEMPLATE: Record<string, Record<string, string>> = {
+  "vid-marigold": { couple_one: "Lisa", couple_two: "", occasion_name: "Haldi ceremony", sender_name: "The Kapoor family", families: "", event_time: "Friday, 10 am onwards", venue_name: "Kapoor Niwas", venue_address: "Civil Lines, Jaipur" },
+  "vid-shubh-vivah-hindi": {
+    couple_one: "सपना", couple_two: "आकाश", sender_name: "शर्मा एवं गुप्ता परिवार", recipient_name: "आप सभी",
+    families: "सुपुत्री श्रीमती मीना एवं श्री दिनेश शर्मा\nसुपुत्र श्रीमती गीता एवं श्री रोहन गुप्ता",
+    event_time: "सायं 7 बजे से", venue_name: "राजमहल पैलेस", venue_address: "जयपुर, राजस्थान", contact: "98765 43210",
+    events: "हल्दी | शुक्रवार, सुबह 10 बजे | पूल लॉन\nसंगीत | शुक्रवार, रात 8 बजे | दरबार हॉल\nविवाह | शनिवार, सायं 7 बजे | राजमहल",
+  },
   "inv-party-time": { recipient_name: "Lisa", age: "7", sender_name: "Riya and Aarav", event_time: "4 pm to 7 pm", venue_name: "Funky Monkeys Play Café", venue_address: "Indiranagar, Bengaluru", letter: "Lisa is turning 7 and wants all her favourite people there!\nThere will be cake, a magician and far too many balloons. Comfy clothes recommended." },
   "inv-new-home": { recipient_name: "our family and friends", sender_name: "Lisa and Andrew", event_time: "Sunday, 11 am onwards", venue_name: "Flat 702, Lake View Towers", venue_address: "Powai, Mumbai", letter: "After many boxes and a few arguments about paint colours, we're finally home.\nCome bless our new place with us. Lunch is on us." },
   "inv-little-one": { recipient_name: "our family and friends", sender_name: "Lisa and Andrew", couple_one: "Baby shower", event_time: "12 pm onwards", venue_name: "The Garden Room", venue_address: "Koregaon Park, Pune", letter: "Our little one is almost here, and we couldn't think of a better way to welcome them than with all of you.\nCome for the food, stay for the baby games." },

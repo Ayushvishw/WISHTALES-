@@ -227,3 +227,8 @@ a{color:inherit}
 .rsvp-tag.yes{color:var(--ok)}.rsvp-tag.maybe{color:var(--warn)}.rsvp-tag.no{color:var(--muted)}
 .rsvp-msg{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
 .rsvp-msg p{margin:0;font-size:14px;color:var(--muted)}
+
+/* Video invitation download */
+.vdl-bar{height:8px;border-radius:8px;background:var(--line);overflow:hidden}
+.vdl-bar i{display:block;height:100%;background:var(--grad);transition:width .3s}
+.vdl-video{width:100%;max-width:300px;aspect-ratio:9/16;border-radius:14px;background:#000;align-self:center}

@@ -783,7 +783,7 @@ function scene(ctx: Ctx, t: number, shot: Shot, f: Frame) {
 
   switch (s.kind) {
     case "art": {
-      const img = f.assets.art[s.art];
+      const img = s.art ? f.assets.art[s.art] : null;
       ctx.save();
       ctx.globalAlpha = smooth(lt / 0.8) * out;
       if (img) cover(ctx, img, 0, 0, W, H, 1.04 + (lt / shot.dur) * 0.1, -lt * 4);
@@ -847,7 +847,7 @@ function scene(ctx: Ctx, t: number, shot: Shot, f: Frame) {
       break;
     }
     case "date": {
-      const d = dateParts(vals.event_date ?? "");
+      const d = dateParts(vals.event_date ?? "", v.lang);
       if (!d) break;
       eyebrow(ctx, th, fill(s.eyebrow) || "Save the date", 360, el(0));
       text(ctx, d.weekday, W / 2, 460 + rise(1), { ...body, family: th.display, size: 34, color: th.fg, spacing: 8, upper: true }, el(1));

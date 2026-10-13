@@ -8,11 +8,13 @@ import { Motif } from "@/story/art";
 import { Obj, skinObjects } from "@/story/obj";
 import { Tilt } from "./fx";
 import { hasPoster, Poster } from "./Poster";
+import { VideoPoster } from "@/video/VideoPoster";
 
 const OPENER: Record<string, string> = { gift: "Opens with a gift box", envelope: "Opens with a sealed letter", chest: "Opens with a treasure chest", ringbox: "Opens with a ring box" };
 
 /** A template in the shop: a living mini banner in its own colours, then the details. */
 export function TemplateCard({ t, children, priority = false }: { t: TemplateConfig; children?: ReactNode; priority?: boolean }) {
+  if (t.video) return <VideoCard t={t}>{children}</VideoCard>;
   const th = t.theme;
   const story = t.story;
   const motifs = Array.from({ length: 7 }, (_, i) => i);
@@ -55,6 +57,32 @@ export function TemplateCard({ t, children, priority = false }: { t: TemplateCon
         <div className="tc-meta">
           {story ? `${story.flow === "swipe" ? "Swipe story" : "Scroll story"} · ${story.chapters.length} chapters · ${OPENER[story.opener.kind]}` : `${t.scenes.length} scenes`}
         </div>
+        {children}
+      </div>
+    </Tilt>
+  );
+}
+
+/** A video design in the shop: a real frame of its video, then the details. */
+function VideoCard({ t, children }: { t: TemplateConfig; children?: ReactNode }) {
+  const secs = Math.round(t.video!.scenes.reduce((n, s) => n + ("seconds" in s && s.seconds ? s.seconds : 5), 0) / 5) * 5;
+  return (
+    <Tilt className="tc tc-vid" style={{ "--ta": t.theme.accent, "--tb": t.theme.accent2 } as React.CSSProperties}>
+      <Link href={`/sample/${t.slug}`} className="tc-art" style={{ background: t.video!.sky[1] }} aria-label={`Watch the ${t.name} video`}>
+        <VideoPoster t={t} className="tc-video" />
+        <span className="tc-badge">Video · MP4</span>
+        <span className="tc-play"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z" fill="currentColor" /></svg>Watch the video</span>
+      </Link>
+      <div className="tc-body">
+        <div className="tc-top">
+          <h3>{t.name}</h3>
+          <span className="tc-price">{inr(t.priceMinor)}</span>
+        </div>
+        <p>{t.description}</p>
+        <div className="tc-chips">
+          {t.traits.slice(0, 4).map((x) => <span key={x}>{x}</span>)}
+        </div>
+        <div className="tc-meta">Download as a video · about {secs} seconds · no link needed</div>
         {children}
       </div>
     </Tilt>

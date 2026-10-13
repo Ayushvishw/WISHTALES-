@@ -40,8 +40,16 @@ const FOR: Record<string, string[]> = {
   "inv-party-time": ["party"],
   "inv-new-home": ["home"],
   "inv-little-one": ["baby"],
+  "vid-shahi-vivah": ["wedding"],
+  "vid-ivory-arch": ["wedding"],
+  "vid-midnight-gold": ["wedding"],
+  "vid-marigold": ["wedding", "home"],
+  "vid-rose-ring": ["engagement"],
+  "vid-shubh-vivah-hindi": ["wedding"],
 };
 const FILTERS = [
+  { key: "video", label: "Video to download" },
+  { key: "link", label: "Interactive link with RSVP" },
   { key: "partner", label: "For a partner" },
   { key: "friends", label: "For friends" },
   { key: "family", label: "For family" },
@@ -94,8 +102,11 @@ export default async function OccasionPage({ params }: { params: Promise<{ occas
   }
 
   const list = await listTemplates(occasion);
-  const flowOf = (t: (typeof list)[number]) => (t.story?.flow === "swipe" ? "swipe" : "scroll");
-  const mixed = new Set(list.map(flowOf)).size > 1;
+  const flowOf = (t: (typeof list)[number]) => (t.video ? null : t.story?.flow === "swipe" ? "swipe" : "scroll");
+  const mixed = new Set(list.map(flowOf).filter(Boolean)).size > 1;
+  const formats = new Set(list.map((t) => (t.video ? "video" : "link"))).size > 1;
+  // Videos are the quickest to send, so they lead the list.
+  if (formats) list.sort((a, b) => Number(!!b.video) - Number(!!a.video));
   return (
     <Shell home>
       <Track events={["occasion_selected", "template_viewed"]} template={occasion} />
@@ -104,8 +115,8 @@ export default async function OccasionPage({ params }: { params: Promise<{ occas
         <div className="obanner-in">
           <Reveal className="obanner-copy">
             <span className="pill-glow"><i />{list.length} templates · from {inr(Math.min(...list.map((t) => t.priceMinor)))}</span>
-            <h1 className="h-mega sm">{occ.name} <em>{occ.slug === "invitations" ? "that open like a gift" : "surprises"}</em></h1>
-            <p className="lead">{look.line} Watch any sample for free, then make it yours.</p>
+            <h1 className="h-mega sm">{occ.name} <em>{occ.slug === "invitations" ? "people remember" : "surprises"}</em></h1>
+            <p className="lead">{formats ? "Send a video your guests can watch anywhere, or an invitation link with RSVP and directions." : look.line} Watch any sample for free, then make it yours.</p>
           </Reveal>
           <Reveal delay={150} className="obanner-art" style={banner}><Scene slug={occ.slug} /></Reveal>
         </div>
@@ -115,12 +126,12 @@ export default async function OccasionPage({ params }: { params: Promise<{ occas
           filters={FILTERS}
           items={list.map((t, i) => ({
             key: t.slug,
-            tags: [...(FOR[t.slug] ?? []), ...(mixed ? [flowOf(t)] : [])],
+            tags: [...(FOR[t.slug] ?? []), ...(mixed && flowOf(t) ? [flowOf(t)!] : []), ...(formats ? [t.video ? "video" : "link"] : [])],
             node: (
               <Reveal delay={Math.min(i, 5) * 60}>
                 <TemplateCard t={t} priority={i < 3}>
                   <form action={personalize} className="tc-actions">
-                    <Link className="gbtn sm" href={`/sample/${t.slug}`}>Watch sample</Link>
+                    <Link className="gbtn sm" href={`/sample/${t.slug}`}>{t.video ? "Watch video" : "Watch sample"}</Link>
                     <input type="hidden" name="template" value={t.slug} />
                     <button className="sbtn sm" type="submit">Personalize</button>
                   </form>

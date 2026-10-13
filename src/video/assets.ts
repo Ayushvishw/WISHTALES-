@@ -37,7 +37,7 @@ export function loadImage(url: string): Promise<Img | null> {
 
 export async function loadStills(video: VideoDesign, photos: string[]) {
   const art: Partial<Record<string, Img>> = {};
-  const names = [...new Set(video.scenes.flatMap((s) => (s.kind === "art" ? [s.art] : [])))];
+  const names = [...new Set(video.scenes.flatMap((s) => (s.kind === "art" && s.art ? [s.art] : [])))];
   const [ps, arts] = await Promise.all([Promise.all(photos.map(loadImage)), Promise.all(names.map((n) => loadImage(`/art/wedding/${n}.webp`)))]);
   names.forEach((n, i) => { if (arts[i]) art[n] = arts[i]!; });
   return { photos: ps, art };

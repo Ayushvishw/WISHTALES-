@@ -27,7 +27,7 @@ const FAQ = [
 export default async function Home() {
   const occasions = (await listOccasions()).filter((o) => o.status !== "hidden");
   const liveOcc = occasions.filter((o) => o.status === "live");
-  const byOcc = Object.fromEntries(await Promise.all(liveOcc.map(async (o) => [o.slug, (await listTemplates(o.slug)).filter((t) => t.layout === "story")] as const)));
+  const byOcc = Object.fromEntries(await Promise.all(liveOcc.map(async (o) => [o.slug, (await listTemplates(o.slug)).filter((t) => t.layout !== "scenes")] as const)));
   const story = byOcc.birthday ?? [];
   const love = [...(byOcc.proposal ?? []), ...(byOcc.anniversary ?? [])];
   const everything = Object.values(byOcc).flat();

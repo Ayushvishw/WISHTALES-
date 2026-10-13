@@ -16,6 +16,9 @@ export const ANALYTICS_EVENTS = [
   "share_whatsapp",
   "experience_opened",
   "experience_completed",
+  "video_rendered",
+  "video_downloaded",
+  "video_shared",
 ] as const;
 export type AnalyticsEvent = (typeof ANALYTICS_EVENTS)[number];
 

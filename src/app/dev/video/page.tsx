@@ -22,7 +22,7 @@ export default function DevVideoPage() {
       ornament: "arch", particles: "petals", frame: "arch", sky: ["#2a0f18", "#12060a"], glow: "#7a2a35",
       scenes: [
         { kind: "art", art: "ganesha", eyebrow: "॥ श्री गणेशाय नमः ॥", title: "With his blessings", seconds: 4 },
-        { kind: "names", clip: "dev-test", eyebrow: "The wedding of", first: "{{couple_one}}", second: "{{couple_two}}", line: "request the pleasure of your company" },
+        { kind: "names", clip: "couple-1", eyebrow: "The wedding of", first: "{{couple_one}}", second: "{{couple_two}}", line: "request the pleasure of your company" },
         { kind: "families", seconds: 4 },
         { kind: "events", each: true, eyebrow: "Join us for the", perEvent: 3.5 },
         { kind: "date" },

@@ -33,6 +33,7 @@ const F: Record<string, FieldInput> = {
   map_link: { key: "map_link", label: "Google Maps link (optional)", type: "text", max: 400, placeholder: "https://maps.app.goo.gl/…", help: "Paste the share link from Google Maps. Without it, we search the address." },
   events: { key: "events", label: "Your functions (one per line)", type: "textarea", required: true, max: 900, placeholder: "Haldi | Friday, 10 am | Poolside lawns\nSangeet | Friday, 7 pm | Durbar Hall\nWedding | Saturday, 7 pm | Durbar Hall", help: "Write Function | Day and time | Place | Google Maps link (optional). Up to 8 lines." },
   note: { key: "letter", label: "A note to your guests", type: "textarea", required: true, max: 900, help: "A few warm lines. It opens like a real letter." },
+  contact: { key: "contact", label: "Contact numbers (optional)", type: "text", max: 80, placeholder: "98765 43210, 91234 56789", help: "Shown on the last screen, so guests can call you." },
   closing_line: { key: "closing_line", label: "The very last line they read", type: "text", max: 90, help: "People remember the ending most. Keep it short." },
 };
 

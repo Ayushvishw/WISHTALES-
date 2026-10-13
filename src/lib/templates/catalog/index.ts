@@ -2,6 +2,7 @@ import { templateConfigSchema, type TemplateConfig, type TemplateInput } from ".
 import { INVITATION_TEMPLATES } from "./invitations";
 import { LOVE_TEMPLATES } from "./love";
 import { STORY_TEMPLATES } from "./story";
+import { VIDEO_TEMPLATES } from "./videos";
 import { fields } from "./fields";
 
 /**
@@ -111,7 +112,7 @@ const classic: TemplateInput[] = [
 /** The three launch templates are kept so paid orders still render, but no longer sold. */
 export const RETIRED_TEMPLATES = classic.map((t) => t.slug);
 
-export const CATALOG: TemplateConfig[] = [...STORY_TEMPLATES, ...LOVE_TEMPLATES, ...INVITATION_TEMPLATES, ...classic].map((t) => templateConfigSchema.parse(t));
+export const CATALOG: TemplateConfig[] = [...STORY_TEMPLATES, ...LOVE_TEMPLATES, ...INVITATION_TEMPLATES, ...VIDEO_TEMPLATES, ...classic].map((t) => templateConfigSchema.parse(t));
 
 export const OCCASIONS = [
   { slug: "birthday", name: "Birthday", live: true },

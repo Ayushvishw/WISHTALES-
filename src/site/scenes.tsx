@@ -7,7 +7,7 @@ export const OCCASION_LOOK: Record<string, { a: string; b: string; line: string;
   anniversary: { a: "#ff4d6d", b: "#ffb4a2", line: "Count every day together, relive your story, and lock your love on a bridge.", blurb: "5 templates" },
   friendship: { a: "#4fd1c5", b: "#ffd166", line: "Inside jokes, old photos, and a thank-you they won't forget.", blurb: "Coming soon" },
   proposal: { a: "#b388ff", b: "#ff8fab", line: "Build up to the question with a ring box and a love meter. They can only say yes.", blurb: "5 templates" },
-  invitations: { a: "#d4af37", b: "#ff8fab", line: "Wedding, engagement, party and housewarming invites that open like a gift, with directions and guest replies.", blurb: "8 templates" },
+  invitations: { a: "#d4af37", b: "#ff8fab", line: "Video invitations to download and send, or invites that open like a gift with directions and guest replies.", blurb: "Videos and links" },
   wedding: { a: "#ff9f1c", b: "#e63946", line: "Blessings, memories and a toast from far away.", blurb: "Coming soon" },
   "mothers-day": { a: "#ff8fab", b: "#ffd6a5", line: "Thank her for everything, in her favourite colours.", blurb: "Coming soon" },
   "fathers-day": { a: "#5aa9e6", b: "#7fc8a9", line: "For the man who never says it first.", blurb: "Coming soon" },

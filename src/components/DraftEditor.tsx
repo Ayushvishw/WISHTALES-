@@ -50,6 +50,7 @@ export function DraftEditor(props: { draftKey: string; config: TemplateConfig; v
   const plan = tierFor(config, Math.max(picked, photos.length));
   const limit = tiered ? plan.photos : config.photos.max;
   const total = priceFor(config, Math.max(photos.length, config.photos.min));
+  const isVideo = config.layout === "video";
 
   // The live preview: the real template with the customer's words and photos, sample words filling any gaps.
   const live = useMemo(() => {
@@ -264,7 +265,7 @@ export function DraftEditor(props: { draftKey: string; config: TemplateConfig; v
           <a className="live-jump" href="#live-preview">See your photos in the live preview ↓</a>
           <div className="drop">
             <div>
-              <b>{tiered ? `Add up to ${limit} photos` : `Add ${config.photos.min} to ${config.photos.max} photos`}</b>
+              <b>{tiered ? `Add up to ${limit} photos` : config.photos.min === 0 ? `Add up to ${config.photos.max} photos (optional)` : `Add ${config.photos.min} to ${config.photos.max} photos`}</b>
               <div className="note">{tiered ? `At least ${config.photos.min}. Watch them appear in the live preview.` : "JPG, PNG or WebP, up to 10 MB each."} They appear in this order.</div>
             </div>
             <div className="row">
@@ -308,7 +309,7 @@ export function DraftEditor(props: { draftKey: string; config: TemplateConfig; v
                 <input type="radio" name="music" id="m-own" disabled={!song} checked={musicId === CUSTOM_MUSIC_ID} onChange={() => chooseMusic(CUSTOM_MUSIC_ID)} />
                 <label htmlFor="m-own">
                   <b>{song ? song.title : "Add your own song"}</b>
-                  <span>{song ? "Your song. It plays from the start of the surprise." : "Their favourite, or the one that's \"yours\". MP3, M4A or WAV, up to 4 MB."}</span>
+                  <span>{song ? (isVideo ? "Your song. It plays under the whole video." : "Your song. It plays from the start of the surprise.") : "Their favourite, or the one that's \"yours\". MP3, M4A or WAV, up to 4 MB."}</span>
                 </label>
                 <div className="acts">
                 {song && <button type="button" className="btn ghost small" onClick={() => listen(props.music.find((m) => m.id === CUSTOM_MUSIC_ID)!)}>{listening === CUSTOM_MUSIC_ID ? "Stop" : "Listen"}</button>}
@@ -322,11 +323,11 @@ export function DraftEditor(props: { draftKey: string; config: TemplateConfig; v
             )}
           </div>
           {songMsg && <div className="err" role="alert">{songMsg}</div>}
-          {customAllowed && <p className="note">Only upload music you have the right to share. The song plays only for the person you send the link to.</p>}
+          {customAllowed && <p className="note">Only upload music you have the right to share. {isVideo ? "Instagram may mute songs it doesn't have rights to; WhatsApp plays it as is." : "The song plays only for the person you send the link to."}</p>}
         </fieldset>
 
         <div className="row">
-          <button className="btn accent" type="submit" disabled={busy || uploading > 0 || songBusy}>{uploading ? "Uploading photos…" : songBusy ? "Uploading song…" : "Preview the experience"}</button>
+          <button className="btn accent" type="submit" disabled={busy || uploading > 0 || songBusy}>{uploading ? "Uploading photos…" : songBusy ? "Uploading song…" : isVideo ? "Preview your video" : "Preview the experience"}</button>
           {Object.keys(errors).length > 0 && <span className="err">Fix {Object.keys(errors).length} thing{Object.keys(errors).length > 1 ? "s" : ""} above to continue.</span>}
         </div>
       </form>
@@ -361,7 +362,7 @@ export function DraftEditor(props: { draftKey: string; config: TemplateConfig; v
               <Experience experience={live} ribbon="Live preview" protect={{ watermark: "PREVIEW · WISHTALES" }} />
             </div>
           </div>
-          <p className="note" style={{ margin: 0 }}>Tap to open it. Your words and photos appear as you add them; sample words fill any gaps.</p>
+          <p className="note" style={{ margin: 0 }}>{isVideo ? "Your video plays here as you type. Sample words fill any gaps. Tap for sound to hear your music." : "Tap to open it. Your words and photos appear as you add them; sample words fill any gaps."}</p>
         </div>
       </aside>
     </div>

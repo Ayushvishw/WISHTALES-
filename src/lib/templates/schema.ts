@@ -171,8 +171,8 @@ const words = z.string().max(160);
  * missing (no photo, no events, no family names) is skipped, so a video always reads well.
  */
 export const videoSceneSchema = z.discriminatedUnion("kind", [
-  /** A painting filling the screen, slowly zooming, with words at the bottom. */
-  z.object({ kind: z.literal("art"), ...shot, art: z.enum(VIDEO_ART), eyebrow: words.optional(), title: words.optional(), line: words.optional() }),
+  /** Footage or a painting filling the screen, with words at the bottom so the picture stays clear. */
+  z.object({ kind: z.literal("art"), ...shot, art: z.enum(VIDEO_ART).optional(), eyebrow: words.optional(), title: words.optional(), line: words.optional() }),
   /** Words on their own, e.g. a blessing or "Save the date". */
   z.object({ kind: z.literal("title"), ...shot, eyebrow: words.optional(), title: words, line: words.optional() }),
   /** The names, written out in the script font. */
@@ -204,6 +204,8 @@ export const videoSchema = z.object({
   /** Background: top and bottom colours, and a soft glow behind the words. */
   sky: z.tuple([color, color]),
   glow: color,
+  /** Language for dates and month names. */
+  lang: z.enum(["en", "hi"]).optional(),
   scenes: z.array(videoSceneSchema).min(3).max(16),
 });
 export type VideoDesign = z.infer<typeof videoSchema>;

@@ -17,6 +17,7 @@ export default async function PreviewPage({ params }: { params: Promise<{ key: s
   const exp = await getPreviewExperience(key);
   if (!exp) notFound();
   const paid = !["PREVIEW_READY", "CHECKOUT_STARTED"].includes(d.state);
+  const video = d.config.layout === "video";
   return (
     <Shell step={2} state={d.state}>
       <div className="stagewrap">
@@ -24,10 +25,10 @@ export default async function PreviewPage({ params }: { params: Promise<{ key: s
         <aside className="side">
           <div className="panel">
             <div className="eyebrow">Preview</div>
-            <h3>This is exactly what {exp.values.recipient_name} will see</h3>
-            <p className="note" style={{ margin: 0 }}>It runs on the same template and data as the paid version. The ribbon and the watermark are removed after payment.</p>
+            <h3>{video ? "This is your video, frame for frame" : `This is exactly what ${exp.values.recipient_name} will see`}</h3>
+            <p className="note" style={{ margin: 0 }}>{video ? "The file you download is made from this same preview, in HD, with your music. The watermark comes off after payment." : "It runs on the same template and data as the paid version. The ribbon and the watermark are removed after payment."}</p>
             {paid ? (
-              <Link className="btn accent" href={`/d/${key}/share`}>Go to your link</Link>
+              <Link className="btn accent" href={`/d/${key}/share`}>{video ? "Download your video" : "Go to your link"}</Link>
             ) : (
               <>
                 <Link className="btn accent" href={`/d/${key}/checkout`}>Looks perfect, continue</Link>

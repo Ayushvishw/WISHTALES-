@@ -39,8 +39,8 @@ export function buildTimeline(video: VideoDesign, values: Values, photoCount: nu
         if (s.photo < photoCount) add(s, secs, [s.photo]);
         break;
       case "gallery": {
-        const ps = Array.from({ length: Math.max(0, photoCount - s.from) }, (_, i) => s.from + i).slice(0, 6);
-        if (ps.length) add(s, ps.length * (s.perPhoto ?? 2.8) + 0.6, ps);
+        const ps = Array.from({ length: Math.max(0, photoCount - s.from) }, (_, i) => s.from + i).slice(0, 4);
+        if (ps.length) add(s, ps.length * (s.perPhoto ?? 2.4) + 0.6, ps);
         break;
       }
       case "families":
@@ -77,9 +77,9 @@ export function shotAt(tl: Timeline, t: number): Shot | undefined {
 }
 
 /** "2026-11-26" → its parts, read as a calendar date (no time zone shifts). */
-export function dateParts(ymd: string) {
+export function dateParts(ymd: string, lang: "en" | "hi" = "en") {
   const d = new Date(`${ymd}T12:00:00Z`);
   if (Number.isNaN(d.getTime())) return null;
-  const f = (o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat("en-IN", { timeZone: "UTC", ...o }).format(d);
+  const f = (o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat(lang === "hi" ? "hi-IN" : "en-IN", { timeZone: "UTC", ...o }).format(d);
   return { weekday: f({ weekday: "long" }), day: f({ day: "numeric" }), month: f({ month: "long" }), year: f({ year: "numeric" }) };
 }
