@@ -7,6 +7,7 @@ import { isPlaying, playAudio, stopAudio } from "./audio";
 import { burst, useReducedMotion } from "./hooks";
 import { SCENES } from "./scenes";
 import { StoryExperience, type Protect } from "@/story/Story";
+import { VideoExperience } from "@/video/VideoExperience";
 import "./experience.css";
 
 export type SceneContext = {
@@ -66,7 +67,8 @@ type Props = {
 /** Renders any template: Template + Personalization + Media + Music → Experience. */
 export function Experience(props: Props) {
   // Older stored configs have no layout field; they are scene templates.
-  return props.experience.config.layout === "story" ? <StoryExperience {...props} /> : <ScenesExperience {...props} />;
+  const layout = props.experience.config.layout;
+  return layout === "story" ? <StoryExperience {...props} /> : layout === "video" ? <VideoExperience {...props} /> : <ScenesExperience {...props} />;
 }
 
 function ScenesExperience({ experience, ribbon, onEvent }: Props) {

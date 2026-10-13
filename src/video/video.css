@@ -1,0 +1,14 @@
+.vx{position:absolute;inset:0;background:#000;overflow:hidden;display:flex;align-items:center;justify-content:center;container-type:size}
+.vx-canvas{height:100%;width:auto;max-width:100%;aspect-ratio:9/16;object-fit:contain;display:block;cursor:pointer}
+.vx-ribbon{position:absolute;left:10px;top:10px;z-index:3;background:rgba(0,0,0,.55);color:#fff;font:600 11px/1 system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:6px 10px;border-radius:999px}
+.vx-bar{position:absolute;left:10px;right:10px;bottom:10px;z-index:3;display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:999px;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#fff}
+.vx-bar button{all:unset;cursor:pointer;width:30px;height:30px;display:grid;place-items:center;border-radius:50%;color:#fff}
+.vx-bar button:hover,.vx-bar button.on{background:rgba(255,255,255,.16)}
+.vx-bar button:focus-visible{outline:2px solid #fff;outline-offset:1px}
+.vx-track{flex:1;height:3px;border-radius:3px;background:rgba(255,255,255,.25);overflow:hidden}
+.vx-track i{display:block;height:100%;background:#fff}
+.vx-time{font:500 11px/1 system-ui,sans-serif;font-variant-numeric:tabular-nums;opacity:.85;white-space:nowrap}
+.vx-sound-hint{position:absolute;right:12px;top:10px;z-index:3;border:1px solid rgba(255,255,255,.35);background:rgba(0,0,0,.45);color:#fff;font:600 12px/1 system-ui,sans-serif;padding:7px 12px;border-radius:999px;cursor:pointer}
+.vx-cta{position:absolute;left:0;right:0;bottom:64px;z-index:4;display:flex;justify-content:center;padding:0 16px}
+/* On a phone-shaped screen the video fills it edge to edge; on wider screens it sits centred. */
+@container (max-aspect-ratio: 9/16){.vx-canvas{width:100%;height:100%;max-width:none;object-fit:cover}}
