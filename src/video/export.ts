@@ -33,7 +33,7 @@ export async function exportVideo(experience: PublicExperience, opts: { onProgre
   const ctx = canvas.getContext("2d", { alpha: false })!;
 
   const output = new mb.Output({ format: mp4 ? new mb.Mp4OutputFormat({ fastStart: "in-memory" }) : new mb.WebMOutputFormat(), target: new mb.BufferTarget() });
-  const vSource = new mb.CanvasSource(canvas, { codec: vCodec, bitrate: 4_000_000, keyFrameInterval: 2 });
+  const vSource = new mb.CanvasSource(canvas, { codec: vCodec, bitrate: 2_500_000, keyFrameInterval: 2 });
   output.addVideoTrack(vSource, { frameRate: FPS });
   const soundtrack = music ? await renderMusic(music.source, timeline.duration).catch(() => null) : null;
   const aSource = soundtrack ? new mb.AudioBufferSource({ codec: aCodec, bitrate: 160_000 }) : null;

@@ -1,3 +1,4 @@
+import { functionsError } from "./functions";
 import type { TemplateConfig } from "./templates/schema";
 
 export type Values = Record<string, string>;
@@ -18,7 +19,7 @@ export function sanitizeValues(t: TemplateConfig, input: Record<string, unknown>
   const out: Values = {};
   for (const f of t.fields) {
     if (!(f.key in input)) continue;
-    out[f.key] = cleanText(input[f.key], f.type === "textarea");
+    out[f.key] = f.type === "functions" ? String(input[f.key] ?? "").slice(0, 6000) : cleanText(input[f.key], f.type === "textarea");
   }
   return out;
 }
@@ -32,7 +33,10 @@ export function validateValues(t: TemplateConfig, values: Values): FieldErrors {
       if (f.required && !f.default) errors[f.key] = `Add ${f.label.toLowerCase()}.`;
       continue;
     }
-    if (f.type === "number") {
+    if (f.type === "functions") {
+      const err = functionsError(v);
+      if (err) errors[f.key] = err;
+    } else if (f.type === "number") {
       const n = Number(v);
       if (!Number.isFinite(n) || (f.min !== undefined && n < f.min) || (f.max !== undefined && n > f.max)) {
         errors[f.key] = `Use a number from ${f.min ?? 0} to ${f.max ?? "any"}.`;

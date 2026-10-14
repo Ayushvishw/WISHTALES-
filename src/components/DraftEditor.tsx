@@ -11,6 +11,7 @@ import { resolveValues, validatePhotoCount, validateValues, type FieldErrors, ty
 import { MEMORY_MIN_PHOTOS, photoTiers, priceFor, tierFor } from "@/lib/pricing";
 import type { TemplateConfig, TemplateField } from "@/lib/templates/schema";
 import { sampleFor } from "@/lib/sample";
+import { FunctionsEditor } from "./FunctionsEditor";
 
 type Photo = { id: string; url: string; thumbUrl: string };
 type Music = { id: string; title: string; source: string; license: string };
@@ -209,6 +210,9 @@ export function DraftEditor(props: { draftKey: string; config: TemplateConfig; v
   const field = (f: TemplateField) => {
     const id = `f-${f.key}`;
     const e = errors[f.key];
+    if (f.type === "functions") {
+      return <FunctionsEditor key={f.key} id={id} label={f.label} help={f.help} value={values[f.key] ?? ""} error={e} hindi={config.video?.lang === "hi"} mainDate={values.event_date ?? ""} onChange={(v) => change({ ...values, [f.key]: v })} />;
+    }
     const common = {
       id,
       value: values[f.key] ?? "",
