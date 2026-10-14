@@ -2,19 +2,19 @@ import type { TemplateInput } from "../schema";
 import { fields } from "./fields";
 
 /**
- * Video invitations (v1.0.0): the customer fills a short form, watches the video
+ * Video invitations (v1.1.0): the customer fills a short form, watches the video
  * play with their details, and downloads an MP4 to send on WhatsApp or post. No
  * link and nothing for guests to tap. Designs whose scenes name a `clip` play that
  * footage (public/video/clips) under the words; the first clips are our own
  * paintings brought to life, to be replaced by AI-made footage under the same names.
  */
 
-const common = { version: "1.0.0", occasion: "invitations", currency: "INR" as const, layout: "video" as const, scenes: [] };
+const common = { version: "1.1.0", occasion: "invitations", currency: "INR" as const, layout: "video" as const, scenes: [] };
 const PHOTOS = { min: 0, max: 6 };
 
 const WEDDING_FIELDS = fields(
   "couple_one", "couple_two", "invitation_from", "families", "event_day", "event_time", "venue_name", "venue_address",
-  { key: "events", required: false, help: "Each function gets its own screen. Write Function | Day and time | Place, up to 6 lines. Leave it empty for a single-day invite." },
+  "functions",
   "contact", "guests",
 );
 
@@ -46,7 +46,8 @@ export const VIDEO_TEMPLATES: TemplateInput[] = [
         { kind: "names", clip: "couple-1", seconds: 6, eyebrow: "The wedding of", first: "{{couple_one}}", second: "{{couple_two}}", line: "request the pleasure of your company" },
         { kind: "families", seconds: 5, eyebrow: "With the blessings of" },
         { kind: "date", clip: "couple-2", eyebrow: "Save the date" },
-        { kind: "events", each: true, eyebrow: "Join us for the", perEvent: 4.5 },
+        { kind: "events", eyebrow: "The celebrations" },
+        { kind: "events", each: true, eyebrow: "Join us for the" },
         { kind: "gallery", from: 0, caption: "Us", perPhoto: 2.6 },
         { kind: "venue", clip: "pheras-1", eyebrow: "The venue" },
         { kind: "closing", title: "Warm regards", line: "{{contact}}", signoff: "{{sender_name}}" },
@@ -74,11 +75,12 @@ export const VIDEO_TEMPLATES: TemplateInput[] = [
     video: {
       ornament: "arch", particles: "petals", frame: "arch", sky: ["#fffaf4", "#f6e6dc"], glow: "#ffe3dc",
       scenes: [
-        { kind: "title", seconds: 4.5, eyebrow: "Mark your calendar", title: "to rejoice in the wedding of", line: "" },
+        { kind: "monogram", eyebrow: "Mark your calendar", line: "to rejoice in the wedding of" },
         { kind: "names", seconds: 6, eyebrow: "", first: "{{couple_one}}", second: "{{couple_two}}", line: "with the blessings of our families" },
         { kind: "families", seconds: 5, eyebrow: "Together with" },
         { kind: "date", eyebrow: "Save the date" },
-        { kind: "events", each: true, eyebrow: "", perEvent: 4.5 },
+        { kind: "events", eyebrow: "The celebrations" },
+        { kind: "events", each: true, eyebrow: "Join us for the" },
         { kind: "gallery", from: 0, caption: "Two hearts, one story", perPhoto: 2.6 },
         { kind: "venue", eyebrow: "Venue" },
         { kind: "closing", title: "Warm regards", line: "{{contact}}", signoff: "{{sender_name}}" },
@@ -106,11 +108,12 @@ export const VIDEO_TEMPLATES: TemplateInput[] = [
     video: {
       ornament: "deco", particles: "sparkles", frame: "rounded", sky: ["#151318", "#060607"], glow: "#4a3a12",
       scenes: [
-        { kind: "title", seconds: 4.5, eyebrow: "An evening to remember", title: "You are invited", line: "to celebrate with us" },
+        { kind: "monogram", eyebrow: "An evening to remember", line: "" },
+        { kind: "title", seconds: 4.5, eyebrow: "", title: "You are invited", line: "to celebrate with us" },
         { kind: "names", seconds: 6, eyebrow: "In honour of", first: "{{couple_one}}", second: "{{couple_two}}", joiner: "and", line: "" },
         { kind: "photo", photo: 0, caption: "" },
         { kind: "date", eyebrow: "Save the evening" },
-        { kind: "events", each: true, eyebrow: "", perEvent: 4 },
+        { kind: "events", each: true, eyebrow: "Tonight we celebrate" },
         { kind: "gallery", from: 1, caption: "", perPhoto: 2.4 },
         { kind: "venue", eyebrow: "Where" },
         { kind: "closing", title: "See you there", line: "{{contact}}", signoff: "{{sender_name}}" },
@@ -171,17 +174,19 @@ export const VIDEO_TEMPLATES: TemplateInput[] = [
       display: "'Playfair Display', Georgia, serif", hand: "'Parisienne', cursive", body: "'Outfit', system-ui, sans-serif", letter: "'Lora', Georgia, serif",
       fx: ["#e3b18a", "#d987a0"], fonts: "family=Playfair+Display:ital,wght@0,500;1,500&family=Parisienne&family=Outfit:wght@400;500;600&family=Lora:ital@0;1",
     },
-    fields: fields("couple_one", "couple_two", "invitation_from", "families", "event_day", "event_time", "venue_name", "venue_address", "contact", "guests"),
+    fields: fields("couple_one", "couple_two", "invitation_from", "families", "event_day", "event_time", "venue_name", "venue_address", "functions", "contact", "guests"),
     photos: PHOTOS,
     music: { default: "mus_canon" },
     video: {
       ornament: "floral", particles: "bokeh", frame: "rounded", sky: ["#3a1a2a", "#160910"], glow: "#7a3550",
       scenes: [
-        { kind: "title", seconds: 4.5, eyebrow: "Two hearts, one promise", title: "We're getting engaged", line: "" },
+        { kind: "monogram", eyebrow: "Two hearts, one promise", line: "" },
+        { kind: "title", seconds: 4.5, eyebrow: "", title: "We're getting engaged", line: "" },
         { kind: "names", seconds: 6, eyebrow: "", first: "{{couple_one}}", second: "{{couple_two}}", line: "are exchanging rings" },
         { kind: "gallery", from: 0, caption: "", perPhoto: 2.6 },
         { kind: "families", seconds: 4.5, eyebrow: "With the blessings of" },
         { kind: "date", eyebrow: "Save the date" },
+        { kind: "events", each: true, eyebrow: "Join us for the", perEvent: 4.4 },
         { kind: "venue", eyebrow: "The ceremony" },
         { kind: "closing", title: "Be there with us", line: "{{contact}}", signoff: "{{sender_name}}" },
       ],
@@ -209,7 +214,7 @@ export const VIDEO_TEMPLATES: TemplateInput[] = [
       { key: "families", label: "परिवार (Family lines, optional)", placeholder: "सुपुत्री श्रीमती मीना एवं श्री दिनेश शर्मा\nसुपुत्र श्रीमती गीता एवं श्री रोहन गुप्ता" },
       "event_day", { key: "event_time", label: "समय (Time)", placeholder: "सायं 7 बजे से" },
       { key: "venue_name", label: "स्थान (Venue)", placeholder: "राजमहल पैलेस" }, { key: "venue_address", label: "पता (Address)", placeholder: "जयपुर, राजस्थान" },
-      { key: "events", required: false, label: "कार्यक्रम (Functions, one per line)", placeholder: "हल्दी | शुक्रवार, सुबह 10 बजे | लॉन\nसंगीत | शुक्रवार, रात 8 बजे | दरबार हॉल\nविवाह | शनिवार, सायं 7 बजे | राजमहल", help: "Function | Day and time | Place. Up to 6 lines." },
+      { key: "functions", label: "कार्यक्रम (Functions: हल्दी, मेहंदी, संगीत, फेरे...)" },
       { key: "contact", label: "संपर्क (Contact numbers, optional)" }, { key: "recipient_name", label: "Guests", type: "text", max: 40, default: "आप सभी" },
     ),
     photos: PHOTOS,
@@ -221,7 +226,8 @@ export const VIDEO_TEMPLATES: TemplateInput[] = [
         { kind: "names", clip: "couple-1", seconds: 6, eyebrow: "सादर आमंत्रण", first: "{{couple_one}}", second: "{{couple_two}}", joiner: "संग", line: "के शुभ विवाह के पावन अवसर पर" },
         { kind: "families", seconds: 5, eyebrow: "आशीर्वाद सहित" },
         { kind: "date", clip: "couple-2", eyebrow: "शुभ मुहूर्त" },
-        { kind: "events", each: true, eyebrow: "कार्यक्रम", perEvent: 4.5 },
+        { kind: "events", eyebrow: "उत्सव", title: "कार्यक्रम" },
+        { kind: "events", each: true, eyebrow: "आपका स्वागत है" },
         { kind: "gallery", from: 0, caption: "", perPhoto: 2.6 },
         { kind: "venue", clip: "pheras-1", eyebrow: "स्थान" },
         { kind: "closing", title: "सादर", line: "{{contact}}", signoff: "{{sender_name}}" },

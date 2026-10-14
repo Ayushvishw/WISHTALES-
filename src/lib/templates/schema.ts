@@ -9,7 +9,7 @@ import { z } from "zod";
 export const fieldSchema = z.object({
   key: z.string().regex(/^[a-z][a-z0-9_]*$/),
   label: z.string(),
-  type: z.enum(["text", "textarea", "date", "number"]),
+  type: z.enum(["text", "textarea", "date", "number", "functions"]),
   required: z.boolean().default(false),
   max: z.number().int().positive().optional(),
   min: z.number().optional(),
@@ -187,7 +187,9 @@ export const videoSceneSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("date"), ...shot, eyebrow: words.optional(), line: words.optional() }),
   /** The venue name and address. */
   z.object({ kind: z.literal("venue"), ...shot, eyebrow: words.optional() }),
-  /** The functions, "Event | When | Where" per line, up to 6: one screen each, or all on one list. */
+  /** The couple's initials inside a drawn ring, as an opener. */
+  z.object({ kind: z.literal("monogram"), ...shot, eyebrow: words.optional(), line: words.optional() }),
+  /** The functions the customer added (date, time, venue, dress code each): one screen each, or all on one list. */
   z.object({ kind: z.literal("events"), ...clip, eyebrow: words.optional(), title: words.optional(), each: z.boolean().optional(), perEvent: z.number().min(2.5).max(8).optional() }),
   /** A short note from a text field. */
   z.object({ kind: z.literal("message"), ...shot, eyebrow: words.optional(), field: z.string() }),

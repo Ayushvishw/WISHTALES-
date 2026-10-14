@@ -1,3 +1,4 @@
+import { serializeFunctions, type WeddingFunction } from "./functions";
 /** Made-up details used by the public samples and the live banners on the home page. */
 export const SAMPLE = {
   recipient_name: "Lisa",
@@ -60,6 +61,29 @@ const SAMPLE_BY_TEMPLATE: Record<string, Record<string, string>> = {
   "inv-little-one": { recipient_name: "our family and friends", sender_name: "Lisa and Andrew", couple_one: "Baby shower", event_time: "12 pm onwards", venue_name: "The Garden Room", venue_address: "Koregaon Park, Pune", letter: "Our little one is almost here, and we couldn't think of a better way to welcome them than with all of you.\nCome for the food, stay for the baby games." },
 };
 
+/** A few sample functions in the days leading up to the wedding date. */
+function sampleFunctions(wedding: string, set: "full" | "none" | "engage" | "hindi"): string {
+  const day = (back: number) => new Date(Date.parse(`${wedding}T12:00:00Z`) - back * 864e5).toISOString().slice(0, 10);
+  if (set === "none") return "";
+  const hindi: WeddingFunction[] = [
+    { kind: "mehendi", date: day(2), time: "सायं 4 बजे", venue: "बाग का आँगन", dress: "हरा और पीला" },
+    { kind: "haldi", date: day(1), time: "सुबह 10 बजे", venue: "पूल लॉन", dress: "पीला" },
+    { kind: "sangeet", date: day(1), time: "रात 8 बजे", venue: "दरबार हॉल", dress: "इंडो-वेस्टर्न" },
+    { kind: "wedding", date: wedding, time: "रात 9 बजे", venue: "राजमहल", dress: "पारंपरिक लाल और सुनहरा" },
+  ];
+  const all: WeddingFunction[] = set === "hindi" ? hindi : set === "engage"
+    ? [{ kind: "roka", date: day(1), time: "11:00 am", venue: "Kapoor Niwas", dress: "Festive ethnic" }, { kind: "engagement", date: wedding, time: "7:00 pm", venue: "The Lakeside Palace", dress: "Pastel formals" }]
+    : [
+        { kind: "mehendi", date: day(2), time: "4:00 pm", venue: "Garden courtyard", dress: "Green and yellow" },
+        { kind: "haldi", date: day(1), time: "10:00 am", venue: "Poolside lawns", dress: "Yellow" },
+        { kind: "sangeet", date: day(1), time: "8:00 pm", venue: "Durbar Hall", dress: "Glam Indo-western" },
+        { kind: "baraat", date: wedding, time: "6:00 pm", venue: "Palace gate", dress: "Rich ethnic, turbans" },
+        { kind: "wedding", date: wedding, time: "9:00 pm", venue: "Lakeside lawns", dress: "Traditional reds and golds" },
+        { kind: "reception", date: day(-1), time: "8:00 pm", venue: "Grand ballroom", dress: "Formal" },
+      ];
+  return serializeFunctions(all);
+}
+
 /** Sample details for a template, for samples, banners and the "fill with sample details" button. */
 export function sampleFor(occasion: string, slug?: string): Record<string, string> {
   const today = new Date();
@@ -67,7 +91,8 @@ export function sampleFor(occasion: string, slug?: string): Record<string, strin
   if (occasion === "invitations") {
     // A date a few weeks ahead, so the countdown has something to count.
     const soon = ymd(new Date(today.getTime() + 45 * 864e5));
-    return { ...SAMPLE, ...WEDDING, ...(slug ? SAMPLE_BY_TEMPLATE[slug] : undefined), event_date: soon };
+    const base = { ...SAMPLE, ...WEDDING, ...(slug ? SAMPLE_BY_TEMPLATE[slug] : undefined), event_date: soon };
+    return slug?.startsWith("vid-") ? { ...base, functions: sampleFunctions(soon, slug === "vid-shubh-vivah-hindi" ? "hindi" : slug === "vid-marigold" ? "none" : slug === "vid-rose-ring" ? "engage" : "full") } : base;
   }
   return { ...SAMPLE, ...SAMPLE_BY_OCCASION[occasion], event_date: ymd(today) };
 }

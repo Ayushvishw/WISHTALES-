@@ -1,6 +1,8 @@
 import { fillText, type Values } from "@/lib/personalization";
 import type { TemplateConfig, Theme, VideoDesign } from "@/lib/templates/schema";
-import { dateParts, eventLines, shotAt, VIDEO_H as H, VIDEO_W as W, type Shot, type Timeline } from "./timeline";
+import { functionShows, type FunctionShow } from "@/lib/functions";
+import { FUNCTION_LOOK, fireworks, flourish, functionGlow, functionMotif, goldDust, sunburst, transition, transitionFor } from "./fx";
+import { dateParts, shortDate, shotAt, VIDEO_H as H, VIDEO_W as W, type Shot, type Timeline } from "./timeline";
 
 /**
  * Draws one frame of a video invitation at time t. The same function feeds the
@@ -35,7 +37,11 @@ function rgba(hex: string, a: number) {
   return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`;
 }
 
+/** The time being drawn, for effects (shimmer, pen sparkle) that text helpers need. */
+let NOW = 0;
+
 export function drawFrame(ctx: Ctx, t: number, f: Frame) {
+  NOW = t;
   const th = f.config.theme;
   const v = f.config.video!;
   ctx.save();
@@ -47,9 +53,34 @@ export function drawFrame(ctx: Ctx, t: number, f: Frame) {
   const footage = shot?.scene.clip ? f.assets.clip?.(shot.scene.clip) : null;
   if (shot && footage) clipLayer(ctx, t, shot, footage);
   else ornamentBack(ctx, t, th, v);
-  if (shot) scene(ctx, t, shot, f);
-  particles(ctx, t, th, v);
+  if (shot) {
+    // A very slow push-in keeps still screens feeling like film.
+    const lt = t - shot.start;
+    const push = 1 + 0.03 * (lt / shot.dur);
+    ctx.save();
+    ctx.translate(W / 2, H / 2);
+    ctx.scale(push, push);
+    ctx.translate(-W / 2, -H / 2);
+    scene(ctx, t, shot, f);
+    ctx.restore();
+    if (shot.scene.kind === "closing") fireworks(ctx, lt, W, H, [th.accent, th.accent3 ?? th.accent, th.accent2]);
+  }
+  const fn = shot?.scene.kind === "events" && shot.item !== undefined ? functionShows(f.values, v.lang ?? "en")[shot.item] : null;
+  particles(ctx, t, th, fn ? { ...v, particles: FUNCTION_LOOK[fn.kind].particles } : v);
+  goldDust(ctx, t, W, H, th.accent3 ?? th.accent);
+  // The frame draws itself in over the opening seconds.
+  const intro = ease(t / 2.4);
+  ctx.save();
+  ctx.globalAlpha = intro;
+  const zoom = 1.04 - 0.04 * intro;
+  ctx.translate(W / 2, H / 2);
+  ctx.scale(zoom, zoom);
+  ctx.translate(-W / 2, -H / 2);
   ornamentFront(ctx, t, th, v);
+  ctx.restore();
+  if (shot && shot !== f.timeline.shots[0]) {
+    transition(ctx, transitionFor(v.ornament), (t - shot.start) / 0.8, W, H, v.sky, th.accent, th.accent2);
+  }
   // Open from dark and settle back at the end, so the video starts and loops softly.
   const edge = Math.max(1 - t / 0.9, (t - (f.timeline.duration - 0.8)) / 0.8);
   if (edge > 0) {
@@ -596,6 +627,8 @@ type TextOpts = {
   spacing?: number;
   upper?: boolean;
   glow?: string;
+  /** A highlight colour that glides across the words now and then. */
+  shine?: string;
 };
 
 function setFont(ctx: Ctx, o: TextOpts, size: number) {
@@ -647,6 +680,18 @@ function text(ctx: Ctx, raw: string, x: number, y: number, o: TextOpts, a = 1, r
   ctx.textBaseline = "middle";
   ctx.globalAlpha = clamp(a);
   ctx.fillStyle = o.color;
+  const wide = Math.max(...L.lines.map((l) => ctx.measureText(l).width));
+  if (o.shine) {
+    const p = ((NOW * 0.32) % 2.2) - 0.6;
+    const g = ctx.createLinearGradient(x - wide / 2, 0, x + wide / 2, 0);
+    const stop = (v: number) => Math.min(1, Math.max(0, v));
+    g.addColorStop(0, o.color);
+    g.addColorStop(stop(p - 0.18), o.color);
+    g.addColorStop(stop(p), o.shine);
+    g.addColorStop(stop(p + 0.18), o.color);
+    g.addColorStop(1, o.color);
+    ctx.fillStyle = g;
+  }
   if (o.glow) {
     ctx.shadowColor = o.glow;
     ctx.shadowBlur = 18;
@@ -660,6 +705,18 @@ function text(ctx: Ctx, raw: string, x: number, y: number, o: TextOpts, a = 1, r
   }
   L.lines.forEach((l, i) => ctx.fillText(l, x, y + i * L.lh));
   ctx.restore();
+  if (reveal > 0 && reveal < 1) {
+    // The pen: a twinkle rides the edge of the handwriting as it appears.
+    const wMax = wide + 40;
+    const ex = x - wMax / 2 + wMax * smooth(reveal);
+    ctx.save();
+    ctx.globalAlpha = clamp(a) * 0.95;
+    ctx.fillStyle = "#fff3d0";
+    ctx.shadowColor = "#ffe6a0";
+    ctx.shadowBlur = 14;
+    sparkle(ctx, ex, y + (L.height - L.lh) / 2, 15 + 8 * Math.sin(NOW * 30));
+    ctx.restore();
+  }
   return L.height;
 }
 
@@ -756,13 +813,72 @@ function photoFrame(ctx: Ctx, th: Theme, v: VideoDesign, img: Img | null, cx: nu
   }
   ctx.restore();
   if (v.frame !== "polaroid") {
-    ctx.strokeStyle = th.accent;
+    const gl = ((NOW * 0.5) % 2) - 0.5;
+    const sg = ctx.createLinearGradient(x, y, x + w, y + h);
+    const st = (n: number) => Math.min(1, Math.max(0, n));
+    sg.addColorStop(0, th.accent);
+    sg.addColorStop(st(gl - 0.15), th.accent);
+    sg.addColorStop(st(gl), "#fff6dc");
+    sg.addColorStop(st(gl + 0.15), th.accent);
+    sg.addColorStop(1, th.accent);
+    ctx.strokeStyle = sg;
     ctx.lineWidth = 3;
     framePath(ctx, v.frame, x, y, w, h);
     ctx.stroke();
+    ctx.strokeStyle = th.accent;
     ctx.lineWidth = 1.2;
     framePath(ctx, v.frame, x - 12, y - 12, w + 24, h + 24);
     ctx.stroke();
+  }
+  ctx.restore();
+}
+
+/** One function's own screen: its animated picture, name, date, time, venue and dress code. */
+function drawFunction(
+  ctx: Ctx, e: FunctionShow, lt: number, el: (i: number) => number, rise: (i: number) => number,
+  o: { th: Theme; v: VideoDesign; script: TextOpts; display: TextOpts; body: TextOpts; eyebrowText: string },
+) {
+  const { th, v, script, display, body } = o;
+  const lang = v.lang ?? "en";
+  const gold = th.accent3 ?? th.accent;
+  ctx.save();
+  ctx.translate(0, 56);
+  functionGlow(ctx, W, W / 2, 400, e.kind, el(0));
+  eyebrow(ctx, th, o.eyebrowText, 150, el(0));
+  functionMotif(ctx, e.kind, W / 2, 400, 118, lt, el(0), th.accent, gold);
+  text(ctx, e.name, W / 2, 655, { ...script, size: 112, maxLines: 1 }, el(1), clamp((lt - 0.4) / 1.2));
+  divider(ctx, th, 745, el(2), 260);
+  const d = dateParts(e.date, lang);
+  let y = 810;
+  if (d) {
+    text(ctx, `${d.weekday}, ${d.day} ${d.month}`, W / 2, y + rise(3), { family: th.display, size: 42, color: th.fg, weight: 500, maxLines: 1 }, el(3));
+    y += 62;
+  }
+  if (e.time) {
+    text(ctx, e.time, W / 2, y + rise(4), { family: th.body, size: 30, color: gold, weight: 600, spacing: 3, maxLines: 1 }, el(4));
+    y += 70;
+  }
+  if (e.venue) {
+    const h = text(ctx, e.venue, W / 2, y + rise(5), { ...body, size: 30, color: th.fg, maxLines: 2, lineH: 1.3 }, el(5));
+    y += h + 22;
+    if (e.address) { text(ctx, e.address, W / 2, y - 6, { ...body, size: 23, maxLines: 2 }, el(5)); y += 48; }
+  }
+  if (e.dress) {
+    // A pill with the dress code.
+    const label = `${lang === "hi" ? "परिधान" : "Dress code"}  ·  ${e.dress}`;
+    ctx.save();
+    ctx.font = `600 22px ${th.body}`;
+    const w = Math.min(W - 120, ctx.measureText(label).width + 56);
+    ctx.globalAlpha = el(6);
+    ctx.strokeStyle = rgba(th.accent, 0.8);
+    ctx.fillStyle = rgba(th.accent, 0.12);
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(W / 2 - w / 2, y + 12, w, 54, 27);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+    text(ctx, label, W / 2, y + 40, { family: th.body, size: 22, color: th.fg, weight: 600, maxLines: 1, maxW: w - 40 }, el(6));
   }
   ctx.restore();
 }
@@ -777,7 +893,7 @@ function scene(ctx: Ctx, t: number, shot: Shot, f: Frame) {
   const el = (i: number) => ease((lt - 0.2 - i * 0.28) / 0.8) * out;
   const rise = (i: number) => (1 - ease((lt - 0.2 - i * 0.28) / 0.8)) * 26;
   const fill = (str?: string) => (str ? fillText(str, vals) : "");
-  const script: TextOpts = { family: th.hand, size: 104, color: th.fg, glow: rgba(th.accent, 0.45), maxLines: 2, lineH: 1.1, maxW: W - 120 };
+  const script: TextOpts = { family: th.hand, size: 104, color: th.fg, glow: rgba(th.accent, 0.45), maxLines: 2, lineH: 1.1, maxW: W - 120, shine: th.accent3 ?? th.accent };
   const display: TextOpts = { family: th.display, size: 52, color: th.fg, weight: 500, maxLines: 3, lineH: 1.2 };
   const body: TextOpts = { family: th.body, size: 27, color: th.muted, maxLines: 4, lineH: 1.45, maxW: W - 170 };
 
@@ -805,12 +921,46 @@ function scene(ctx: Ctx, t: number, shot: Shot, f: Frame) {
       text(ctx, fill(s.line), W / 2, 590 + h + 100 + rise(3), body, el(3));
       break;
     }
+    case "monogram": {
+      const first = (a: string) => Array.from(fill(a).trim())[0]?.toUpperCase() ?? "";
+      const a1 = first(vals.couple_one ?? ""), b1 = first(vals.couple_two ?? "");
+      const cx = W / 2, cy = 560;
+      ctx.save();
+      ctx.globalAlpha = out;
+      ctx.strokeStyle = th.accent;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 200, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * ease(lt / 1.8));
+      ctx.stroke();
+      ctx.lineWidth = 1.2;
+      ctx.globalAlpha = out * 0.7;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 216, Math.PI / 2, Math.PI / 2 + Math.PI * 2 * ease((lt - 0.3) / 1.8));
+      ctx.stroke();
+      for (let i = 0; i < 4; i++) {
+        const an = (i / 4) * Math.PI * 2;
+        ctx.globalAlpha = out * ease((lt - 1.4) / 0.6);
+        ctx.fillStyle = th.accent;
+        diamond(ctx, cx + Math.cos(an) * 216, cy + Math.sin(an) * 216, 6);
+      }
+      ctx.restore();
+      eyebrow(ctx, th, fill(s.eyebrow), 280 + rise(0), el(0));
+      if (b1) {
+        text(ctx, a1, cx - 66, cy - 6, { ...script, size: 168, maxLines: 1 }, el(1), clamp((lt - 0.5) / 1.1));
+        text(ctx, b1, cx + 66, cy + 24, { ...script, size: 168, maxLines: 1 }, el(2), clamp((lt - 1) / 1.1));
+        text(ctx, "&", cx, cy + 4, { ...display, size: 50, color: th.accent, italic: true }, el(2));
+      } else text(ctx, a1, cx, cy, { ...script, size: 200, maxLines: 1 }, el(1), clamp((lt - 0.5) / 1.1));
+      divider(ctx, th, 850, el(3), 240);
+      text(ctx, fill(s.line), W / 2, 920 + rise(4), { ...display, size: 40, color: th.fg, italic: true, maxLines: 2 }, el(4));
+      break;
+    }
     case "names": {
       const second = fill(s.second);
       eyebrow(ctx, th, fill(s.eyebrow), second ? 380 : 470, el(0));
       const y1 = second ? 520 : 610;
       text(ctx, fill(s.first), W / 2, y1, script, el(1), clamp((lt - 0.35) / 1.3));
       if (second) {
+        flourish(ctx, W / 2, y1 + 130, 56, el(2), th.accent);
         text(ctx, s.joiner ?? "&", W / 2, y1 + 130, { ...display, family: th.display, size: 56, color: th.accent, italic: true }, el(2));
         text(ctx, second, W / 2, y1 + 260, script, el(3), clamp((lt - 1.2) / 1.3));
       }
@@ -849,6 +999,7 @@ function scene(ctx: Ctx, t: number, shot: Shot, f: Frame) {
     case "date": {
       const d = dateParts(vals.event_date ?? "", v.lang);
       if (!d) break;
+      sunburst(ctx, W / 2, 600, 400, t, th.accent3 ?? th.accent, el(2) * 0.9);
       eyebrow(ctx, th, fill(s.eyebrow) || "Save the date", 360, el(0));
       text(ctx, d.weekday, W / 2, 460 + rise(1), { ...body, family: th.display, size: 34, color: th.fg, spacing: 8, upper: true }, el(1));
       ctx.save();
@@ -859,7 +1010,7 @@ function scene(ctx: Ctx, t: number, shot: Shot, f: Frame) {
       line(ctx, W / 2 - 100 - span, 620, W / 2 - 110, 620);
       line(ctx, W / 2 + 110, 620, W / 2 + 100 + span, 620);
       ctx.restore();
-      text(ctx, d.day, W / 2, 625 + rise(2), { family: th.display, size: 190, color: th.accent3 ?? th.accent, weight: 500, glow: rgba(th.accent, 0.5), maxLines: 1 }, el(2));
+      text(ctx, d.day, W / 2, 625 + rise(2), { family: th.display, size: 190, color: th.accent3 ?? th.accent, weight: 500, glow: rgba(th.accent, 0.5), maxLines: 1, shine: "#ffffff" }, el(2));
       text(ctx, d.month, W / 2, 790 + rise(3), { family: th.display, size: 44, color: th.fg, spacing: 10, upper: true, maxLines: 1 }, el(3));
       text(ctx, d.year, W / 2, 855 + rise(3), { ...body, size: 28, color: th.muted, spacing: 8 }, el(3));
       divider(ctx, th, 930, el(4), 180);
@@ -889,26 +1040,30 @@ function scene(ctx: Ctx, t: number, shot: Shot, f: Frame) {
       break;
     }
     case "events": {
-      const evs = eventLines(vals);
+      const lang = v.lang ?? "en";
+      const evs = functionShows(vals, lang);
       if (shot.item !== undefined) {
         const e = evs[shot.item];
         if (!e) break;
-        eyebrow(ctx, th, fill(s.eyebrow) || "Join us for the", 400, el(0));
-        text(ctx, e.name, W / 2, 520, { ...script, size: 112, maxLines: 1 }, el(1), clamp((lt - 0.4) / 1.2));
-        divider(ctx, th, 640, el(2), 240);
-        text(ctx, e.when, W / 2, 720 + rise(3), { family: th.display, size: 40, color: th.fg, weight: 500, maxLines: 2 }, el(3));
-        if (e.where) text(ctx, e.where, W / 2, 810 + rise(4), body, el(4));
+        drawFunction(ctx, e, lt, el, rise, { th, v, script, display, body, eyebrowText: fill(s.eyebrow) || (lang === "hi" ? "आपका स्वागत है" : "Join us for the") });
         break;
       }
-      eyebrow(ctx, th, fill(s.eyebrow) || "The celebrations", 190, el(0));
-      text(ctx, fill(s.title) || "Join us for", W / 2, 285, { ...script, size: 74, maxLines: 1 }, el(1), clamp((lt - 0.4) / 1.2));
-      const rowH = Math.min(150, 820 / evs.length);
+      eyebrow(ctx, th, fill(s.eyebrow) || (lang === "hi" ? "उत्सव" : "The celebrations"), 175, el(0));
+      text(ctx, fill(s.title) || (lang === "hi" ? "कार्यक्रम" : "Join us for"), W / 2, 270, { ...script, size: 74, maxLines: 1 }, el(1), clamp((lt - 0.4) / 1.2));
+      const rowH = Math.min(150, 840 / evs.length);
       evs.forEach((e, i) => {
         const a = ease((lt - 0.9 - i * 1.3) / 0.7) * out;
-        const y = 410 + i * rowH + (1 - a) * 20;
+        const y = 395 + i * rowH + (1 - a) * 20;
+        const look = FUNCTION_LOOK[e.kind];
+        ctx.save();
+        ctx.globalAlpha = a;
+        ctx.fillStyle = look.tint;
+        diamond(ctx, 96, y + rowH * 0.2, 7);
+        ctx.restore();
         text(ctx, e.name, W / 2, y, { family: th.display, size: Math.min(40, rowH * 0.32), color: th.accent3 ?? th.accent, weight: 500, maxLines: 1 }, a);
-        text(ctx, e.when, W / 2, y + rowH * 0.3, { ...body, size: Math.min(26, rowH * 0.2), color: th.fg, maxLines: 1 }, a);
-        if (e.where) text(ctx, e.where, W / 2, y + rowH * 0.5, { ...body, size: Math.min(23, rowH * 0.17), maxLines: 1 }, a);
+        const when = [shortDate(e.date, lang), e.time].filter(Boolean).join("  ·  ");
+        text(ctx, when, W / 2, y + rowH * 0.3, { ...body, size: Math.min(26, rowH * 0.2), color: th.fg, maxLines: 1 }, a);
+        if (e.venue) text(ctx, e.venue, W / 2, y + rowH * 0.5, { ...body, size: Math.min(23, rowH * 0.17), maxLines: 1 }, a);
         if (i < evs.length - 1) {
           ctx.save();
           ctx.globalAlpha = a * 0.4;

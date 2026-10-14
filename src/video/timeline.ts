@@ -1,3 +1,4 @@
+import { functionShows } from "@/lib/functions";
 import { fillText, type Values } from "@/lib/personalization";
 import type { VideoDesign, VideoScene } from "@/lib/templates/schema";
 
@@ -11,18 +12,8 @@ export type Shot = { scene: VideoScene; start: number; dur: number; photos: numb
 export type Timeline = { shots: Shot[]; duration: number };
 
 const DEFAULT_SECONDS: Record<VideoScene["kind"], number> = {
-  art: 5, title: 4.5, names: 5.5, photo: 4.5, gallery: 0, families: 4.5, date: 5, venue: 4.5, events: 0, message: 6, closing: 5.5,
+  art: 5, title: 4.5, monogram: 4, names: 5.5, photo: 4.5, gallery: 0, families: 4.5, date: 5, venue: 4.5, events: 0, message: 6, closing: 5.5,
 };
-
-/** "Haldi | Friday, 10 am | Poolside lawns" lines, at most 6, map links dropped. */
-export function eventLines(values: Values): { name: string; when: string; where: string }[] {
-  return (values.events ?? "")
-    .split("\n")
-    .map((l) => l.split("|").map((x) => x.trim()))
-    .filter((p) => p[0])
-    .slice(0, 6)
-    .map(([name, when = "", where = ""]) => ({ name, when, where: /^https?:/i.test(where) ? "" : where }));
-}
 
 /** Lays the design's scenes out in time, skipping any whose content the customer left out. */
 export function buildTimeline(video: VideoDesign, values: Values, photoCount: number): Timeline {
@@ -47,9 +38,9 @@ export function buildTimeline(video: VideoDesign, values: Values, photoCount: nu
         if ((values.families ?? "").trim()) add(s, secs);
         break;
       case "events": {
-        const n = eventLines(values).length;
-        if (s.each) for (let i = 0; i < n; i++) add(s, s.perEvent ?? 4.5, [], i);
-        else if (n) add(s, 2.4 + n * 1.3);
+        const n = functionShows(values, video.lang ?? "en").length;
+        if (s.each) for (let i = 0; i < n; i++) add(s, s.perEvent ?? 4.4, [], i);
+        else if (n) add(s, 2.2 + n * 1.05);
         break;
       }
       case "message":
@@ -82,4 +73,10 @@ export function dateParts(ymd: string, lang: "en" | "hi" = "en") {
   if (Number.isNaN(d.getTime())) return null;
   const f = (o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat(lang === "hi" ? "hi-IN" : "en-IN", { timeZone: "UTC", ...o }).format(d);
   return { weekday: f({ weekday: "long" }), day: f({ day: "numeric" }), month: f({ month: "long" }), year: f({ year: "numeric" }) };
+}
+
+/** "Fri, 12 Nov" – a short date for lists. */
+export function shortDate(ymd: string, lang: "en" | "hi" = "en") {
+  const d = dateParts(ymd, lang);
+  return d ? `${d.weekday.slice(0, lang === "hi" ? 12 : 3)}, ${d.day} ${lang === "hi" ? d.month : d.month.slice(0, 3)}` : "";
 }

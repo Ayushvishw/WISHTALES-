@@ -3,7 +3,8 @@ import { resolveValues } from "@/lib/personalization";
 import { sampleFor } from "@/lib/sample";
 import { CATALOG } from "@/lib/templates/catalog";
 import { templateConfigSchema } from "@/lib/templates/schema";
-import { buildTimeline, dateParts, eventLines, shotAt } from "@/video/timeline";
+import { functionShows, functionsError, legacyFunctions, parseFunctions, serializeFunctions } from "@/lib/functions";
+import { buildTimeline, dateParts, shotAt } from "@/video/timeline";
 
 const videos = CATALOG.filter((t) => t.layout === "video");
 const shahi = videos.find((t) => t.slug === "vid-shahi-vivah")!;
@@ -18,11 +19,11 @@ describe("video invitations", () => {
   it("gives every function its own screen and skips what the customer left out", () => {
     const full = resolveValues(shahi, sampleFor("invitations", shahi.slug));
     const tl = buildTimeline(shahi.video!, full, 6);
-    const events = tl.shots.filter((s) => s.scene.kind === "events");
-    expect(events.map((s) => s.item)).toEqual([0, 1, 2, 3, 4]);
+    const events = tl.shots.filter((s) => s.scene.kind === "events" && s.item !== undefined);
+    expect(events.map((s) => s.item)).toEqual([0, 1, 2, 3, 4, 5]);
     expect(tl.shots.find((s) => s.scene.kind === "gallery")!.photos).toEqual([0, 1, 2, 3]);
 
-    const bare = buildTimeline(shahi.video!, { ...full, events: "", families: "" }, 0);
+    const bare = buildTimeline(shahi.video!, { ...full, functions: "", events: "", families: "" }, 0);
     expect(bare.shots.map((s) => s.scene.kind)).not.toContain("events");
     expect(bare.shots.map((s) => s.scene.kind)).not.toContain("gallery");
     expect(bare.shots.map((s) => s.scene.kind)).not.toContain("families");
@@ -39,7 +40,7 @@ describe("video invitations", () => {
   });
 
   it("reads functions and dates the way customers write them", () => {
-    expect(eventLines({ events: "Haldi | Fri 10 am | Lawns | https://maps.app.goo.gl/x\n\nSangeet | Fri 8 pm" })).toEqual([
+    expect(legacyFunctions("Haldi | Fri 10 am | Lawns | https://maps.app.goo.gl/x\n\nSangeet | Fri 8 pm")).toEqual([
       { name: "Haldi", when: "Fri 10 am", where: "Lawns" },
       { name: "Sangeet", when: "Fri 8 pm", where: "" },
     ]);
@@ -51,5 +52,26 @@ describe("video invitations", () => {
   it("rejects a video scene that reads an unknown field", () => {
     const bad = { ...shahi, video: { ...shahi.video!, scenes: [...shahi.video!.scenes, { kind: "message", field: "nope" }] } };
     expect(templateConfigSchema.safeParse(bad).success).toBe(false);
+  });
+
+  it("keeps wedding functions in date order with their own details", () => {
+    const raw = serializeFunctions([
+      { kind: "wedding", date: "2026-12-12", time: "9 pm", dress: "Reds" },
+      { kind: "haldi", date: "2026-12-11", time: "10 am", venue: "Lawns" },
+      { kind: "custom", name: "Tilak", date: "2026-12-10" },
+    ]);
+    const shows = functionShows({ functions: raw, venue_name: "The Palace" }, "en");
+    expect(shows.map((f) => f.name)).toEqual(["Tilak", "Haldi", "Pheras"]);
+    expect(shows[1].venue).toBe("Lawns");
+    expect(shows[2].venue).toBe("The Palace");
+    expect(functionShows({ functions: raw }, "hi")[1].name).toBe("हल्दी");
+    expect(parseFunctions("not json")).toEqual([]);
+  });
+
+  it("asks for a date on every function and a name on a custom one", () => {
+    expect(functionsError(serializeFunctions([{ kind: "haldi", date: "" }]))).toMatch(/date/i);
+    expect(functionsError(serializeFunctions([{ kind: "custom", date: "2026-12-10" }]))).toMatch(/name/i);
+    expect(functionsError(serializeFunctions([{ kind: "sangeet", date: "2026-12-10" }]))).toBeNull();
+    expect(functionsError("")).toBeNull();
   });
 });
